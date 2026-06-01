@@ -121,10 +121,37 @@
   * {
     @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
-    }
   html {
-    @apply font-sans;
+    @apply font-sans overflow-x-hidden;
     }
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+    }
+}
+
+@layer utilities {
+  /** Contenedor de scroll vertical del área principal (sin desborde horizontal). */
+  .page-scroll {
+    @apply flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto;
+  }
+
+  /** Contenido de página: texto envuelve; tablas scrollean en su propio contenedor. */
+  .page-content {
+    @apply w-full min-w-0 max-w-full break-words;
+    overflow-wrap: anywhere;
+  }
+}
+
+[data-sonner-toast] {
+  background-color: #09090b !important;
+  color: #fafafa !important;
+  border-color: #27272a !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: #fafafa !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: #d4d4d8 !important;
 }

@@ -3,6 +3,14 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    dedupe: ["react", "react-dom"],
+    tsconfigPaths: true,
+  },
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+  },
   plugins: [tailwindcss(), reactRouter()],
 })

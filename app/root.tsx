@@ -1,25 +1,59 @@
 import {
+  data,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  type ShouldRevalidateFunctionArgs,
 } from "react-router"
 
 import type { Route } from "./+types/root"
+import { getServerAuthUser } from "./lib/auth/session"
+import { APP_TITLE } from "./lib/page-meta"
+import { AppProviders } from "./providers/app-providers"
 import "./app.css"
+
+export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+]
+
+export function meta() {
+  return [{ title: APP_TITLE }]
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const { user, profile, headers } = await getServerAuthUser(request)
+  return data({ user, profile }, { headers })
+}
+
+/**
+ * La sesión ya vive en AuthProvider (cliente). Sin esto, cada clic del sidebar
+ * re-ejecuta este loader (SSR + Supabase) y se percibe demora antes de cambiar de ruta.
+ */
+export function shouldRevalidate({
+  formAction,
+  formMethod,
+  currentUrl,
+  nextUrl,
+}: ShouldRevalidateFunctionArgs) {
+  if (formAction != null || (formMethod != null && formMethod !== "GET")) {
+    return true
+  }
+  return currentUrl.pathname === nextUrl.pathname
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -28,8 +62,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function App() {
-  return <Outlet />
+export default function App({ loaderData }: Route.ComponentProps) {
+  return (
+    <AppProviders
+      initialUser={loaderData.user}
+      initialProfile={loaderData.profile}
+    >
+      <Outlet />
+    </AppProviders>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
