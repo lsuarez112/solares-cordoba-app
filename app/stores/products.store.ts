@@ -1,7 +1,14 @@
 import { create } from "zustand"
 import { z } from "zod"
-import { ProductSchema, ProductCategorySchema } from "~/domain/products/products.schemas"
-import type { Product, ProductCategory } from "~/domain/products/products.schemas"
+import {
+  ProductSchema,
+  ProductCategorySchema,
+} from "~/domain/products/products.schemas"
+import type {
+  Product,
+  ProductCategory,
+  ProductFormValues,
+} from "~/domain/products/products.schemas"
 import { devLog } from "~/lib/dev-log"
 import { createClient } from "~/lib/supabase/client"
 
@@ -17,6 +24,9 @@ interface ProductsState {
 
   fetchAll: (options?: { force?: boolean }) => Promise<void>
   fetchCategories: () => Promise<void>
+  createProduct: (values: ProductFormValues) => Promise<boolean>
+  updateProduct: (id: string, values: ProductFormValues) => Promise<boolean>
+  deleteProduct: (id: string) => Promise<boolean>
   refresh: () => Promise<void>
   reset: () => void
 }
@@ -106,6 +116,125 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
       categoriesInitialized: true,
       loadingCategories: false,
     })
+  },
+
+  createProduct: async (values) => {
+    devLog("[products-store] createProduct →", values)
+    const supabase = createClient()
+
+    const generic_properties = Object.fromEntries(
+      (values.generic_properties ?? []).map(({ key, value }) => [key, value]),
+    )
+
+    const { data, error } = await supabase
+      .from("products")
+      .insert({
+        product_code: values.product_code,
+        name: values.name,
+        short_desc: values.short_desc ?? null,
+        description: values.description ?? null,
+        category_id: values.category_id ?? null,
+        grid_type: values.grid_type ?? null,
+        supplier_id: values.supplier_id ?? null,
+        price_usd: values.price_usd,
+        cost_usd: values.cost_usd ?? null,
+        stock: values.stock,
+        stock_alert_at: values.stock_alert_at ?? null,
+        is_composite: values.is_composite,
+        active: values.active,
+        links: values.links,
+        generic_properties,
+      })
+      .select(
+        `*, category:product_categories ( id, name, description, slug, icon )`,
+      )
+      .single()
+
+    if (error) {
+      devLog("[products-store] createProduct ← error", error.message)
+      return false
+    }
+
+    const parsed = ProductSchema.safeParse(data)
+    if (!parsed.success) {
+      devLog("[products-store] createProduct ← fila inválida", parsed.error)
+      return false
+    }
+
+    devLog("[products-store] createProduct ← OK", parsed.data)
+    set((state) => ({
+      products: [parsed.data, ...state.products],
+    }))
+    return true
+  },
+
+  updateProduct: async (id, values) => {
+    devLog("[products-store] updateProduct →", { id, values })
+    const supabase = createClient()
+
+    const generic_properties = Object.fromEntries(
+      (values.generic_properties ?? []).map(({ key, value }) => [key, value]),
+    )
+
+    const { data, error } = await supabase
+      .from("products")
+      .update({
+        product_code: values.product_code,
+        name: values.name,
+        short_desc: values.short_desc ?? null,
+        description: values.description ?? null,
+        category_id: values.category_id ?? null,
+        grid_type: values.grid_type ?? null,
+        supplier_id: values.supplier_id ?? null,
+        price_usd: values.price_usd,
+        cost_usd: values.cost_usd ?? null,
+        stock: values.stock,
+        stock_alert_at: values.stock_alert_at ?? null,
+        is_composite: values.is_composite,
+        active: values.active,
+        links: values.links,
+        generic_properties,
+      })
+      .eq("id", id)
+      .select(
+        `*, category:product_categories ( id, name, description, slug, icon )`,
+      )
+      .single()
+
+    if (error) {
+      devLog("[products-store] updateProduct ← error", error.message)
+      return false
+    }
+
+    const parsed = ProductSchema.safeParse(data)
+    if (!parsed.success) {
+      devLog("[products-store] updateProduct ← fila inválida", parsed.error)
+      return false
+    }
+
+    devLog("[products-store] updateProduct ← OK", parsed.data)
+    set((state) => ({
+      products: state.products.map((p) => (p.id === id ? parsed.data : p)),
+    }))
+    return true
+  },
+
+  deleteProduct: async (id) => {
+    devLog("[products-store] deleteProduct →", { id })
+    const supabase = createClient()
+
+    const { error } = await supabase.from("products").delete().eq("id", id)
+
+    if (error) {
+      devLog("[products-store] deleteProduct ← error", error.message)
+      return false
+    }
+
+    devLog("[products-store] deleteProduct ← OK", { id })
+    set((state) => ({
+      products: state.products.filter((p) => p.id !== id),
+    }))
+    return true
   },
 
   refresh: async () => {

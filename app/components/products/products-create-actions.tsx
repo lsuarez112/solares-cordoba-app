@@ -15,14 +15,20 @@ import {
 } from "~/components/ui/dropdown-menu"
 import type { ImportFileFormat } from "~/domain/products/products-import"
 
-export function ProductsCreateActions() {
+type ProductsCreateActionsProps = {
+  onNewProduct?: () => void
+}
+
+export function ProductsCreateActions({
+  onNewProduct,
+}: ProductsCreateActionsProps) {
   const [importFormat, setImportFormat] =
     React.useState<ImportFileFormat | null>(null)
 
   return (
     <>
-      <Button size="sm">
-        <Plus className="size-4" />
+      <Button size="sm" onClick={onNewProduct}>
+        <Plus data-icon="inline-start" />
         Nuevo producto
       </Button>
 

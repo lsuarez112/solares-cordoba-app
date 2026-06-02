@@ -119,6 +119,7 @@ export default function LoginPage() {
               id="login-password"
               name="password"
               autoComplete="current-password"
+              placeholder="••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-describedby="login-password-hint"

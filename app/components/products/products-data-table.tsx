@@ -14,6 +14,7 @@ import {
 import { Search } from "lucide-react"
 
 import { ProductsDataTableSkeleton } from "~/components/products/products-data-table-skeleton"
+import { ProductsTableEmpty } from "~/components/products/products-table-empty"
 import { productsTableColumns } from "~/components/products/products-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
 import {
@@ -51,12 +52,24 @@ type ProductsDataTableProps = {
   data: Product[]
   categories: ProductCategory[]
   loading?: boolean
+  canCreate?: boolean
+  onOpenEdit?: (product: Product) => void
+  onDuplicate?: (product: Product) => void
+  onNewProduct?: () => void
+  onNewProductInCategory?: (categoryId: string) => void
+  onRefresh?: () => void
 }
 
 export function ProductsDataTable({
   data,
   categories,
   loading = false,
+  canCreate = false,
+  onOpenEdit,
+  onDuplicate,
+  onNewProduct,
+  onNewProductInCategory,
+  onRefresh,
 }: ProductsDataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -67,9 +80,14 @@ export function ProductsDataTable({
     pageSize: 10,
   })
 
+  const columns = React.useMemo(
+    () => productsTableColumns({ onOpenEdit, onDuplicate }),
+    [onOpenEdit, onDuplicate],
+  )
+
   const table = useReactTable({
     data,
-    columns: productsTableColumns,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -94,6 +112,42 @@ export function ProductsDataTable({
     (table.getColumn("status")?.getFilterValue() as
       | ProductStatusFilter
       | undefined) ?? "all"
+  const search =
+    (table.getColumn("name")?.getFilterValue() as string | undefined) ?? ""
+
+  const hasActiveFilters =
+    search.trim().length > 0 ||
+    categoryFilter !== "all" ||
+    gridFilter !== "all" ||
+    statusFilter !== "all"
+
+  const selectedCategory = categories.find((c) => c.id === categoryFilter)
+
+  const clearFilters = React.useCallback(() => {
+    table.getColumn("name")?.setFilterValue("")
+    table.getColumn("categoryId")?.setFilterValue("")
+    table.getColumn("grid_type")?.setFilterValue("")
+    table.getColumn("status")?.setFilterValue("")
+  }, [table])
+
+  const emptyState = (
+    <ProductsTableEmpty
+      totalCount={data.length}
+      hasActiveFilters={hasActiveFilters}
+      search={search}
+      categoryId={categoryFilter}
+      categoryName={selectedCategory?.name}
+      gridType={
+        gridFilter === "all" ? "all" : (gridFilter as GridType)
+      }
+      statusFilter={statusFilter}
+      canCreate={canCreate}
+      onNewProduct={onNewProduct ?? (() => {})}
+      onNewProductInCategory={onNewProductInCategory ?? (() => {})}
+      onRefresh={onRefresh ?? (() => {})}
+      onClearFilters={clearFilters}
+    />
+  )
 
   if (loading) {
     return <ProductsDataTableSkeleton />
@@ -187,8 +241,8 @@ export function ProductsDataTable({
 
       <DataTableView
         table={table}
-        columnCount={productsTableColumns.length}
-        emptyMessage="No se encontraron productos"
+        columnCount={columns.length}
+        emptyState={emptyState}
         showPagination
         showRowCount
         totalCount={data.length}

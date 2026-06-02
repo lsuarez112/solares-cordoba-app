@@ -8,8 +8,10 @@ import {
   Plus,
 } from "lucide-react"
 
+import { ProductFormModal } from "~/components/products/product-form-modal"
 import { ProductsCreateActions } from "~/components/products/products-create-actions"
 import { ProductsDataTable } from "~/components/products/products-data-table"
+import type { Product } from "~/domain/products/products.schemas"
 import { DataActionsMenu } from "~/components/ui/data-actions-menu"
 import { DataRefreshActions } from "~/components/ui/data-refresh-actions"
 import { Badge } from "~/components/ui/badge"
@@ -44,6 +46,54 @@ export function ProductsManagement() {
   const fetchAll = useProductsStore((s) => s.fetchAll)
 
   const canCreate = usePermission("products", "create")
+  const canUpdate = usePermission("products", "update")
+
+  const [formOpen, setFormOpen] = React.useState(false)
+  const [editingProduct, setEditingProduct] = React.useState<
+    Product | undefined
+  >()
+  const [duplicateFrom, setDuplicateFrom] = React.useState<
+    Product | undefined
+  >()
+  const [presetCategoryId, setPresetCategoryId] = React.useState<
+    string | null
+  >(null)
+
+  const closeForm = () => {
+    setFormOpen(false)
+    setEditingProduct(undefined)
+    setDuplicateFrom(undefined)
+    setPresetCategoryId(null)
+  }
+
+  const handleNewProduct = () => {
+    setEditingProduct(undefined)
+    setDuplicateFrom(undefined)
+    setPresetCategoryId(null)
+    setFormOpen(true)
+  }
+
+  const handleNewProductInCategory = (categoryId: string) => {
+    setEditingProduct(undefined)
+    setDuplicateFrom(undefined)
+    setPresetCategoryId(categoryId)
+    setFormOpen(true)
+  }
+
+  const handleEditProduct = (product: Product) => {
+    setDuplicateFrom(undefined)
+    setEditingProduct(product)
+    setFormOpen(true)
+  }
+
+  const handleDuplicateProduct = (product: Product) => {
+    setEditingProduct(undefined)
+    setDuplicateFrom(product)
+    setFormOpen(true)
+  }
+
+  const canOpenForm = canCreate || canUpdate
+  const canDuplicateProduct = canCreate
 
   const stats = React.useMemo(() => getProductStats(products), [products])
 
@@ -68,7 +118,7 @@ export function ProductsManagement() {
               label="Data"
             >
               {canCreate ? (
-                <DropdownNewProductItem />
+                <DropdownNewProductItem onSelect={handleNewProduct} />
               ) : null}
             </DataActionsMenu>
           </div>
@@ -78,7 +128,9 @@ export function ProductsManagement() {
               lastFetchedAt={fetchedAt}
               onRefresh={() => void fetchAll({ force: true })}
             >
-              {canCreate ? <ProductsCreateActions /> : null}
+              {canCreate ? (
+                <ProductsCreateActions onNewProduct={handleNewProduct} />
+              ) : null}
             </DataRefreshActions>
           </div>
         </div>
@@ -131,15 +183,33 @@ export function ProductsManagement() {
         data={products}
         categories={categories}
         loading={isInitialLoading}
+        canCreate={canCreate}
+        onOpenEdit={canOpenForm ? handleEditProduct : undefined}
+        onDuplicate={canDuplicateProduct ? handleDuplicateProduct : undefined}
+        onNewProduct={canCreate ? handleNewProduct : undefined}
+        onNewProductInCategory={
+          canCreate ? handleNewProductInCategory : undefined
+        }
+        onRefresh={() => void fetchAll({ force: true })}
       />
+
+      {canOpenForm ? (
+        <ProductFormModal
+          open={formOpen}
+          onClose={closeForm}
+          product={editingProduct}
+          duplicateFrom={duplicateFrom}
+          presetCategoryId={presetCategoryId}
+        />
+      ) : null}
     </div>
   )
 }
 
-function DropdownNewProductItem() {
+function DropdownNewProductItem({ onSelect }: { onSelect: () => void }) {
   return (
-    <DropdownMenuItem onSelect={() => {}}>
-      <Plus className="size-4" />
+    <DropdownMenuItem onSelect={onSelect}>
+      <Plus data-icon="inline-start" />
       Nuevo producto
     </DropdownMenuItem>
   )

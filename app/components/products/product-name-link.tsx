@@ -17,9 +17,16 @@ function formatProductName(name: string) {
 type ProductNameLinkProps = {
   product: Product
   className?: string
+  onOpenEdit?: (product: Product) => void
+  onDuplicate?: (product: Product) => void
 }
 
-export function ProductNameLink({ product, className }: ProductNameLinkProps) {
+export function ProductNameLink({
+  product,
+  className,
+  onOpenEdit,
+  onDuplicate,
+}: ProductNameLinkProps) {
   const [open, setOpen] = React.useState(false)
   const displayName = formatProductName(product.name)
   const isTruncated = product.name.length > NAME_MAX_LENGTH
@@ -43,6 +50,22 @@ export function ProductNameLink({ product, className }: ProductNameLinkProps) {
         product={product}
         open={open}
         onOpenChange={setOpen}
+        onOpenEdit={
+          onOpenEdit
+            ? () => {
+                setOpen(false)
+                onOpenEdit(product)
+              }
+            : undefined
+        }
+        onDuplicate={
+          onDuplicate
+            ? () => {
+                setOpen(false)
+                onDuplicate(product)
+              }
+            : undefined
+        }
       />
     </>
   )

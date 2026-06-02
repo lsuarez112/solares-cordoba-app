@@ -105,7 +105,9 @@ export function RolesManagement() {
 
         <RolesDataTable
           data={filteredRoles}
+          statusFilter={statusFilter}
           loading={isInitialLoading}
+          onRefresh={() => void refreshRoles()}
         />
       </RolesPage.Section>
     </RolesPage>

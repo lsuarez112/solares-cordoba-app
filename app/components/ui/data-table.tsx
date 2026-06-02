@@ -63,6 +63,7 @@ type DataTableViewProps<TData> = {
   table: TanstackTable<TData>
   columnCount: number
   emptyMessage?: string
+  emptyState?: React.ReactNode
   showPagination?: boolean
   showRowCount?: boolean
   totalCount?: number
@@ -73,6 +74,7 @@ export function DataTableView<TData>({
   table,
   columnCount,
   emptyMessage = "Sin resultados",
+  emptyState,
   showPagination = false,
   showRowCount = false,
   totalCount,
@@ -126,11 +128,12 @@ export function DataTableView<TData>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columnCount}
-                    className="h-24 text-center text-muted-foreground"
-                  >
-                    {emptyMessage}
+                  <TableCell colSpan={columnCount} className="p-0">
+                    {emptyState ?? (
+                      <p className="py-12 text-center text-sm text-muted-foreground">
+                        {emptyMessage}
+                      </p>
+                    )}
                   </TableCell>
                 </TableRow>
               )}

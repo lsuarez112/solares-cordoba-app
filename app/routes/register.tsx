@@ -161,6 +161,7 @@ export default function RegisterPage() {
             id="register-password"
             name="password"
             autoComplete="new-password"
+            placeholder="Mínimo 6 caracteres"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             aria-describedby="register-password-hint"
@@ -183,6 +184,7 @@ export default function RegisterPage() {
             id="register-confirmPassword"
             name="confirmPassword"
             autoComplete="new-password"
+            placeholder="Repetí la contraseña"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             aria-describedby="register-confirmPassword-hint"

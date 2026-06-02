@@ -43,7 +43,16 @@ function SortableHeader({
   )
 }
 
-export const productsTableColumns: ColumnDef<Product>[] = [
+type ProductsTableColumnsOptions = {
+  onOpenEdit?: (product: Product) => void
+  onDuplicate?: (product: Product) => void
+}
+
+export function productsTableColumns(
+  options?: ProductsTableColumnsOptions,
+): ColumnDef<Product>[] {
+  const { onOpenEdit, onDuplicate } = options ?? {}
+  return [
   {
     accessorKey: "product_code",
     header: ({ column }) => (
@@ -60,7 +69,11 @@ export const productsTableColumns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => (
       <div className="min-w-0">
-        <ProductNameLink product={row.original} />
+        <ProductNameLink
+          product={row.original}
+          onOpenEdit={onOpenEdit}
+          onDuplicate={onDuplicate}
+        />
         {row.original.short_desc ? (
           <p className="max-w-xs truncate text-xs text-muted-foreground">
             {row.original.short_desc}
@@ -158,3 +171,4 @@ export const productsTableColumns: ColumnDef<Product>[] = [
     },
   },
 ]
+}

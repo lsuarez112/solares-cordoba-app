@@ -122,7 +122,9 @@ export function UsersManagement() {
         <UsersDataTable
           data={filteredUsers}
           availableRoles={availableRoles}
+          statusFilter={statusFilter}
           loading={isInitialLoading}
+          onRefresh={handleRefresh}
         />
       </UsersPage.Section>
     </UsersPage>

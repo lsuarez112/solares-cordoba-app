@@ -14,6 +14,7 @@ import {
 import { Search } from "lucide-react"
 
 import { RolesDataTableSkeleton } from "~/components/roles/roles-data-table-skeleton"
+import { RolesTableEmpty } from "~/components/roles/roles-table-empty"
 import { rolesTableColumns } from "~/components/roles/roles-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
 import {
@@ -21,16 +22,20 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "~/components/ui/input-group"
-import type { RoleListItem } from "~/domain/roles/roles.types"
+import type { RoleListItem, RoleStatusFilter } from "~/domain/roles/roles.types"
 
 type RolesDataTableProps = {
   data: RoleListItem[]
+  statusFilter: RoleStatusFilter
   loading?: boolean
+  onRefresh?: () => void
 }
 
 export function RolesDataTable({
   data,
+  statusFilter,
   loading = false,
+  onRefresh,
 }: RolesDataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -60,6 +65,25 @@ export function RolesDataTable({
     },
   })
 
+  const search =
+    (table.getColumn("name")?.getFilterValue() as string | undefined) ?? ""
+  const hasTableFilters = search.trim().length > 0
+
+  const clearTableFilters = React.useCallback(() => {
+    table.getColumn("name")?.setFilterValue("")
+  }, [table])
+
+  const emptyState = (
+    <RolesTableEmpty
+      totalCount={data.length}
+      hasTableFilters={hasTableFilters}
+      search={search}
+      statusFilter={statusFilter}
+      onRefresh={onRefresh ?? (() => {})}
+      onClearTableFilters={clearTableFilters}
+    />
+  )
+
   if (loading) {
     return <RolesDataTableSkeleton />
   }
@@ -82,6 +106,7 @@ export function RolesDataTable({
       <DataTableView
         table={table}
         columnCount={rolesTableColumns.length}
+        emptyState={emptyState}
         showPagination
         showRowCount
         totalCount={data.length}
