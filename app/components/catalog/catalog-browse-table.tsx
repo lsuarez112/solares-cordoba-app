@@ -24,6 +24,7 @@ type CatalogBrowseTableProps<T extends Record<string, unknown>> = {
   data: T[]
   loading?: boolean
   skeletonRows?: number
+  emptyState?: ReactNode
 }
 
 export function CatalogBrowseTable<T extends Record<string, unknown>>({
@@ -31,6 +32,7 @@ export function CatalogBrowseTable<T extends Record<string, unknown>>({
   data,
   loading = false,
   skeletonRows = 10,
+  emptyState,
 }: CatalogBrowseTableProps<T>) {
   return (
     <div className="min-w-0 overflow-hidden rounded-lg border bg-card">
@@ -61,11 +63,12 @@ export function CatalogBrowseTable<T extends Record<string, unknown>>({
               ))
             : data.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-muted-foreground"
-                  >
-                    Sin registros
+                  <TableCell colSpan={columns.length} className="p-0">
+                    {emptyState ?? (
+                      <p className="py-12 text-center text-sm text-muted-foreground">
+                        Sin registros
+                      </p>
+                    )}
                   </TableCell>
                 </TableRow>
               ) : (

@@ -1,6 +1,22 @@
 import { z } from "zod"
 
+import { SupplierCurrencySchema } from "~/domain/suppliers/suppliers.schemas"
+
 export const GridTypeSchema = z.enum(["ON-GRID", "OFF-GRID", "HYBRID"])
+
+export const ProductSupplierSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  tax_id: z.string().nullable().optional(),
+  currency: SupplierCurrencySchema,
+  active: z.boolean().optional(),
+  contact_name: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  whatsapp: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  payment_days: z.number().int().nullable().optional(),
+  rating: z.number().nullable().optional(),
+})
 
 export const ProductCategorySchema = z.object({
     id: z.string().uuid(),
@@ -18,11 +34,14 @@ export const ProductSchema = z.object({
     description: z.string().nullable(),
     category_id: z.string().uuid().nullable(),
     category: ProductCategorySchema.nullable().optional(),
+    supplier_id: z.string().uuid().nullable(),
+    supplier: ProductSupplierSchema.nullable().optional(),
     grid_type: GridTypeSchema.nullable(),
     generic_properties: z.record(z.string(), z.unknown()).default({}),
     links: z.array(z.unknown()).default([]),
     is_composite: z.boolean().default(false),
     price_usd: z.number(),
+    cost_usd: z.number().nullable().optional(),
     stock: z.number(),
     stock_alert_at: z.number().nullable(),
     active: z.boolean(),
@@ -80,6 +99,7 @@ export const ProductFormSchema = z.object({
 
 export type GridType = z.infer<typeof GridTypeSchema>
 export type ProductCategory = z.infer<typeof ProductCategorySchema>
+export type ProductSupplier = z.infer<typeof ProductSupplierSchema>
 export type Product = z.infer<typeof ProductSchema>
 export type ProductComponent = z.infer<typeof ProductComponentSchema>
 export type ProductFormValues = z.infer<typeof ProductFormSchema>

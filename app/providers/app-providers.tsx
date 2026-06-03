@@ -7,6 +7,7 @@ import type { ReactNode } from "react"
 import { PermissionsStoreSync } from "~/components/stores/permissions-store-sync"
 import { ProductsStoreSync } from "~/components/stores/products-store-sync"
 import { RolesStoreSync } from "~/components/stores/roles-store-sync"
+import { SuppliersStoreSync } from "~/components/stores/suppliers-store-sync"
 import { UsersStoreSync } from "~/components/stores/users-store-sync"
 import { Toaster } from "~/components/ui/sonner"
 import { TooltipProvider } from "~/components/ui/tooltip"
@@ -31,6 +32,7 @@ export function AppProviders({
       <RolesStoreSync />
       <PermissionsStoreSync />
       <ProductsStoreSync />
+      <SuppliersStoreSync />
       <TooltipProvider>
         {children}
         <Toaster />

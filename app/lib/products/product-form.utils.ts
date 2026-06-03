@@ -33,7 +33,7 @@ export function productToFormValues(product: Product): ProductFormValues {
     description: product.description ?? "",
     category_id: product.category_id ?? null,
     grid_type: product.grid_type ?? null,
-    supplier_id: null,
+    supplier_id: product.supplier_id ?? null,
     price_usd: product.price_usd,
     cost_usd: null,
     stock: product.stock,

@@ -21,6 +21,7 @@ interface PermissionsState {
   refreshRoles: () => Promise<void>
   syncFromAdminRoles: (roles: AdminRole[]) => void
   upsertRole: (role: PermissionRole) => void
+  removeRole: (id: string) => void
   getRoleById: (id: string) => PermissionRole | undefined
   reset: () => void
 }
@@ -101,6 +102,17 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
         roles,
         rolesById: indexPermissionRoles(roles),
         initialized: true,
+      }
+    })
+  },
+
+  removeRole: (id) => {
+    set((state) => {
+      const roles = state.roles.filter((role) => role.id !== id)
+
+      return {
+        roles,
+        rolesById: indexPermissionRoles(roles),
       }
     })
   },

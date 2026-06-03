@@ -1,5 +1,4 @@
-import { CatalogBrowsePage } from "~/components/catalog/catalog-browse-page"
-import { PROVEEDORES_COLUMNS } from "~/data/catalog-mocks"
+import { SuppliersManagement } from "~/components/suppliers/suppliers-management"
 import { metaFromRouteHandle } from "~/routing/route-page"
 import type { AppRouteHandle } from "~/routing/route-handle.types"
 
@@ -15,12 +14,5 @@ export function meta({ matches }: Route.MetaArgs) {
 }
 
 export default function ProveedoresPage() {
-  return (
-    <CatalogBrowsePage
-      title="Proveedores"
-      description="Directorio de proveedores y contactos comerciales."
-      columns={PROVEEDORES_COLUMNS}
-      data={[]}
-    />
-  )
+  return <SuppliersManagement />
 }

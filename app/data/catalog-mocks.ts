@@ -52,22 +52,6 @@ export const KITS_COLUMNS: CatalogColumn<KitRow>[] = [
   { key: "estado", header: "Estado", skeletonClassName: "w-[80px]" },
 ]
 
-export type ProveedorRow = {
-  codigo: string
-  nombre: string
-  contacto: string
-  cuit: string
-  estado: string
-}
-
-export const PROVEEDORES_COLUMNS: CatalogColumn<ProveedorRow>[] = [
-  { key: "codigo", header: "Código", skeletonClassName: "w-[72px]" },
-  { key: "nombre", header: "Nombre", skeletonClassName: "w-[180px]" },
-  { key: "contacto", header: "Contacto", skeletonClassName: "w-[160px]" },
-  { key: "cuit", header: "CUIT", skeletonClassName: "w-[120px]" },
-  { key: "estado", header: "Estado", skeletonClassName: "w-[80px]" },
-]
-
 export type StockMovementRow = {
   fecha: string
   producto: string

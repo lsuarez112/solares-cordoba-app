@@ -15,7 +15,7 @@ import { Search } from "lucide-react"
 
 import { RolesDataTableSkeleton } from "~/components/roles/roles-data-table-skeleton"
 import { RolesTableEmpty } from "~/components/roles/roles-table-empty"
-import { rolesTableColumns } from "~/components/roles/roles-table-columns"
+import { createRolesTableColumns } from "~/components/roles/roles-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
 import {
   InputGroup,
@@ -28,6 +28,11 @@ type RolesDataTableProps = {
   data: RoleListItem[]
   statusFilter: RoleStatusFilter
   loading?: boolean
+  canCreate?: boolean
+  canUpdate?: boolean
+  canDelete?: boolean
+  onOpenEdit?: (role: RoleListItem) => void
+  onNewRole?: () => void
   onRefresh?: () => void
 }
 
@@ -35,6 +40,11 @@ export function RolesDataTable({
   data,
   statusFilter,
   loading = false,
+  canCreate = false,
+  canUpdate = false,
+  canDelete = false,
+  onOpenEdit,
+  onNewRole,
   onRefresh,
 }: RolesDataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -48,9 +58,19 @@ export function RolesDataTable({
     pageSize: 10,
   })
 
+  const columns = React.useMemo(
+    () =>
+      createRolesTableColumns({
+        canUpdate,
+        canDelete,
+        onOpenEdit,
+      }),
+    [canUpdate, canDelete, onOpenEdit],
+  )
+
   const table = useReactTable({
     data,
-    columns: rolesTableColumns,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -79,6 +99,8 @@ export function RolesDataTable({
       hasTableFilters={hasTableFilters}
       search={search}
       statusFilter={statusFilter}
+      canCreate={canCreate}
+      onNewRole={onNewRole}
       onRefresh={onRefresh ?? (() => {})}
       onClearTableFilters={clearTableFilters}
     />
@@ -105,7 +127,7 @@ export function RolesDataTable({
 
       <DataTableView
         table={table}
-        columnCount={rolesTableColumns.length}
+        columnCount={columns.length}
         emptyState={emptyState}
         showPagination
         showRowCount

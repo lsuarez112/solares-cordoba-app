@@ -1,13 +1,18 @@
 "use client"
 
 import * as React from "react"
+import { Plus } from "lucide-react"
 
+import { RoleFormModal } from "~/components/roles/role-form-modal"
+import { RolesCreateActions } from "~/components/roles/roles-create-actions"
 import { RolesDataTable } from "~/components/roles/roles-data-table"
 import { RolesPage } from "~/components/roles/roles-page"
 import { DataActionsMenu } from "~/components/ui/data-actions-menu"
 import { DataRefreshActions } from "~/components/ui/data-refresh-actions"
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu"
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import type { RoleStatusFilter } from "~/domain/roles/roles.types"
+import { usePermission } from "~/hooks/use-permission"
 import { useRolesStoreAdminSync } from "~/hooks/use-roles-store-sync"
 import {
   filterRolesByStatus,
@@ -31,6 +36,12 @@ export function RolesManagement() {
   const initialized = useRolesStore((s) => s.initialized)
   const fetchedAt = useRolesStore((s) => s.fetchedAt)
   const refreshRoles = useRolesStore((s) => s.refreshRoles)
+  const openModal = useRolesStore((s) => s.openModal)
+
+  const canCreate = usePermission("configs", "create")
+  const canUpdate = usePermission("configs", "update")
+  const canDelete = usePermission("configs", "delete")
+  const canOpenForm = canCreate || canUpdate
 
   const [statusFilter, setStatusFilter] =
     React.useState<RoleStatusFilter>("all")
@@ -49,6 +60,9 @@ export function RolesManagement() {
   const isInitialLoading = loading && !initialized
   const isRefreshing = loading && initialized
 
+  const handleNewRole = () => openModal()
+  const handleEditRole = (role: (typeof roleItems)[number]) => openModal(role)
+
   return (
     <RolesPage>
       <div className="min-w-0">
@@ -63,14 +77,25 @@ export function RolesManagement() {
                 lastFetchedAt={fetchedAt}
                 onRefresh={() => void refreshRoles()}
                 label="Data"
-              />
+              >
+                {canCreate ? (
+                  <DropdownMenuItem onSelect={handleNewRole}>
+                    <Plus data-icon="inline-start" />
+                    Nuevo rol
+                  </DropdownMenuItem>
+                ) : null}
+              </DataActionsMenu>
             </div>
             <div className="hidden sm:block">
               <DataRefreshActions
                 refreshing={isRefreshing}
                 lastFetchedAt={fetchedAt}
                 onRefresh={() => void refreshRoles()}
-              />
+              >
+                {canCreate ? (
+                  <RolesCreateActions onNewRole={handleNewRole} />
+                ) : null}
+              </DataRefreshActions>
             </div>
           </div>
         </div>
@@ -107,9 +132,16 @@ export function RolesManagement() {
           data={filteredRoles}
           statusFilter={statusFilter}
           loading={isInitialLoading}
+          canCreate={canCreate}
+          canUpdate={canUpdate}
+          canDelete={canDelete}
+          onOpenEdit={canOpenForm ? handleEditRole : undefined}
+          onNewRole={canCreate ? handleNewRole : undefined}
           onRefresh={() => void refreshRoles()}
         />
       </RolesPage.Section>
+
+      {canOpenForm ? <RoleFormModal /> : null}
     </RolesPage>
   )
 }

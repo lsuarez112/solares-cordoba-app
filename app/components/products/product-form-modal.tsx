@@ -13,6 +13,7 @@ import {
 import { ProductDeleteAlertDialog } from "~/components/products/product-delete-alert-dialog"
 import { useProductActions } from "~/hooks/use-product-actions"
 import { useProductForm } from "~/hooks/use-product-form"
+import { useProductsPageSuppliers } from "~/hooks/use-products-page-suppliers"
 import { useProductsStore } from "~/stores/products.store"
 import type { Product } from "~/domain/products/products.schemas"
 import {
@@ -60,6 +61,7 @@ export function ProductFormModal({
   presetCategoryId,
 }: ProductFormModalProps) {
   const categories = useProductsStore((s) => s.categories)
+  const suppliers = useProductsPageSuppliers()
 
   const { form, isSubmitting, submitError, isEditing, isDuplicating, onSubmit } =
     useProductForm({
@@ -269,6 +271,40 @@ export function ProductFormModal({
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="supplier_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Proveedor</FormLabel>
+                        <Select
+                          value={field.value ?? "none"}
+                          onValueChange={(value) =>
+                            field.onChange(value === "none" ? null : value)
+                          }
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sin proveedor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="none">Sin proveedor</SelectItem>
+                              {suppliers.map((supplier) => (
+                                <SelectItem key={supplier.id} value={supplier.id}>
+                                  {supplier.name}
+                                  {supplier.tax_id ? ` (${supplier.tax_id})` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </TabsContent>
 

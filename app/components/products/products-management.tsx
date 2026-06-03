@@ -18,6 +18,7 @@ import { Badge } from "~/components/ui/badge"
 import { DropdownMenuItem } from "~/components/ui/dropdown-menu"
 import { Skeleton } from "~/components/ui/skeleton"
 import { usePermission } from "~/hooks/use-permission"
+import { useProductsPageSuppliers } from "~/hooks/use-products-page-suppliers"
 import { useProductsStorePageSync } from "~/hooks/use-products-store-sync"
 import { getProductStats } from "~/lib/products/product-list.utils"
 import { useProductsStore } from "~/stores/products.store"
@@ -37,6 +38,7 @@ function ProductsMetricsSkeleton() {
 
 export function ProductsManagement() {
   useProductsStorePageSync()
+  const suppliers = useProductsPageSuppliers()
 
   const products = useProductsStore((s) => s.products)
   const categories = useProductsStore((s) => s.categories)
@@ -182,6 +184,7 @@ export function ProductsManagement() {
       <ProductsDataTable
         data={products}
         categories={categories}
+        suppliers={suppliers}
         loading={isInitialLoading}
         canCreate={canCreate}
         onOpenEdit={canOpenForm ? handleEditProduct : undefined}

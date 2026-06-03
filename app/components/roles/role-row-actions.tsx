@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Trash2 } from "lucide-react"
 
-import { RoleEditDialog } from "~/components/roles/role-edit-dialog"
+import { RoleDeleteAlertDialog } from "~/components/roles/role-delete-alert-dialog"
 import { Button } from "~/components/ui/button"
 import {
   DropdownMenu,
@@ -15,16 +14,22 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import type { RoleListItem } from "~/domain/roles/roles.types"
-import { appToast } from "~/lib/toast"
-import { useRolesStore } from "~/stores/roles.store"
+import { useRoleActions } from "~/hooks/use-role-actions"
 
 type RoleRowActionsProps = {
   role: RoleListItem
+  canUpdate?: boolean
+  onOpenEdit?: (role: RoleListItem) => void
 }
 
-export function RoleRowActions({ role }: RoleRowActionsProps) {
-  const updateRole = useRolesStore((s) => s.updateRole)
-  const [editOpen, setEditOpen] = React.useState(false)
+export function RoleRowActions({
+  role,
+  canUpdate = false,
+  onOpenEdit,
+}: RoleRowActionsProps) {
+  const actions = useRoleActions(role)
+
+  if (!actions.hasAnyAction) return null
 
   return (
     <>
@@ -43,39 +48,51 @@ export function RoleRowActions({ role }: RoleRowActionsProps) {
             >
               Copiar ID
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={(event) => {
-                event.preventDefault()
-                setEditOpen(true)
-              }}
-            >
-              Editar rol
-            </DropdownMenuItem>
           </DropdownMenuGroup>
+
+          {canUpdate ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault()
+                    onOpenEdit?.(role)
+                  }}
+                >
+                  Editar rol
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </>
+          ) : null}
+
+          {actions.canDelete ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Administración</DropdownMenuLabel>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={actions.openDeleteDialog}
+                >
+                  <Trash2 data-icon="inline-start" />
+                  Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <RoleEditDialog
-        role={role}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSave={async (values) => {
-          const ok = await updateRole(role.id, values)
-          if (ok) {
-            appToast.success("Rol actualizado", {
-              description: `Los cambios en "${values.name.trim()}" se guardaron correctamente.`,
-            })
-            return true
-          }
-
-          appToast.error("No se pudo actualizar el rol", {
-            description:
-              "La base de datos no aplicó cambios. Suele deberse a permisos (RLS) en la tabla roles de Supabase.",
-          })
-          return false
-        }}
-      />
+      {actions.canDelete ? (
+        <RoleDeleteAlertDialog
+          role={role}
+          open={actions.deleteDialogOpen}
+          onOpenChange={actions.setDeleteDialogOpen}
+          isDeleting={actions.isDeleting}
+          onConfirm={actions.handleDeleteConfirm}
+        />
+      ) : null}
     </>
   )
 }

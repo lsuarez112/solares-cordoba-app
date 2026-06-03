@@ -1,4 +1,4 @@
-import { FilterX, RefreshCcw, Search, Shield } from "lucide-react"
+import { FilterX, Plus, RefreshCcw, Search, Shield } from "lucide-react"
 
 import { TableEmptyState } from "~/components/ui/table-empty-state"
 import { Button } from "~/components/ui/button"
@@ -9,6 +9,8 @@ type RolesTableEmptyProps = {
   hasTableFilters: boolean
   search: string
   statusFilter: RoleStatusFilter
+  canCreate?: boolean
+  onNewRole?: () => void
   onRefresh: () => void
   onClearTableFilters: () => void
 }
@@ -18,6 +20,8 @@ export function RolesTableEmpty({
   hasTableFilters,
   search,
   statusFilter,
+  canCreate = false,
+  onNewRole,
   onRefresh,
   onClearTableFilters,
 }: RolesTableEmptyProps) {
@@ -27,6 +31,14 @@ export function RolesTableEmpty({
       Actualizar
     </Button>
   )
+
+  const createButton =
+    canCreate && onNewRole ? (
+      <Button type="button" onClick={onNewRole}>
+        <Plus data-icon="inline-start" />
+        Nuevo rol
+      </Button>
+    ) : null
 
   if (totalCount === 0) {
     if (statusFilter === "active") {
@@ -57,8 +69,13 @@ export function RolesTableEmpty({
       <TableEmptyState
         icon={Shield}
         title="No hay roles"
-        description="Todavía no hay roles configurados en el sistema."
-        actions={refreshButton}
+        description="Todavía no hay roles configurados en el sistema. Creá el primero o actualizá los datos si acabás de cargar información."
+        actions={
+          <>
+            {createButton}
+            {refreshButton}
+          </>
+        }
       />
     )
   }

@@ -9,6 +9,7 @@ type CatalogBrowsePageProps<T extends Record<string, unknown>> = {
   data: T[]
   loading?: boolean
   toolbar?: ReactNode
+  emptyState?: ReactNode
 }
 
 export function CatalogBrowsePage<T extends Record<string, unknown>>({
@@ -18,6 +19,7 @@ export function CatalogBrowsePage<T extends Record<string, unknown>>({
   data,
   loading = false,
   toolbar,
+  emptyState,
 }: CatalogBrowsePageProps<T>) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -28,7 +30,12 @@ export function CatalogBrowsePage<T extends Record<string, unknown>>({
         ) : null}
       </div>
       {toolbar}
-      <CatalogBrowseTable columns={columns} data={data} loading={loading} />
+      <CatalogBrowseTable
+        columns={columns}
+        data={data}
+        loading={loading}
+        emptyState={emptyState}
+      />
     </div>
   )
 }

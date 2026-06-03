@@ -10,6 +10,11 @@ import type {
   ProductFormValues,
 } from "~/domain/products/products.schemas"
 import { devLog } from "~/lib/dev-log"
+import { parseProductsFromViewRows } from "~/lib/products/map-product-view-row"
+import {
+  PRODUCT_TABLE_SELECT,
+  PRODUCT_VIEW_SELECT,
+} from "~/lib/products/product-query.utils"
 import { createClient } from "~/lib/supabase/client"
 
 interface ProductsState {
@@ -48,15 +53,12 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
     if (get().initialized && !options?.force) return
     set({ loading: true })
 
-    devLog("[products-store] fetchAll → products (+ category)")
+    devLog("[products-store] fetchAll → v_products_with_ars")
 
     const supabase = createClient()
     const { data, error } = await supabase
-      .from("v_products_with_ars") // usamos la vista que ya tenés
-      .select(`
-        *,
-        category:product_categories ( id, name, description, slug, icon )
-      `)
+      .from("v_products_with_ars")
+      .select(PRODUCT_VIEW_SELECT)
       .order("name")
 
     if (error) {
@@ -65,10 +67,9 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
       return
     }
 
-    const products = (data ?? [])
-      .map((row) => ProductSchema.safeParse(row))
-      .filter((p) => p.success)
-      .map((p) => p.data)
+    const products = parseProductsFromViewRows(
+      (data ?? []) as Record<string, unknown>[],
+    )
 
     devLog("[products-store] fetchAll ← products", {
       count: products.length,
@@ -145,9 +146,7 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
         links: values.links,
         generic_properties,
       })
-      .select(
-        `*, category:product_categories ( id, name, description, slug, icon )`,
-      )
+      .select(PRODUCT_TABLE_SELECT)
       .single()
 
     if (error) {
@@ -196,9 +195,7 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
         generic_properties,
       })
       .eq("id", id)
-      .select(
-        `*, category:product_categories ( id, name, description, slug, icon )`,
-      )
+      .select(PRODUCT_TABLE_SELECT)
       .single()
 
     if (error) {

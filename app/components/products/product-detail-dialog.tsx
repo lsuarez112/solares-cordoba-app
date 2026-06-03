@@ -1,22 +1,29 @@
 "use client"
 
 import {
+  CheckCircle2,
+  CircleX,
   ClipboardCopy,
   Copy,
-  Cpu,
   FileText,
   History,
+  Layers,
   Link2,
+  Mail,
   MessageCircle,
   MoreHorizontal,
+  Package,
   PackageMinus,
   Pencil,
   PowerOff,
   Trash2,
+  TriangleAlert,
+  Truck,
   X,
 } from "lucide-react"
 
 import { ProductDeleteAlertDialog } from "~/components/products/product-delete-alert-dialog"
+import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import {
@@ -45,6 +52,8 @@ import {
   parseProductLinks,
 } from "~/lib/products/product-display.utils"
 import { isStockAlert } from "~/lib/products/product-list.utils"
+import { getProductSupplierDisplay } from "~/lib/products/product-supplier.utils"
+import { supplierWhatsAppUrl } from "~/lib/suppliers/supplier-display.utils"
 
 type ProductDetailDialogProps = {
   product: Product
@@ -70,6 +79,9 @@ export function ProductDetailDialog({
 
   const links = parseProductLinks(product.links)
   const properties = parseProductGenericProperties(product.generic_properties)
+  const supplierDisplay = getProductSupplierDisplay(product)
+  const supplierWhatsApp =
+    product.supplier?.whatsapp && supplierWhatsAppUrl(product.supplier.whatsapp)
 
   const handleClose = () => onOpenChange(false)
 
@@ -201,6 +213,49 @@ export function ProductDetailDialog({
           </DialogHeader>
 
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
+            <div className="flex flex-wrap gap-2">
+              {product.active ? (
+                <Badge
+                  variant="secondary"
+                  className="border-green-200 bg-green-100 text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
+                >
+                  <CheckCircle2 data-icon="inline-start" className="text-green-600" />
+                  Activo
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="border-muted-foreground/20 bg-muted text-muted-foreground"
+                >
+                  <CircleX data-icon="inline-start" />
+                  Inactivo
+                </Badge>
+              )}
+              {product.is_composite ? (
+                <Badge
+                  variant="secondary"
+                  className="border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300"
+                >
+                  <Layers data-icon="inline-start" className="text-blue-600" />
+                  Kit
+                </Badge>
+              ) : (
+                <Badge variant="secondary">
+                  <Package data-icon="inline-start" className="text-muted-foreground" />
+                  Simple
+                </Badge>
+              )}
+              {isStockAlert(product) ? (
+                <Badge
+                  variant="secondary"
+                  className="border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
+                >
+                  <TriangleAlert data-icon="inline-start" className="text-amber-600" />
+                  Alerta stock
+                </Badge>
+              ) : null}
+            </div>
+
             <div>
               <p className="text-xs font-medium text-muted-foreground">
                 Descripción corta
@@ -236,6 +291,79 @@ export function ProductDetailDialog({
                     : emptyFieldLabel("tipo de red")}
                 </dd>
               </div>
+              <div className="col-span-2">
+                <dt className="text-xs text-muted-foreground">Proveedor</dt>
+                <dd>
+                  {supplierDisplay ? (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary">
+                          <Truck data-icon="inline-start" />
+                          {supplierDisplay.name}
+                        </Badge>
+                        {supplierDisplay.currency ? (
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {supplierDisplay.currency}
+                          </Badge>
+                        ) : null}
+                        {supplierDisplay.active === false ? (
+                          <Badge variant="secondary">Inactivo</Badge>
+                        ) : null}
+                      </div>
+                      {supplierDisplay.taxId ? (
+                        <span className="text-xs text-muted-foreground">
+                          CUIT: {supplierDisplay.taxId}
+                        </span>
+                      ) : null}
+                      {supplierDisplay.contactName ? (
+                        <span className="text-xs text-muted-foreground">
+                          Contacto: {supplierDisplay.contactName}
+                        </span>
+                      ) : null}
+                      {supplierDisplay.phone ? (
+                        <span className="text-xs text-muted-foreground">
+                          Tel.: {supplierDisplay.phone}
+                        </span>
+                      ) : null}
+                      {supplierDisplay.paymentDays != null &&
+                      supplierDisplay.paymentDays > 0 ? (
+                        <span className="text-xs text-muted-foreground">
+                          Plazo de pago: {supplierDisplay.paymentDays} días
+                        </span>
+                      ) : null}
+                      {supplierDisplay.rating != null ? (
+                        <span className="text-xs text-muted-foreground">
+                          Rating: {"★".repeat(Math.round(supplierDisplay.rating))}
+                        </span>
+                      ) : null}
+                      <div className="flex flex-wrap gap-2">
+                        {supplierDisplay.email ? (
+                          <a
+                            href={`mailto:${supplierDisplay.email}`}
+                            className="inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
+                          >
+                            <Mail className="size-3.5" />
+                            {supplierDisplay.email}
+                          </a>
+                        ) : null}
+                        {supplierWhatsApp && product.supplier?.whatsapp ? (
+                          <a
+                            href={supplierWhatsApp}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-700"
+                          >
+                            <MessageCircle className="size-3.5" />
+                            WhatsApp
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : (
+                    emptyFieldLabel("proveedor")
+                  )}
+                </dd>
+              </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Precio USD</dt>
                 <dd className="tabular-nums">
@@ -255,18 +383,6 @@ export function ProductDetailDialog({
                 </dd>
               </div>
             </dl>
-
-            <div className="flex flex-wrap gap-2">
-              <Badge variant={product.active ? "default" : "secondary"}>
-                {product.active ? "Activo" : "Inactivo"}
-              </Badge>
-              <Badge variant="secondary">
-                {product.is_composite ? "Kit" : "Simple"}
-              </Badge>
-              {isStockAlert(product) ? (
-                <Badge variant="secondary">Alerta stock</Badge>
-              ) : null}
-            </div>
 
             <section className="flex flex-col gap-2">
               <p className="text-xs font-medium text-muted-foreground">
@@ -304,14 +420,10 @@ export function ProductDetailDialog({
                 Propiedades técnicas
               </p>
               {properties.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {properties.map(({ key, value }) => (
-                    <Badge key={key} variant="secondary">
-                      <Cpu data-icon="inline-start" />
-                      {key}: {value}
-                    </Badge>
-                  ))}
-                </div>
+                <ProductTechnicalPropertyBadges
+                  items={properties}
+                  className="gap-2"
+                />
               ) : (
                 <p className="text-muted-foreground">
                   {emptyFieldLabel("propiedades técnicas")}

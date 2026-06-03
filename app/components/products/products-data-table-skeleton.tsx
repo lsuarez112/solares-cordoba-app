@@ -10,13 +10,14 @@ import {
 import { TableScrollArea } from "~/components/ui/table-scroll-area"
 
 const SKELETON_ROWS = 8
-const SKELETON_COLUMNS = 6
+const SKELETON_COLUMNS = 7
 
 export function ProductsDataTableSkeleton() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
         <Skeleton className="h-8 max-w-sm w-full" />
+        <Skeleton className="h-8 w-full sm:w-48" />
         <Skeleton className="h-8 w-full sm:w-48" />
         <Skeleton className="h-8 w-full sm:w-40" />
         <Skeleton className="h-8 w-full sm:w-40" />

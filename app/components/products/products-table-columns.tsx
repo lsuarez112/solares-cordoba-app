@@ -4,9 +4,12 @@ import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 
 import { ProductNameLink } from "~/components/products/product-name-link"
+import { ProductSupplierCell } from "~/components/products/product-supplier-cell"
+import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import type { Product } from "~/domain/products/products.schemas"
+import { parseProductGenericProperties } from "~/lib/products/product-display.utils"
 import {
   GRID_TYPE_COLORS,
   GRID_TYPE_LABELS,
@@ -67,28 +70,43 @@ export function productsTableColumns(
     header: ({ column }) => (
       <SortableHeader column={column} title="Nombre" />
     ),
-    cell: ({ row }) => (
-      <div className="min-w-0">
-        <ProductNameLink
-          product={row.original}
-          onOpenEdit={onOpenEdit}
-          onDuplicate={onDuplicate}
-        />
-        {row.original.short_desc ? (
-          <p className="max-w-xs truncate text-xs text-muted-foreground">
-            {row.original.short_desc}
-          </p>
-        ) : null}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const properties = parseProductGenericProperties(
+        row.original.generic_properties,
+      )
+
+      return (
+        <div className="flex min-w-0 max-w-md flex-col gap-1.5">
+          <ProductNameLink
+            product={row.original}
+            onOpenEdit={onOpenEdit}
+            onDuplicate={onDuplicate}
+          />
+          {row.original.short_desc ? (
+            <p className="truncate text-xs text-muted-foreground">
+              {row.original.short_desc}
+            </p>
+          ) : null}
+          <ProductTechnicalPropertyBadges items={properties} />
+        </div>
+      )
+    },
     filterFn: (row, _id, value) => {
       if (!value) return true
       const search = String(value).toLowerCase()
       const product = row.original
+      const properties = parseProductGenericProperties(product.generic_properties)
       return (
         product.name.toLowerCase().includes(search) ||
         product.product_code.toLowerCase().includes(search) ||
-        (product.short_desc?.toLowerCase().includes(search) ?? false)
+        (product.supplier?.name.toLowerCase().includes(search) ?? false) ||
+        (product.supplier?.tax_id?.toLowerCase().includes(search) ?? false) ||
+        (product.short_desc?.toLowerCase().includes(search) ?? false) ||
+        properties.some(
+          ({ key, value: propValue }) =>
+            key.toLowerCase().includes(search) ||
+            propValue.toLowerCase().includes(search),
+        )
       )
     },
   },
@@ -104,6 +122,19 @@ export function productsTableColumns(
     filterFn: (row, _id, value) => {
       if (!value || value === "all") return true
       return row.original.category_id === value
+    },
+  },
+  {
+    id: "supplierId",
+    accessorFn: (row) => row.supplier?.name ?? "",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Proveedor" />
+    ),
+    cell: ({ row }) => <ProductSupplierCell product={row.original} />,
+    filterFn: (row, _id, value) => {
+      if (!value || value === "all") return true
+      if (value === "none") return !row.original.supplier_id
+      return row.original.supplier_id === value
     },
   },
   {
