@@ -7,6 +7,7 @@ import {
   Package,
   Plus,
 } from "lucide-react"
+import { useSearchParams } from "react-router"
 
 import { ProductFormModal } from "~/components/products/product-form-modal"
 import { ProductsCreateActions } from "~/components/products/products-create-actions"
@@ -38,6 +39,8 @@ function ProductsMetricsSkeleton() {
 
 export function ProductsManagement() {
   useProductsStorePageSync()
+  const [searchParams] = useSearchParams()
+  const initialCategoryId = searchParams.get("category")
   const suppliers = useProductsPageSuppliers()
 
   const products = useProductsStore((s) => s.products)
@@ -187,6 +190,7 @@ export function ProductsManagement() {
         suppliers={suppliers}
         loading={isInitialLoading}
         canCreate={canCreate}
+        initialCategoryId={initialCategoryId}
         onOpenEdit={canOpenForm ? handleEditProduct : undefined}
         onDuplicate={canDuplicateProduct ? handleDuplicateProduct : undefined}
         onNewProduct={canCreate ? handleNewProduct : undefined}

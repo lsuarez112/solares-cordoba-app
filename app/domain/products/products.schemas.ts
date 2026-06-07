@@ -7,6 +7,7 @@ export const GridTypeSchema = z.enum(["ON-GRID", "OFF-GRID", "HYBRID"])
 export const ProductSupplierSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
+  prefix: z.string().nullable().optional(),
   tax_id: z.string().nullable().optional(),
   currency: SupplierCurrencySchema,
   active: z.boolean().optional(),
@@ -24,6 +25,7 @@ export const ProductCategorySchema = z.object({
     description: z.string().nullable(),
     slug: z.string().nullable(),
     icon: z.string().nullable(),
+    prefix: z.string().nullable().optional(),
 })
 
 export const ProductSchema = z.object({
@@ -35,6 +37,7 @@ export const ProductSchema = z.object({
     category_id: z.string().uuid().nullable(),
     category: ProductCategorySchema.nullable().optional(),
     supplier_id: z.string().uuid().nullable(),
+    supplier_sku: z.string().nullable().optional(),
     supplier: ProductSupplierSchema.nullable().optional(),
     grid_type: GridTypeSchema.nullable(),
     generic_properties: z.record(z.string(), z.unknown()).default({}),
@@ -60,7 +63,7 @@ export const ProductComponentSchema = z.object({
 export const ProductFormSchema = z.object({
   product_code: z
     .string()
-    .min(1, "El código es obligatorio")
+    .min(1, "El código interno es obligatorio")
     .max(10, "Máximo 10 caracteres"),
   name: z
     .string()
@@ -75,6 +78,11 @@ export const ProductFormSchema = z.object({
   category_id: z.string().uuid().nullable().optional(),
   grid_type: GridTypeSchema.nullable().optional(),
   supplier_id: z.string().uuid().nullable().optional(),
+  supplier_sku: z
+    .string()
+    .max(100, "Máximo 100 caracteres")
+    .nullable()
+    .optional(),
   price_usd: z
     .number({ error: "Ingresá un precio válido" })
     .min(0, "El precio no puede ser negativo"),

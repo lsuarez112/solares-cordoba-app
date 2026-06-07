@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table"
 import { FilterX, Search } from "lucide-react"
 
+import { formatPrefixLabel } from "~/lib/prefix-label.utils"
 import { ProductsDataTableSkeleton } from "~/components/products/products-data-table-skeleton"
 import { ProductsTableEmpty } from "~/components/products/products-table-empty"
 import { productsTableColumns } from "~/components/products/products-table-columns"
@@ -57,6 +58,7 @@ type ProductsDataTableProps = {
   suppliers: Supplier[]
   loading?: boolean
   canCreate?: boolean
+  initialCategoryId?: string | null
   onOpenEdit?: (product: Product) => void
   onDuplicate?: (product: Product) => void
   onNewProduct?: () => void
@@ -70,6 +72,7 @@ export function ProductsDataTable({
   suppliers,
   loading = false,
   canCreate = false,
+  initialCategoryId = null,
   onOpenEdit,
   onDuplicate,
   onNewProduct,
@@ -77,7 +80,10 @@ export function ProductsDataTable({
   onRefresh,
 }: ProductsDataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
+    () =>
+      initialCategoryId
+        ? [{ id: "categoryId", value: initialCategoryId }]
+        : [],
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [pagination, setPagination] = React.useState<PaginationState>({
@@ -199,7 +205,7 @@ export function ProductsDataTable({
                 <SelectItem value="all">Todas las categorías</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
-                    {category.name}
+                    {formatPrefixLabel(category.name, category.prefix)}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -223,7 +229,7 @@ export function ProductsDataTable({
                 <SelectItem value="none">Sin proveedor</SelectItem>
                 {suppliers.map((supplier) => (
                   <SelectItem key={supplier.id} value={supplier.id}>
-                    {supplier.name}
+                    {formatPrefixLabel(supplier.name, supplier.prefix)}
                   </SelectItem>
                 ))}
               </SelectGroup>

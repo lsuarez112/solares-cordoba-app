@@ -48,9 +48,9 @@ export const SIDEBAR_NAV: SidebarNavConfig = {
               access: [{ module: "products", action: "read" }],
             },
             {
-              id: "productos-tipos",
+              id: "productos-categorias",
               type: "link",
-              title: "Tipos de productos",
+              title: "Categorías",
               description: "Clasificación del catálogo",
               to: "/productos/tipos",
               access: [{ module: "products", action: "read" }],

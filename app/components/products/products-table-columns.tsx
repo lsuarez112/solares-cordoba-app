@@ -2,13 +2,13 @@
 
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
-
 import { ProductNameLink } from "~/components/products/product-name-link"
 import { ProductSupplierCell } from "~/components/products/product-supplier-cell"
 import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import type { Product } from "~/domain/products/products.schemas"
+import { getCategoryIcon } from "~/lib/categories/category-icons"
 import { parseProductGenericProperties } from "~/lib/products/product-display.utils"
 import {
   GRID_TYPE_COLORS,
@@ -116,9 +116,27 @@ export function productsTableColumns(
     header: ({ column }) => (
       <SortableHeader column={column} title="Categoría" />
     ),
-    cell: ({ row }) => (
-      <span className="text-sm">{row.original.category?.name ?? "—"}</span>
-    ),
+    cell: ({ row }) => {
+      const category = row.original.category
+      if (!category) {
+        return <span className="text-sm text-muted-foreground">—</span>
+      }
+
+      const CategoryIcon = getCategoryIcon(category.icon)
+
+      return (
+        <Badge
+          variant="secondary"
+          className="border-violet-200 bg-violet-100 text-violet-800 dark:border-violet-900 dark:bg-violet-950 dark:text-violet-300"
+        >
+          <CategoryIcon
+            data-icon="inline-start"
+            className="text-violet-600"
+          />
+          {category.name}
+        </Badge>
+      )
+    },
     filterFn: (row, _id, value) => {
       if (!value || value === "all") return true
       return row.original.category_id === value

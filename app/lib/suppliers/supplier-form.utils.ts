@@ -4,6 +4,7 @@ import type { SupplierInsert } from "~/domain/suppliers/suppliers.types"
 
 export const emptySupplierFormValues: SupplierFormValues = {
   name: "",
+  prefix: null,
   legal_name: null,
   tax_id: null,
   contact_name: null,
@@ -30,9 +31,25 @@ function cleanOptionalString(value: string | null | undefined) {
   return trimmed === "" ? null : trimmed
 }
 
+export function findSuppliersWithDuplicatePrefix(
+  prefix: string | null | undefined,
+  suppliers: Supplier[],
+  excludeId?: string,
+): Supplier[] {
+  const normalized = prefix?.trim().toUpperCase()
+  if (!normalized) return []
+
+  return suppliers.filter(
+    (supplier) =>
+      supplier.id !== excludeId &&
+      supplier.prefix?.trim().toUpperCase() === normalized,
+  )
+}
+
 export function supplierToFormValues(supplier: Supplier): SupplierFormValues {
   return {
     name: supplier.name,
+    prefix: supplier.prefix,
     legal_name: supplier.legal_name,
     tax_id: supplier.tax_id,
     contact_name: supplier.contact_name,
@@ -57,8 +74,11 @@ export function supplierToFormValues(supplier: Supplier): SupplierFormValues {
 export function formValuesToSupplierInsert(
   values: SupplierFormValues,
 ): SupplierInsert {
+  const prefix = cleanOptionalString(values.prefix ?? null)
+
   return {
     name: values.name.trim(),
+    prefix: prefix ? prefix.toUpperCase() : null,
     legal_name: cleanOptionalString(values.legal_name ?? null),
     tax_id: cleanOptionalString(values.tax_id ?? null),
     contact_name: cleanOptionalString(values.contact_name ?? null),

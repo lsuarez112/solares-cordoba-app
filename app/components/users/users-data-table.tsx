@@ -137,7 +137,7 @@ export function UsersDataTable({
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filtrar por rol" />
           </SelectTrigger>
-          <SelectContent align="end">
+          <SelectContent>
             <SelectGroup>
               <SelectItem value="all">Todos los roles</SelectItem>
               {availableRoles.map((role) => (

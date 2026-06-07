@@ -14,12 +14,16 @@ function buildCategoryFromViewColumns(row: ProductViewRow) {
     return null
   }
 
+  const prefix =
+    typeof row.category_prefix === "string" ? row.category_prefix.trim() : null
+
   return {
     id,
     name: name.trim(),
     description: null,
     slug: null,
     icon: null,
+    prefix: prefix || null,
   }
 }
 
@@ -37,9 +41,13 @@ function buildSupplierFromViewColumns(row: ProductViewRow) {
   const paymentDaysRaw = row.supplier_payment_days
   const ratingRaw = row.supplier_rating
 
+  const prefix =
+    typeof row.supplier_prefix === "string" ? row.supplier_prefix.trim() : null
+
   return {
     id: supplierId,
     name: name.trim(),
+    prefix: prefix || null,
     tax_id: null,
     currency: currencyParsed.data,
     active: true,
@@ -58,7 +66,9 @@ function buildSupplierFromViewColumns(row: ProductViewRow) {
 export function normalizeProductViewRow(row: ProductViewRow): ProductViewRow {
   const {
     category_name: _categoryName,
+    category_prefix: _categoryPrefix,
     supplier_name: _supplierName,
+    supplier_prefix: _supplierPrefix,
     supplier_currency: _supplierCurrency,
     supplier_payment_days: _supplierPaymentDays,
     supplier_rating: _supplierRating,
@@ -69,7 +79,6 @@ export function normalizeProductViewRow(row: ProductViewRow): ProductViewRow {
     cost_ars: _costArs,
     current_exchange_rate: _exchangeRate,
     exchange_rate_date: _exchangeRateDate,
-    supplier_sku: _supplierSku,
     category: _categoryEmbed,
     supplier: _supplierEmbed,
     ...rest

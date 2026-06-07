@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import { useFieldArray } from "react-hook-form"
 import {
   CircleDollarSign,
@@ -14,6 +15,11 @@ import { ProductDeleteAlertDialog } from "~/components/products/product-delete-a
 import { useProductActions } from "~/hooks/use-product-actions"
 import { useProductForm } from "~/hooks/use-product-form"
 import { useProductsPageSuppliers } from "~/hooks/use-products-page-suppliers"
+import { formatPrefixLabel } from "~/lib/prefix-label.utils"
+import {
+  getProductCodePlaceholder,
+  proposeProductCode,
+} from "~/lib/products/product-code.utils"
 import { useProductsStore } from "~/stores/products.store"
 import type { Product } from "~/domain/products/products.schemas"
 import {
@@ -61,7 +67,10 @@ export function ProductFormModal({
   presetCategoryId,
 }: ProductFormModalProps) {
   const categories = useProductsStore((s) => s.categories)
+  const products = useProductsStore((s) => s.products)
   const suppliers = useProductsPageSuppliers()
+  const [codeManuallyEdited, setCodeManuallyEdited] = useState(false)
+  const lastSuggestedCode = useRef<string | null>(null)
 
   const { form, isSubmitting, submitError, isEditing, isDuplicating, onSubmit } =
     useProductForm({
@@ -82,6 +91,52 @@ export function ProductFormModal({
     control: form.control,
     name: "generic_properties",
   })
+
+  const supplierId = form.watch("supplier_id")
+  const categoryId = form.watch("category_id")
+  const selectedSupplier = suppliers.find((supplier) => supplier.id === supplierId)
+  const selectedCategory = categories.find((category) => category.id === categoryId)
+  const codePlaceholder = getProductCodePlaceholder(
+    selectedSupplier?.prefix,
+    selectedCategory?.prefix,
+  )
+
+  useEffect(() => {
+    if (!open) {
+      setCodeManuallyEdited(false)
+      lastSuggestedCode.current = null
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (isEditing || !open || codeManuallyEdited) return
+
+    const proposedCode = proposeProductCode({
+      supplierPrefix: selectedSupplier?.prefix,
+      categoryPrefix: selectedCategory?.prefix,
+      existingCodes: products.map((item) => item.product_code),
+    })
+
+    if (!proposedCode) return
+
+    const currentCode = form.getValues("product_code")
+    const canReplace =
+      !currentCode.trim() ||
+      currentCode === lastSuggestedCode.current
+
+    if (canReplace) {
+      form.setValue("product_code", proposedCode, { shouldValidate: true })
+      lastSuggestedCode.current = proposedCode
+    }
+  }, [
+    isEditing,
+    open,
+    codeManuallyEdited,
+    selectedSupplier?.prefix,
+    selectedCategory?.prefix,
+    products,
+    form,
+  ])
 
   return (
     <Dialog
@@ -139,10 +194,28 @@ export function ProductFormModal({
                       name="product_code"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Código *</FormLabel>
+                          <FormLabel>Código interno *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ej: INV-001" {...field} />
+                            <Input
+                              placeholder={codePlaceholder}
+                              className="font-mono uppercase"
+                              maxLength={10}
+                              {...field}
+                              onChange={(event) => {
+                                setCodeManuallyEdited(true)
+                                field.onChange(event.target.value.toUpperCase())
+                              }}
+                            />
                           </FormControl>
+                          {!isEditing &&
+                          selectedSupplier?.prefix &&
+                          selectedCategory?.prefix ? (
+                            <p className="text-xs text-muted-foreground">
+                              Se propone automáticamente como{" "}
+                              {selectedSupplier.prefix}-{selectedCategory.prefix}
+                              -N
+                            </p>
+                          ) : null}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -211,23 +284,24 @@ export function ProductFormModal({
                           <FormLabel>Categoría</FormLabel>
                           <Select
                             value={field.value ?? "none"}
-                            onValueChange={(v) =>
-                              field.onChange(v === "none" ? null : v)
+                            onValueChange={(value) =>
+                              field.onChange(value === "none" ? null : value)
                             }
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Sin categoría" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectItem value="none">
-                                  Sin categoría
-                                </SelectItem>
-                                {categories.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>
-                                    {c.name}
+                                <SelectItem value="none">Sin categoría</SelectItem>
+                                {categories.map((category) => (
+                                  <SelectItem key={category.id} value={category.id}>
+                                    {formatPrefixLabel(
+                                      category.name,
+                                      category.prefix,
+                                    )}
                                   </SelectItem>
                                 ))}
                               </SelectGroup>
@@ -272,10 +346,11 @@ export function ProductFormModal({
                     />
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="supplier_id"
-                    render={({ field }) => (
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="supplier_id"
+                      render={({ field }) => (
                       <FormItem>
                         <FormLabel>Proveedor</FormLabel>
                         <Select
@@ -285,7 +360,7 @@ export function ProductFormModal({
                           }
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Sin proveedor" />
                             </SelectTrigger>
                           </FormControl>
@@ -294,8 +369,10 @@ export function ProductFormModal({
                               <SelectItem value="none">Sin proveedor</SelectItem>
                               {suppliers.map((supplier) => (
                                 <SelectItem key={supplier.id} value={supplier.id}>
-                                  {supplier.name}
-                                  {supplier.tax_id ? ` (${supplier.tax_id})` : ""}
+                                  {formatPrefixLabel(
+                                    supplier.name,
+                                    supplier.prefix,
+                                  )}
                                 </SelectItem>
                               ))}
                             </SelectGroup>
@@ -303,8 +380,28 @@ export function ProductFormModal({
                         </Select>
                         <FormMessage />
                       </FormItem>
-                    )}
-                  />
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="supplier_sku"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Código del proveedor</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="SKU o código del proveedor"
+                              maxLength={100}
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </TabsContent>
 

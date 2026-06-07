@@ -5,6 +5,7 @@ export const SupplierCurrencySchema = z.enum(["ARS", "USD"])
 export const SupplierSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
+  prefix: z.string().nullable(),
   legal_name: z.string().nullable(),
   tax_id: z.string().nullable(),
   email: z.string().nullable(),
@@ -35,6 +36,13 @@ export const SupplierFormSchema = z.object({
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(150, "Máximo 150 caracteres"),
+
+  prefix: z
+    .string()
+    .max(10, "Máximo 10 caracteres")
+    .toUpperCase()
+    .nullable()
+    .optional(),
 
   legal_name: z.string().max(200).nullable().optional(),
 

@@ -1,9 +1,11 @@
 "use client"
 
-import { Save } from "lucide-react"
+import { useMemo } from "react"
+import { AlertTriangle, Save } from "lucide-react"
 
 import { useSupplierForm } from "~/hooks/use-supplier-form"
 import { PROVINCES_AR } from "~/lib/suppliers/supplier-form.constants"
+import { findSuppliersWithDuplicatePrefix } from "~/lib/suppliers/supplier-form.utils"
 import { useSuppliersStore } from "~/stores/suppliers.store"
 import { Button } from "~/components/ui/button"
 import {
@@ -25,6 +27,7 @@ import { Input } from "~/components/ui/input"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -35,6 +38,7 @@ import { Textarea } from "~/components/ui/textarea"
 export function SupplierFormModal() {
   const modalOpen = useSuppliersStore((s) => s.modalOpen)
   const editingSupplier = useSuppliersStore((s) => s.editingSupplier)
+  const suppliers = useSuppliersStore((s) => s.suppliers)
   const closeModal = useSuppliersStore((s) => s.closeModal)
 
   const { form, isSubmitting, submitError, isEditing, onSubmit } = useSupplierForm(
@@ -43,6 +47,17 @@ export function SupplierFormModal() {
       open: modalOpen,
       onSuccess: closeModal,
     },
+  )
+
+  const prefix = form.watch("prefix")
+  const duplicatePrefixSuppliers = useMemo(
+    () =>
+      findSuppliersWithDuplicatePrefix(
+        prefix,
+        suppliers,
+        editingSupplier?.id,
+      ),
+    [prefix, suppliers, editingSupplier?.id],
   )
 
   return (
@@ -89,6 +104,44 @@ export function SupplierFormModal() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="prefix"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Código de proveedor</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ej: DIST"
+                            className="font-mono uppercase"
+                            maxLength={10}
+                            {...field}
+                            value={field.value ?? ""}
+                            onChange={(event) => {
+                              const value = event.target.value.toUpperCase()
+                              field.onChange(value === "" ? null : value)
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {duplicatePrefixSuppliers.length > 0 ? (
+                    <p className="flex items-start gap-2 text-xs text-amber-600 sm:col-span-2">
+                      <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+                      <span>
+                        Este código ya está en uso por{" "}
+                        <strong>
+                          {duplicatePrefixSuppliers
+                            .map((supplier) => supplier.name)
+                            .join(", ")}
+                        </strong>
+                        . Podés guardarlo igual, pero revisá que no sea un
+                        error.
+                      </span>
+                    </p>
+                  ) : null}
                   <FormField
                     control={form.control}
                     name="legal_name"
@@ -317,16 +370,18 @@ export function SupplierFormModal() {
                           onValueChange={field.onChange}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Seleccionar..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {PROVINCES_AR.map((province) => (
-                              <SelectItem key={province} value={province}>
-                                {province}
-                              </SelectItem>
-                            ))}
+                            <SelectGroup>
+                              {PROVINCES_AR.map((province) => (
+                                <SelectItem key={province} value={province}>
+                                  {province}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
                           </SelectContent>
                         </Select>
                         <FormMessage />

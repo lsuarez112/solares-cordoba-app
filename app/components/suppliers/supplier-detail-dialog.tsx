@@ -187,6 +187,11 @@ export function SupplierDetailDialog({
 
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
             <div className="flex flex-wrap gap-2">
+              {supplier.prefix ? (
+                <Badge variant="outline" className="font-mono">
+                  {supplier.prefix}
+                </Badge>
+              ) : null}
               {supplier.active ? (
                 <Badge
                   variant="secondary"
@@ -215,10 +220,16 @@ export function SupplierDetailDialog({
               ) : null}
             </div>
 
-            <DetailField
-              label="Razón social"
-              value={displayTextField(supplier.legal_name, "razón social")}
-            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <DetailField
+                label="Código de proveedor"
+                value={displayTextField(supplier.prefix, "código de proveedor")}
+              />
+              <DetailField
+                label="Razón social"
+                value={displayTextField(supplier.legal_name, "razón social")}
+              />
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailField

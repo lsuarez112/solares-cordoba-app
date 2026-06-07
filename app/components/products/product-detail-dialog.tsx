@@ -96,7 +96,7 @@ export function ProductDetailDialog({
             <div className="flex min-w-0 flex-col gap-1">
               <DialogTitle className="text-base">{product.name}</DialogTitle>
               <DialogDescription className="font-mono text-xs">
-                {product.product_code}
+                Código interno: {product.product_code}
               </DialogDescription>
             </div>
 
@@ -276,11 +276,34 @@ export function ProductDetailDialog({
 
             <dl className="grid grid-cols-2 gap-3">
               <div>
+                <dt className="text-xs text-muted-foreground">Código interno</dt>
+                <dd className="font-mono">{product.product_code}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">
+                  Código del proveedor
+                </dt>
+                <dd className="font-mono">
+                  {product.supplier_sku?.trim()
+                    ? product.supplier_sku
+                    : emptyFieldLabel("código del proveedor")}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-xs text-muted-foreground">Categoría</dt>
                 <dd>
-                  {product.category?.name?.trim()
-                    ? product.category.name
-                    : emptyFieldLabel("categoría")}
+                  {product.category?.name?.trim() ? (
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      {product.category.name}
+                      {product.category.prefix ? (
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {product.category.prefix}
+                        </Badge>
+                      ) : null}
+                    </span>
+                  ) : (
+                    emptyFieldLabel("categoría")
+                  )}
                 </dd>
               </div>
               <div>
@@ -301,6 +324,11 @@ export function ProductDetailDialog({
                           <Truck data-icon="inline-start" />
                           {supplierDisplay.name}
                         </Badge>
+                        {product.supplier?.prefix ? (
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {product.supplier.prefix}
+                          </Badge>
+                        ) : null}
                         {supplierDisplay.currency ? (
                           <Badge variant="outline" className="font-mono text-xs">
                             {supplierDisplay.currency}
