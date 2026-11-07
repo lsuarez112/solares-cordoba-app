@@ -3,7 +3,6 @@
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { ProductNameLink } from "~/components/products/product-name-link"
-import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import type { Product } from "~/domain/products/products.schemas"
@@ -14,6 +13,7 @@ import {
   GRID_TYPE_LABELS,
 } from "~/lib/products/grid-type.utils"
 import { hasNoPrice } from "~/lib/products/product-list.utils"
+import { truncateText } from "~/lib/text.utils"
 import { cn } from "~/lib/utils"
 
 function SortableHeader({
@@ -45,6 +45,8 @@ function SortableHeader({
   )
 }
 
+const DESCRIPTION_MAX_LENGTH = 60
+
 type ProductsTableColumnsOptions = {
   onOpenEdit?: (product: Product) => void
   onDuplicate?: (product: Product) => void
@@ -70,23 +72,26 @@ export function productsTableColumns(
       <SortableHeader column={column} title="Nombre" />
     ),
     cell: ({ row }) => {
-      const properties = parseProductGenericProperties(
-        row.original.generic_properties,
-      )
+      const product = row.original
+      const description =
+        product.short_desc?.trim() || product.description?.trim() || ""
 
       return (
-        <div className="flex min-w-0 max-w-md flex-col gap-1.5">
+        <div className="flex max-w-[34rem] min-w-0 items-baseline gap-2">
           <ProductNameLink
-            product={row.original}
+            product={product}
             onOpenEdit={onOpenEdit}
             onDuplicate={onDuplicate}
+            className="shrink-0"
           />
-          {row.original.short_desc ? (
-            <p className="truncate text-xs text-muted-foreground">
-              {row.original.short_desc}
-            </p>
+          {description ? (
+            <span
+              className="min-w-0 truncate text-xs text-muted-foreground"
+              title={description}
+            >
+              {truncateText(description, DESCRIPTION_MAX_LENGTH)}
+            </span>
           ) : null}
-          <ProductTechnicalPropertyBadges items={properties} />
         </div>
       )
     },

@@ -9,7 +9,6 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { FilterX, Search } from "lucide-react"
 
 import { CategoriesDataTableSkeleton } from "./categories-data-table-skeleton"
 import { CategoriesTableEmpty } from "./categories-table-empty"
@@ -18,12 +17,7 @@ import {
   type CategoryRow,
 } from "./categories-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
-import { Button } from "~/components/ui/button"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "~/components/ui/input-group"
+import { DataTableToolbar } from "~/components/ui/data-table-toolbar"
 import type { Category } from "~/domain/categories/categories.schemas"
 import type { CategoryFilters } from "~/domain/categories/categories.types"
 
@@ -102,34 +96,13 @@ export function CategoriesDataTable({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-        <InputGroup className="w-full lg:max-w-sm">
-          <InputGroupAddon align="inline-start">
-            <Search />
-          </InputGroupAddon>
-          <InputGroupInput
-            placeholder="Buscar por nombre o descripción..."
-            value={filters.search}
-            onChange={(event) =>
-              onFiltersChange({ search: event.target.value })
-            }
-          />
-        </InputGroup>
-
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:ml-auto lg:w-auto lg:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs text-muted-foreground"
-            onClick={onResetFilters}
-          >
-            <FilterX data-icon="inline-start" />
-            Limpiar filtros
-          </Button>
-        </div>
-      </div>
+    <div className="flex min-w-0 flex-col gap-3">
+      <DataTableToolbar
+        search={filters.search}
+        onSearchChange={(value) => onFiltersChange({ search: value })}
+        searchPlaceholder="Buscar por nombre o descripción..."
+        onClearFilters={onResetFilters}
+      />
 
       <DataTableView
         table={table}

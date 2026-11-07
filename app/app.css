@@ -127,6 +127,11 @@
   body {
     @apply bg-background text-foreground overflow-x-hidden;
     }
+  /* Edge agrega su propio botón "mostrar contraseña"; usamos el de PasswordInput. */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
 }
 
 @layer utilities {
@@ -137,7 +142,7 @@
 
   /** Contenido de página: texto envuelve; tablas scrollean en su propio contenedor. */
   .page-content {
-    @apply w-full min-w-0 max-w-full break-words;
+    @apply mx-auto w-full min-w-0 max-w-6xl break-words;
     overflow-wrap: anywhere;
   }
 }

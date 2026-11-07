@@ -11,17 +11,12 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Search } from "lucide-react"
 
 import { RolesDataTableSkeleton } from "~/components/roles/roles-data-table-skeleton"
 import { RolesTableEmpty } from "~/components/roles/roles-table-empty"
 import { createRolesTableColumns } from "~/components/roles/roles-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "~/components/ui/input-group"
+import { DataTableToolbar } from "~/components/ui/data-table-toolbar"
 import type { RoleListItem, RoleStatusFilter } from "~/domain/roles/roles.types"
 
 type RolesDataTableProps = {
@@ -111,19 +106,12 @@ export function RolesDataTable({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <InputGroup className="w-full sm:max-w-sm">
-        <InputGroupAddon align="inline-start">
-          <Search />
-        </InputGroupAddon>
-        <InputGroupInput
-          placeholder="Buscar rol..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-        />
-      </InputGroup>
+    <div className="flex min-w-0 flex-col gap-3">
+      <DataTableToolbar
+        search={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+        onSearchChange={(value) => table.getColumn("name")?.setFilterValue(value)}
+        searchPlaceholder="Buscar rol..."
+      />
 
       <DataTableView
         table={table}

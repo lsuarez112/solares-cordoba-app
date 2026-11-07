@@ -74,7 +74,7 @@ export function categoriesTableColumns(
                 className="text-violet-600"
               />
             </Badge>
-            <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="flex min-w-0 items-baseline gap-2">
               <CategoryNameLink category={category} onOpenEdit={onOpenEdit} />
               {category.slug ? (
                 <span className="truncate font-mono text-xs text-muted-foreground">
@@ -90,7 +90,7 @@ export function categoriesTableColumns(
       accessorKey: "description",
       header: "Descripción",
       cell: ({ row }) => (
-        <span className="line-clamp-2 max-w-md text-sm text-muted-foreground">
+        <span className="block max-w-md truncate text-sm text-muted-foreground">
           {row.original.description?.trim() || "—"}
         </span>
       ),

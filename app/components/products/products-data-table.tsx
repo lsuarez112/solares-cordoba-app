@@ -11,27 +11,15 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { FilterX, Search } from "lucide-react"
-
 import { formatPrefixLabel } from "~/lib/prefix-label.utils"
 import { ProductsDataTableSkeleton } from "~/components/products/products-data-table-skeleton"
 import { ProductsTableEmpty } from "~/components/products/products-table-empty"
 import { productsTableColumns } from "~/components/products/products-table-columns"
-import { Button } from "~/components/ui/button"
 import { DataTableView } from "~/components/ui/data-table"
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "~/components/ui/input-group"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select"
+  DataTableToolbar,
+  FILTER_ALL,
+} from "~/components/ui/data-table-toolbar"
 import type { GridType, Product } from "~/domain/products/products.schemas"
 import type { ProductCategory } from "~/domain/products/products.schemas"
 import type { ProductStatusFilter } from "~/domain/products/products.types"
@@ -162,103 +150,54 @@ export function ProductsDataTable({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-        <InputGroup className="w-full lg:max-w-sm">
-          <InputGroupAddon align="inline-start">
-            <Search />
-          </InputGroupAddon>
-          <InputGroupInput
-            placeholder="Buscar por nombre, código o propiedad..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
-          />
-        </InputGroup>
-
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:ml-auto lg:w-auto lg:justify-end">
-          <Select
-            value={categoryFilter}
-            onValueChange={(value) =>
+    <div className="flex min-w-0 flex-col gap-3">
+      <DataTableToolbar
+        search={search}
+        onSearchChange={(value) => table.getColumn("name")?.setFilterValue(value)}
+        searchPlaceholder="Buscar por nombre, código o propiedad..."
+        onClearFilters={clearFilters}
+        filters={[
+          {
+            id: "category",
+            label: "Categoría",
+            allLabel: "Todas las categorías",
+            value: categoryFilter,
+            widthClassName: "w-48",
+            options: categories.map((category) => ({
+              value: category.id,
+              label: formatPrefixLabel(category.name, category.prefix),
+            })),
+            onChange: (value) =>
               table
                 .getColumn("categoryId")
-                ?.setFilterValue(value === "all" ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {formatPrefixLabel(category.name, category.prefix)}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={gridFilter}
-            onValueChange={(value) =>
+                ?.setFilterValue(value === FILTER_ALL ? "" : value),
+          },
+          {
+            id: "grid",
+            label: "Red",
+            allLabel: "Todas las redes",
+            value: gridFilter,
+            widthClassName: "w-36",
+            options: gridFilterOptions,
+            onChange: (value) =>
               table
                 .getColumn("grid_type")
-                ?.setFilterValue(value === "all" ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Tipo de red" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">Todas las redes</SelectItem>
-                {gridFilterOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={statusFilter}
-            onValueChange={(value) =>
+                ?.setFilterValue(value === FILTER_ALL ? "" : value),
+          },
+          {
+            id: "status",
+            label: "Estado",
+            allLabel: "Todos los estados",
+            value: statusFilter,
+            widthClassName: "w-40",
+            options: statusFilterOptions,
+            onChange: (value) =>
               table
                 .getColumn("status")
-                ?.setFilterValue(value === "all" ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                {statusFilterOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs text-muted-foreground"
-            onClick={clearFilters}
-          >
-            <FilterX data-icon="inline-start" />
-            Limpiar filtros
-          </Button>
-        </div>
-      </div>
+                ?.setFilterValue(value === FILTER_ALL ? "" : value),
+          },
+        ]}
+      />
 
       <DataTableView
         table={table}

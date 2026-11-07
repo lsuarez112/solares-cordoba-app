@@ -11,25 +11,15 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Search } from "lucide-react"
 
 import { UsersDataTableSkeleton } from "~/components/users/users-data-table-skeleton"
 import { UsersTableEmpty } from "~/components/users/users-table-empty"
 import { DataTableView } from "~/components/ui/data-table"
+import {
+  DataTableToolbar,
+  FILTER_ALL,
+} from "~/components/ui/data-table-toolbar"
 import { createUsersTableColumns } from "~/components/users/users-table-columns"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "~/components/ui/input-group"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select"
 import type { AvailableRole, User } from "~/domain/users/users.types"
 import type { UserStatusFilter } from "~/domain/users/users.types"
 
@@ -109,46 +99,32 @@ export function UsersDataTable({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputGroup className="w-full sm:max-w-sm">
-          <InputGroupAddon align="inline-start">
-            <Search />
-          </InputGroupAddon>
-          <InputGroupInput
-            placeholder="Buscar..."
-            value={
-              (table.getColumn("fullName")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("fullName")?.setFilterValue(event.target.value)
-            }
-          />
-        </InputGroup>
-
-        <Select
-          value={roleFilter}
-          onValueChange={(value) =>
-            table
-              .getColumn("roleId")
-              ?.setFilterValue(value === "all" ? "" : value)
-          }
-        >
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filtrar por rol" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="all">Todos los roles</SelectItem>
-              {availableRoles.map((role) => (
-                <SelectItem key={role.id} value={role.id}>
-                  {role.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="flex min-w-0 flex-col gap-3">
+      <DataTableToolbar
+        search={(table.getColumn("fullName")?.getFilterValue() as string) ?? ""}
+        onSearchChange={(value) =>
+          table.getColumn("fullName")?.setFilterValue(value)
+        }
+        searchPlaceholder="Buscar por nombre o email..."
+        inlineFrom="md"
+        filters={[
+          {
+            id: "role",
+            label: "Rol",
+            allLabel: "Todos los roles",
+            value: roleFilter,
+            widthClassName: "w-44",
+            options: availableRoles.map((role) => ({
+              value: role.id,
+              label: role.name,
+            })),
+            onChange: (value) =>
+              table
+                .getColumn("roleId")
+                ?.setFilterValue(value === FILTER_ALL ? "" : value),
+          },
+        ]}
+      />
 
       <DataTableView
         table={table}
