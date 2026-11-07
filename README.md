@@ -37,6 +37,13 @@ pnpm exec supabase link --project-ref <project-ref>
 
 Las migraciones viven en `supabase/migrations/` y las Edge Functions en `supabase/functions/`. Los secrets (por ejemplo `ANTHROPIC_API_KEY`) se cargan con `supabase secrets set` y nunca van al front.
 
+```bash
+pnpm db:dry-run --yes                                      # ensaya migraciones + prueba de humo (rollback)
+pnpm db:push                                               # aplica migraciones
+pnpm exec supabase functions deploy fetch-exchange-rate --use-api   # Edge Function de cotización
+pnpm db:seed-catalog                                       # regenera la migración de catálogo desde armador-kit-solares/
+```
+
 ## Deploy
 
 Vercel con el repo vinculado a Git. Variables de entorno en Vercel: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.

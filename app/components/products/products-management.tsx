@@ -3,11 +3,13 @@
 import * as React from "react"
 import {
   AlertTriangle,
+  DollarSign,
   Package,
   Plus,
 } from "lucide-react"
 import { useSearchParams } from "react-router"
 
+import { PriceImportDialog } from "~/components/products/price-import-dialog"
 import { ProductFormModal } from "~/components/products/product-form-modal"
 import { ProductsCreateActions } from "~/components/products/products-create-actions"
 import { ProductsDataTable } from "~/components/products/products-data-table"
@@ -15,6 +17,7 @@ import type { Product } from "~/domain/products/products.schemas"
 import { DataActionsMenu } from "~/components/ui/data-actions-menu"
 import { DataRefreshActions } from "~/components/ui/data-refresh-actions"
 import { Badge } from "~/components/ui/badge"
+import { Button } from "~/components/ui/button"
 import { DropdownMenuItem } from "~/components/ui/dropdown-menu"
 import { Skeleton } from "~/components/ui/skeleton"
 import { usePermission } from "~/hooks/use-permission"
@@ -57,6 +60,7 @@ export function ProductsManagement() {
   const [duplicateFrom, setDuplicateFrom] = React.useState<
     Product | undefined
   >()
+  const [priceImportOpen, setPriceImportOpen] = React.useState(false)
   const [presetCategoryId, setPresetCategoryId] = React.useState<
     string | null
   >(null)
@@ -122,6 +126,12 @@ export function ProductsManagement() {
               {canCreate ? (
                 <DropdownNewProductItem onSelect={handleNewProduct} />
               ) : null}
+              {canUpdate ? (
+                <DropdownMenuItem onSelect={() => setPriceImportOpen(true)}>
+                  <DollarSign className="size-4" />
+                  Actualizar precios
+                </DropdownMenuItem>
+              ) : null}
             </DataActionsMenu>
           </div>
           <div className="hidden sm:block">
@@ -130,6 +140,16 @@ export function ProductsManagement() {
               lastFetchedAt={fetchedAt}
               onRefresh={() => void fetchAll({ force: true })}
             >
+              {canUpdate ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPriceImportOpen(true)}
+                >
+                  <DollarSign data-icon="inline-start" />
+                  Actualizar precios
+                </Button>
+              ) : null}
               {canCreate ? (
                 <ProductsCreateActions onNewProduct={handleNewProduct} />
               ) : null}
@@ -186,6 +206,13 @@ export function ProductsManagement() {
         }
         onRefresh={() => void fetchAll({ force: true })}
       />
+
+      {canUpdate ? (
+        <PriceImportDialog
+          open={priceImportOpen}
+          onOpenChange={setPriceImportOpen}
+        />
+      ) : null}
 
       {canOpenForm ? (
         <ProductFormModal

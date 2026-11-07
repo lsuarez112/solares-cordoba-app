@@ -1,4 +1,4 @@
-import { PlaceholderPage } from "~/components/pages/placeholder-page"
+import { KitsPage } from "~/components/kits/kits-page"
 import { metaFromRouteHandle } from "~/routing/route-page"
 import type { AppRouteHandle } from "~/routing/route-handle.types"
 
@@ -13,11 +13,6 @@ export function meta({ matches }: Route.MetaArgs) {
   return metaFromRouteHandle(matches)
 }
 
-export default function KitsPage() {
-  return (
-    <PlaceholderPage
-      title="Kits"
-      description="Kits predefinidos y reglas de armado (se implementa en F2)."
-    />
-  )
+export default function KitsRoute() {
+  return <KitsPage />
 }

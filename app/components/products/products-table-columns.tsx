@@ -193,7 +193,14 @@ export function productsTableColumns(
           Sin precio
         </Badge>
       ) : (
-        <span className="font-mono text-sm tabular-nums">
+        <span
+          className="font-mono text-sm tabular-nums"
+          title={
+            row.original.price_updated_at
+              ? `Actualizado el ${new Date(row.original.price_updated_at).toLocaleDateString("es-AR")}`
+              : undefined
+          }
+        >
           {row.original.price_usd.toLocaleString("es-AR", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
