@@ -22,6 +22,8 @@ export default [
     route("productos", "routes/productos.tsx"),
     route("productos/tipos", "routes/productos-tipos.tsx"),
     route("kits", "routes/kits.tsx"),
+    route("kits/nuevo", "routes/kit-editor.tsx", { id: "kit-new" }),
+    route("kits/:kitId", "routes/kit-editor.tsx", { id: "kit-edit" }),
     route("config/permisos", "routes/config-permisos.tsx"),
     route("config/permisos/usuarios", "routes/permisos-usuarios.tsx"),
     route("config/general", "routes/config-general.tsx"),

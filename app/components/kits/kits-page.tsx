@@ -1,38 +1,27 @@
 "use client"
 
 import * as React from "react"
+import { useNavigate } from "react-router"
 import { Plus } from "lucide-react"
 
 import { AssemblyRulesEditor } from "~/components/kits/assembly-rules-editor"
-import { KitEditorDialog } from "~/components/kits/kit-editor-dialog"
 import { KitsDataTable } from "~/components/kits/kits-data-table"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
-import type { Kit, KitFormValues } from "~/domain/kits/kits.schemas"
+import type { Kit } from "~/domain/kits/kits.schemas"
 import { usePermission } from "~/hooks/use-permission"
-import {
-  duplicateKitFormValues,
-  kitDetailToFormValues,
-} from "~/lib/kits/kit-form.utils"
 import { appToast } from "~/lib/toast"
 import { kitsService } from "~/services/kits.service"
-import { useProductsStore } from "~/stores/products.store"
 
 export function KitsPage() {
   const canCreate = usePermission("kits", "create")
   const canUpdate = usePermission("kits", "update")
   const canDelete = usePermission("kits", "delete")
 
-  const products = useProductsStore((s) => s.products)
-  const fetchProducts = useProductsStore((s) => s.fetchAll)
+  const navigate = useNavigate()
 
   const [kits, setKits] = React.useState<Kit[] | null>(null)
-  const [editor, setEditor] = React.useState<{
-    open: boolean
-    kitId: string | null
-    initial: KitFormValues | null
-  }>({ open: false, kitId: null, initial: null })
 
   const load = React.useCallback(async () => {
     try {
@@ -45,27 +34,15 @@ export function KitsPage() {
 
   React.useEffect(() => {
     void load()
-    void fetchProducts()
-  }, [load, fetchProducts])
+  }, [load])
 
-  const openNew = () => setEditor({ open: true, kitId: null, initial: null })
-  const openKit = React.useCallback(
-    (kit: Kit) => setEditor({ open: true, kitId: kit.id, initial: null }),
-    [],
+  const openNew = () => navigate("/kits/nuevo")
+  const openKit = React.useCallback((kit: Kit) => navigate(`/kits/${kit.id}`), [navigate])
+
+  const duplicate = React.useCallback(
+    (kit: Kit) => navigate(`/kits/nuevo?desde=${kit.id}`),
+    [navigate],
   )
-
-  const duplicate = React.useCallback(async (kit: Kit) => {
-    try {
-      const detail = await kitsService.getDetail(kit.id)
-      setEditor({
-        open: true,
-        kitId: null,
-        initial: duplicateKitFormValues(kitDetailToFormValues(detail)),
-      })
-    } catch {
-      appToast.error("No se pudo duplicar el kit")
-    }
-  }, [])
 
   const toggleActive = React.useCallback(async (kit: Kit, active: boolean) => {
     setKits((prev) => prev?.map((k) => (k.id === kit.id ? { ...k, active } : k)) ?? prev)
@@ -133,15 +110,6 @@ export function KitsPage() {
         </TabsContent>
       </Tabs>
 
-      <KitEditorDialog
-        open={editor.open}
-        kitId={editor.kitId}
-        initialValues={editor.initial}
-        products={products}
-        canEdit={editor.kitId ? canUpdate : canCreate}
-        onOpenChange={(open) => setEditor((prev) => ({ ...prev, open }))}
-        onSaved={() => void load()}
-      />
     </div>
   )
 }

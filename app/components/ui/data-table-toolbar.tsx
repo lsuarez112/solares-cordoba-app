@@ -4,6 +4,7 @@ import { FilterIcon, FilterX, Search, XIcon } from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import { IconActionButton } from "~/components/ui/icon-action-button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -252,17 +253,8 @@ function ClearButton({
   disabled?: boolean
 }) {
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="shrink-0 text-muted-foreground"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label="Limpiar filtros"
-      title="Limpiar filtros"
-    >
+    <IconActionButton label="Limpiar filtros" onClick={onClick} disabled={disabled}>
       <FilterX />
-    </Button>
+    </IconActionButton>
   )
 }

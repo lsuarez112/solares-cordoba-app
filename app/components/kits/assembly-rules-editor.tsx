@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Save, Trash2 } from "lucide-react"
+import { Plus, Save } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
+import { DeleteIconButton } from "~/components/ui/icon-action-button"
 import {
   Card,
   CardContent,
@@ -143,21 +144,15 @@ export function AssemblyRulesEditor({ canEdit }: { canEdit: boolean }) {
                   <>
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="icon-sm"
+                      className="text-muted-foreground"
                       aria-label="Guardar regla"
                       disabled={!rule.dirty || savingKey === rule.key}
                       onClick={() => void save(rule)}
                     >
                       <Save />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Borrar regla"
-                      onClick={() => void removeRule(rule)}
-                    >
-                      <Trash2 />
-                    </Button>
+                    <DeleteIconButton label="Borrar regla" onClick={() => void removeRule(rule)} />
                   </>
                 ) : null}
               </div>
