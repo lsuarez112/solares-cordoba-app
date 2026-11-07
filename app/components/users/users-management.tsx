@@ -18,7 +18,6 @@ import {
 import type { UserStatusFilter } from "~/domain/users/users.types"
 import { usePermissionsStoreAdminSync } from "~/hooks/use-permissions-store-sync"
 import { useUsersStoreAdminSync } from "~/hooks/use-users-store-sync"
-import { useUserCompaniesSummary } from "~/hooks/use-user-companies-summary"
 import { usePermissionsStore } from "~/stores/permissions.store"
 import { useUsersStore } from "~/stores/users.store"
 
@@ -40,8 +39,6 @@ export function UsersManagement() {
   const fullFetchedAt = useUsersStore((s) => s.fullFetchedAt)
   const refreshFull = useUsersStore((s) => s.refreshFull)
   const refreshPermissionRoles = usePermissionsStore((s) => s.refreshRoles)
-  const { byUserId: companiesByUserId, refresh: refreshUserCompanies } =
-    useUserCompaniesSummary()
 
   const [statusFilter, setStatusFilter] =
     React.useState<UserStatusFilter>("all")
@@ -64,8 +61,7 @@ export function UsersManagement() {
   const handleRefresh = React.useCallback(() => {
     void refreshFull()
     void refreshPermissionRoles()
-    void refreshUserCompanies()
-  }, [refreshFull, refreshPermissionRoles, refreshUserCompanies])
+  }, [refreshFull, refreshPermissionRoles])
 
   return (
     <UsersPage>
@@ -126,7 +122,6 @@ export function UsersManagement() {
         <UsersDataTable
           data={filteredUsers}
           availableRoles={availableRoles}
-          companiesByUserId={companiesByUserId}
           statusFilter={statusFilter}
           loading={isInitialLoading}
           onRefresh={handleRefresh}

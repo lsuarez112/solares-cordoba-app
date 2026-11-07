@@ -6,7 +6,7 @@ import type { Route } from "./+types/presupuestos"
 
 export const handle = {
   title: "Presupuestos",
-  access: [{ module: "budgets", action: "read" }],
+  access: [{ module: "quotes", action: "read" }],
 } satisfies AppRouteHandle
 
 export function meta({ matches }: Route.MetaArgs) {

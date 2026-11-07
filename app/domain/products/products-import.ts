@@ -107,7 +107,5 @@ export function mapImportRowToUpsert(row: RawImportRow) {
     short_desc: truncateImportDescription(row.description, 100),
     price_usd: row.price_usd,
     active: true,
-    stock: 0,
-    is_composite: false,
   }
 }

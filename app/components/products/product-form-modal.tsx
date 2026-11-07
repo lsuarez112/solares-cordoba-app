@@ -1,10 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
 import { useFieldArray } from "react-hook-form"
 import {
   CircleDollarSign,
-  Link2,
   ListTree,
   Package,
   Save,
@@ -14,12 +12,7 @@ import {
 import { ProductDeleteAlertDialog } from "~/components/products/product-delete-alert-dialog"
 import { useProductActions } from "~/hooks/use-product-actions"
 import { useProductForm } from "~/hooks/use-product-form"
-import { useProductsPageSuppliers } from "~/hooks/use-products-page-suppliers"
 import { formatPrefixLabel } from "~/lib/prefix-label.utils"
-import {
-  getProductCodePlaceholder,
-  proposeProductCode,
-} from "~/lib/products/product-code.utils"
 import { useProductsStore } from "~/stores/products.store"
 import type { Product } from "~/domain/products/products.schemas"
 import {
@@ -67,10 +60,6 @@ export function ProductFormModal({
   presetCategoryId,
 }: ProductFormModalProps) {
   const categories = useProductsStore((s) => s.categories)
-  const products = useProductsStore((s) => s.products)
-  const suppliers = useProductsPageSuppliers()
-  const [codeManuallyEdited, setCodeManuallyEdited] = useState(false)
-  const lastSuggestedCode = useRef<string | null>(null)
 
   const { form, isSubmitting, submitError, isEditing, isDuplicating, onSubmit } =
     useProductForm({
@@ -86,57 +75,11 @@ export function ProductFormModal({
     onClose,
   })
 
-  const links = useFieldArray({ control: form.control, name: "links" })
   const props = useFieldArray({
     control: form.control,
     name: "generic_properties",
   })
 
-  const supplierId = form.watch("supplier_id")
-  const categoryId = form.watch("category_id")
-  const selectedSupplier = suppliers.find((supplier) => supplier.id === supplierId)
-  const selectedCategory = categories.find((category) => category.id === categoryId)
-  const codePlaceholder = getProductCodePlaceholder(
-    selectedSupplier?.prefix,
-    selectedCategory?.prefix,
-  )
-
-  useEffect(() => {
-    if (!open) {
-      setCodeManuallyEdited(false)
-      lastSuggestedCode.current = null
-    }
-  }, [open])
-
-  useEffect(() => {
-    if (isEditing || !open || codeManuallyEdited) return
-
-    const proposedCode = proposeProductCode({
-      supplierPrefix: selectedSupplier?.prefix,
-      categoryPrefix: selectedCategory?.prefix,
-      existingCodes: products.map((item) => item.product_code),
-    })
-
-    if (!proposedCode) return
-
-    const currentCode = form.getValues("product_code")
-    const canReplace =
-      !currentCode.trim() ||
-      currentCode === lastSuggestedCode.current
-
-    if (canReplace) {
-      form.setValue("product_code", proposedCode, { shouldValidate: true })
-      lastSuggestedCode.current = proposedCode
-    }
-  }, [
-    isEditing,
-    open,
-    codeManuallyEdited,
-    selectedSupplier?.prefix,
-    selectedCategory?.prefix,
-    products,
-    form,
-  ])
 
   return (
     <Dialog
@@ -175,7 +118,7 @@ export function ProductFormModal({
                 </TabsTrigger>
                 <TabsTrigger value="precios" className="flex-1">
                   <CircleDollarSign data-icon="inline-start" />
-                  Precios y stock
+                  Precio
                 </TabsTrigger>
                 <TabsTrigger value="detalles" className="flex-1">
                   <ListTree data-icon="inline-start" />
@@ -194,28 +137,18 @@ export function ProductFormModal({
                       name="product_code"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Código interno *</FormLabel>
+                          <FormLabel>Código *</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={codePlaceholder}
+                              placeholder="Ej: 037046"
                               className="font-mono uppercase"
-                              maxLength={10}
+                              maxLength={20}
                               {...field}
-                              onChange={(event) => {
-                                setCodeManuallyEdited(true)
+                              onChange={(event) =>
                                 field.onChange(event.target.value.toUpperCase())
-                              }}
+                              }
                             />
                           </FormControl>
-                          {!isEditing &&
-                          selectedSupplier?.prefix &&
-                          selectedCategory?.prefix ? (
-                            <p className="text-xs text-muted-foreground">
-                              Se propone automáticamente como{" "}
-                              {selectedSupplier.prefix}-{selectedCategory.prefix}
-                              -N
-                            </p>
-                          ) : null}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -346,62 +279,6 @@ export function ProductFormModal({
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="supplier_id"
-                      render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Proveedor</FormLabel>
-                        <Select
-                          value={field.value ?? "none"}
-                          onValueChange={(value) =>
-                            field.onChange(value === "none" ? null : value)
-                          }
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Sin proveedor" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="none">Sin proveedor</SelectItem>
-                              {suppliers.map((supplier) => (
-                                <SelectItem key={supplier.id} value={supplier.id}>
-                                  {formatPrefixLabel(
-                                    supplier.name,
-                                    supplier.prefix,
-                                  )}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="supplier_sku"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Código del proveedor</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="SKU o código del proveedor"
-                              maxLength={100}
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </div>
               </TabsContent>
 
@@ -439,93 +316,8 @@ export function ProductFormModal({
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="cost_usd"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Precio de costo USD</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              name={field.name}
-                              ref={field.ref}
-                              onBlur={field.onBlur}
-                              value={field.value ?? ""}
-                              onChange={(e) =>
-                                field.onChange(
-                                  e.target.value === ""
-                                    ? null
-                                    : Number(e.target.value),
-                                )
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="stock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Stock actual</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              name={field.name}
-                              ref={field.ref}
-                              onBlur={field.onBlur}
-                              value={field.value}
-                              onChange={(e) =>
-                                field.onChange(
-                                  e.target.value === ""
-                                    ? 0
-                                    : Number(e.target.value),
-                                )
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="stock_alert_at"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Alerta de stock</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              placeholder="Avisar cuando llegue a..."
-                              name={field.name}
-                              ref={field.ref}
-                              onBlur={field.onBlur}
-                              value={field.value ?? ""}
-                              onChange={(e) =>
-                                field.onChange(
-                                  e.target.value === ""
-                                    ? null
-                                    : Number(e.target.value),
-                                )
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
 
                   <FormField
                     control={form.control}
@@ -556,90 +348,6 @@ export function ProductFormModal({
                 className="flex-1 overflow-y-auto pt-2"
               >
                 <div className="flex flex-col gap-4">
-                  <FormField
-                    control={form.control}
-                    name="is_composite"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="flex flex-col gap-1">
-                          <FormLabel>Es kit / compuesto</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Activá si este producto está formado por otros
-                            productos
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Links y recursos</FormLabel>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => links.append({ label: "", url: "" })}
-                      >
-                        <Link2 data-icon="inline-start" />
-                        Agregar link
-                      </Button>
-                    </div>
-                    {links.fields.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No hay links cargados para este producto
-                      </p>
-                    ) : null}
-                    {links.fields.map((field, index) => (
-                      <div key={field.id} className="flex items-start gap-2">
-                        <FormField
-                          control={form.control}
-                          name={`links.${index}.label`}
-                          render={({ field: linkField }) => (
-                            <FormItem className="flex-1">
-                              <FormControl>
-                                <Input
-                                  placeholder="Label (ej: Ficha técnica)"
-                                  {...linkField}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`links.${index}.url`}
-                          render={({ field: linkField }) => (
-                            <FormItem className="flex-1">
-                              <FormControl>
-                                <Input
-                                  placeholder="https://..."
-                                  {...linkField}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Eliminar link"
-                          onClick={() => links.remove(index)}
-                        >
-                          <Trash2 data-icon="inline-start" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
 
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">

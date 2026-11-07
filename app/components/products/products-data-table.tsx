@@ -35,7 +35,6 @@ import {
 import type { GridType, Product } from "~/domain/products/products.schemas"
 import type { ProductCategory } from "~/domain/products/products.schemas"
 import type { ProductStatusFilter } from "~/domain/products/products.types"
-import type { Supplier } from "~/domain/suppliers/suppliers.types"
 
 const gridFilterOptions: { value: GridType; label: string }[] = [
   { value: "ON-GRID", label: "On Grid" },
@@ -49,13 +48,12 @@ const statusFilterOptions: {
 }[] = [
   { value: "active", label: "Activos" },
   { value: "inactive", label: "Inactivos" },
-  { value: "stock_alert", label: "Alerta stock" },
+  { value: "no_price", label: "Sin precio" },
 ]
 
 type ProductsDataTableProps = {
   data: Product[]
   categories: ProductCategory[]
-  suppliers: Supplier[]
   loading?: boolean
   canCreate?: boolean
   initialCategoryId?: string | null
@@ -69,7 +67,6 @@ type ProductsDataTableProps = {
 export function ProductsDataTable({
   data,
   categories,
-  suppliers,
   loading = false,
   canCreate = false,
   initialCategoryId = null,
@@ -123,26 +120,20 @@ export function ProductsDataTable({
     (table.getColumn("status")?.getFilterValue() as
       | ProductStatusFilter
       | undefined) ?? "all"
-  const supplierFilter =
-    (table.getColumn("supplierId")?.getFilterValue() as string | undefined) ??
-    "all"
   const search =
     (table.getColumn("name")?.getFilterValue() as string | undefined) ?? ""
 
   const hasActiveFilters =
     search.trim().length > 0 ||
     categoryFilter !== "all" ||
-    supplierFilter !== "all" ||
     gridFilter !== "all" ||
     statusFilter !== "all"
 
   const selectedCategory = categories.find((c) => c.id === categoryFilter)
-  const selectedSupplier = suppliers.find((s) => s.id === supplierFilter)
 
   const clearFilters = React.useCallback(() => {
     table.getColumn("name")?.setFilterValue("")
     table.getColumn("categoryId")?.setFilterValue("")
-    table.getColumn("supplierId")?.setFilterValue("")
     table.getColumn("grid_type")?.setFilterValue("")
     table.getColumn("status")?.setFilterValue("")
   }, [table])
@@ -154,8 +145,6 @@ export function ProductsDataTable({
       search={search}
       categoryId={categoryFilter}
       categoryName={selectedCategory?.name}
-      supplierId={supplierFilter}
-      supplierName={selectedSupplier?.name}
       gridType={
         gridFilter === "all" ? "all" : (gridFilter as GridType)
       }
@@ -180,7 +169,7 @@ export function ProductsDataTable({
             <Search />
           </InputGroupAddon>
           <InputGroupInput
-            placeholder="Buscar por nombre, código, proveedor..."
+            placeholder="Buscar por nombre, código o propiedad..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
@@ -206,30 +195,6 @@ export function ProductsDataTable({
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {formatPrefixLabel(category.name, category.prefix)}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={supplierFilter}
-            onValueChange={(value) =>
-              table
-                .getColumn("supplierId")
-                ?.setFilterValue(value === "all" ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Proveedor" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">Todos los proveedores</SelectItem>
-                <SelectItem value="none">Sin proveedor</SelectItem>
-                {suppliers.map((supplier) => (
-                  <SelectItem key={supplier.id} value={supplier.id}>
-                    {formatPrefixLabel(supplier.name, supplier.prefix)}
                   </SelectItem>
                 ))}
               </SelectGroup>

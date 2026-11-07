@@ -2,25 +2,13 @@ import { z } from "zod"
 
 export const ModuleSchema = z.enum([
   "dashboards",
-  "notifications",
-  "reports",
+  "quotes",
+  "clients",
   "products",
   "kits",
-  "suppliers",
-  "stock_movements",
-  "clients",
-  "consumption_profiles",
-  "budgets",
-  "orders",
-  "financing",
-  "installations",
-  "technical_visits",
-  "warranties",
-  "user_profiles",
-  "companies",
-  "configs",
   "exchange_rates",
-  "user_settings",
+  "configs",
+  "user_profiles",
 ])
 
 export const ActionSchema = z.enum(["read", "create", "update", "delete"])

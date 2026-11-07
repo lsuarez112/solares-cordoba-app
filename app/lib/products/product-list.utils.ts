@@ -5,18 +5,15 @@ import type {
   ProductStatusFilter,
 } from "~/domain/products/products.types"
 
-export function isStockAlert(product: Product): boolean {
-  return (
-    product.stock_alert_at != null && product.stock <= product.stock_alert_at
-  )
+export function hasNoPrice(product: Product): boolean {
+  return !(product.price_usd > 0)
 }
 
 export function getProductStats(products: Product[]): ProductStats {
   return {
     total: products.length,
     active: products.filter((product) => product.active).length,
-    composite: products.filter((product) => product.is_composite).length,
-    stockAlert: products.filter(isStockAlert).length,
+    noPrice: products.filter(hasNoPrice).length,
   }
 }
 
@@ -27,7 +24,7 @@ function matchProductStatus(
   if (status === "all") return true
   if (status === "active") return product.active
   if (status === "inactive") return !product.active
-  if (status === "stock_alert") return isStockAlert(product)
+  if (status === "no_price") return hasNoPrice(product)
   return true
 }
 

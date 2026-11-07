@@ -19,59 +19,29 @@ export type PermissionSectionConfig = {
 
 export const PERMISSION_SECTIONS: PermissionSectionConfig[] = [
   {
-    id: "main",
-    label: "Principal",
+    id: "commercial",
+    label: "Comercial",
     modules: [
-      { module: "dashboards", label: "Dashboard" },
-      { module: "notifications", label: "Notificaciones" },
-      { module: "reports", label: "Reportes" },
+      { module: "dashboards", label: "Inicio" },
+      { module: "quotes", label: "Presupuestos" },
+      { module: "clients", label: "Clientes" },
     ],
   },
   {
     id: "catalog",
     label: "Catálogo",
     modules: [
-      { module: "products", label: "Productos" },
-      { module: "kits", label: "Kits" },
-      { module: "suppliers", label: "Proveedores" },
-      { module: "stock_movements", label: "Movimientos de stock" },
-    ],
-  },
-  {
-    id: "clients",
-    label: "Clientes",
-    modules: [
-      { module: "clients", label: "Clientes" },
-      { module: "consumption_profiles", label: "Perfiles de consumo" },
-    ],
-  },
-  {
-    id: "commercial",
-    label: "Comercial",
-    modules: [
-      { module: "budgets", label: "Presupuestos" },
-      { module: "orders", label: "Pedidos" },
-      { module: "financing", label: "Ventas / Financiación" },
-    ],
-  },
-  {
-    id: "operations",
-    label: "Operaciones",
-    modules: [
-      { module: "installations", label: "Instalaciones" },
-      { module: "technical_visits", label: "Visitas técnicas" },
-      { module: "warranties", label: "Garantías" },
+      { module: "products", label: "Productos y categorías" },
+      { module: "kits", label: "Kits y reglas de armado" },
     ],
   },
   {
     id: "admin",
     label: "Administración",
     modules: [
+      { module: "configs", label: "Configuración y roles" },
+      { module: "exchange_rates", label: "Cotización del dólar" },
       { module: "user_profiles", label: "Usuarios" },
-      { module: "companies", label: "Empresas" },
-      { module: "configs", label: "Configuración" },
-      { module: "exchange_rates", label: "Tipos de cambio" },
-      { module: "user_settings", label: "Preferencias de usuario" },
     ],
   },
 ]

@@ -3,7 +3,6 @@
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { ProductNameLink } from "~/components/products/product-name-link"
-import { ProductSupplierCell } from "~/components/products/product-supplier-cell"
 import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -14,7 +13,7 @@ import {
   GRID_TYPE_COLORS,
   GRID_TYPE_LABELS,
 } from "~/lib/products/grid-type.utils"
-import { isStockAlert } from "~/lib/products/product-list.utils"
+import { hasNoPrice } from "~/lib/products/product-list.utils"
 import { cn } from "~/lib/utils"
 
 function SortableHeader({
@@ -99,8 +98,6 @@ export function productsTableColumns(
       return (
         product.name.toLowerCase().includes(search) ||
         product.product_code.toLowerCase().includes(search) ||
-        (product.supplier?.name.toLowerCase().includes(search) ?? false) ||
-        (product.supplier?.tax_id?.toLowerCase().includes(search) ?? false) ||
         (product.short_desc?.toLowerCase().includes(search) ?? false) ||
         properties.some(
           ({ key, value: propValue }) =>
@@ -143,19 +140,6 @@ export function productsTableColumns(
     },
   },
   {
-    id: "supplierId",
-    accessorFn: (row) => row.supplier?.name ?? "",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Proveedor" />
-    ),
-    cell: ({ row }) => <ProductSupplierCell product={row.original} />,
-    filterFn: (row, _id, value) => {
-      if (!value || value === "all") return true
-      if (value === "none") return !row.original.supplier_id
-      return row.original.supplier_id === value
-    },
-  },
-  {
     accessorKey: "grid_type",
     header: ({ column }) => (
       <SortableHeader column={column} title="Tipo red" />
@@ -181,19 +165,26 @@ export function productsTableColumns(
     },
   },
   {
-    accessorKey: "is_composite",
+    accessorKey: "price_usd",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Tipo" className="mx-auto" />
+      <SortableHeader column={column} title="Precio USD" className="ml-auto" />
     ),
     cell: ({ row }) =>
-      row.original.is_composite ? (
-        <Badge variant="secondary">Kit</Badge>
+      hasNoPrice(row.original) ? (
+        <Badge variant="outline" className="text-amber-700">
+          Sin precio
+        </Badge>
       ) : (
-        <Badge variant="outline">Simple</Badge>
+        <span className="font-mono text-sm tabular-nums">
+          {row.original.price_usd.toLocaleString("es-AR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </span>
       ),
     meta: {
-      headerClassName: "text-center",
-      cellClassName: "text-center",
+      headerClassName: "text-right",
+      cellClassName: "text-right",
     },
   },
   {
@@ -211,7 +202,7 @@ export function productsTableColumns(
       if (!value || value === "all") return true
       if (value === "active") return row.original.active
       if (value === "inactive") return !row.original.active
-      if (value === "stock_alert") return isStockAlert(row.original)
+      if (value === "no_price") return hasNoPrice(row.original)
       return true
     },
     meta: {

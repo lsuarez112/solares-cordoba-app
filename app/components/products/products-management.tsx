@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   AlertTriangle,
-  Layers,
   Package,
   Plus,
 } from "lucide-react"
@@ -19,7 +18,6 @@ import { Badge } from "~/components/ui/badge"
 import { DropdownMenuItem } from "~/components/ui/dropdown-menu"
 import { Skeleton } from "~/components/ui/skeleton"
 import { usePermission } from "~/hooks/use-permission"
-import { useProductsPageSuppliers } from "~/hooks/use-products-page-suppliers"
 import { useProductsStorePageSync } from "~/hooks/use-products-store-sync"
 import { getProductStats } from "~/lib/products/product-list.utils"
 import { useProductsStore } from "~/stores/products.store"
@@ -27,7 +25,7 @@ import { useProductsStore } from "~/stores/products.store"
 function ProductsMetricsSkeleton() {
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-      {Array.from({ length: 4 }).map((_, index) => (
+      {Array.from({ length: 3 }).map((_, index) => (
         <div key={index} className="flex items-center gap-2">
           <Skeleton className="h-5 w-20" />
           <Skeleton className="h-4 w-8" />
@@ -41,7 +39,6 @@ export function ProductsManagement() {
   useProductsStorePageSync()
   const [searchParams] = useSearchParams()
   const initialCategoryId = searchParams.get("category")
-  const suppliers = useProductsPageSuppliers()
 
   const products = useProductsStore((s) => s.products)
   const categories = useProductsStore((s) => s.categories)
@@ -165,20 +162,11 @@ export function ProductsManagement() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
-              <Layers data-icon="inline-start" className="text-blue-600" />
-              Kits/Compuestos
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.composite}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
               <AlertTriangle data-icon="inline-start" className="text-amber-600" />
-              Alerta stock
+              Sin precio
             </Badge>
             <span className="text-sm font-semibold tabular-nums">
-              {stats.stockAlert}
+              {stats.noPrice}
             </span>
           </div>
         </div>
@@ -187,7 +175,6 @@ export function ProductsManagement() {
       <ProductsDataTable
         data={products}
         categories={categories}
-        suppliers={suppliers}
         loading={isInitialLoading}
         canCreate={canCreate}
         initialCategoryId={initialCategoryId}

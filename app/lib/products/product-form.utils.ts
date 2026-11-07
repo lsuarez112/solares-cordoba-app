@@ -1,5 +1,4 @@
 import type { Product, ProductFormValues } from "~/domain/products/products.schemas"
-import { parseProductLinks } from "~/lib/products/product-display.utils"
 
 export const emptyProductFormValues: ProductFormValues = {
   product_code: "",
@@ -8,24 +7,15 @@ export const emptyProductFormValues: ProductFormValues = {
   description: "",
   category_id: null,
   grid_type: null,
-  supplier_id: null,
-  supplier_sku: "",
   price_usd: 0,
-  cost_usd: null,
-  stock: 0,
-  stock_alert_at: 0,
-  is_composite: false,
   active: true,
-  links: [],
   generic_properties: [],
 }
 
 export function productToFormValues(product: Product): ProductFormValues {
   const generic_properties = Object.entries(
-    (product.generic_properties as Record<string, string>) ?? {},
+    (product.generic_properties as Record<string, unknown>) ?? {},
   ).map(([key, value]) => ({ key, value: String(value) }))
-
-  const links = parseProductLinks(product.links)
 
   return {
     product_code: product.product_code,
@@ -34,15 +24,8 @@ export function productToFormValues(product: Product): ProductFormValues {
     description: product.description ?? "",
     category_id: product.category_id ?? null,
     grid_type: product.grid_type ?? null,
-    supplier_id: product.supplier_id ?? null,
-    supplier_sku: product.supplier_sku ?? "",
     price_usd: product.price_usd,
-    cost_usd: product.cost_usd ?? null,
-    stock: product.stock,
-    stock_alert_at: product.stock_alert_at ?? 0,
-    is_composite: product.is_composite,
     active: product.active,
-    links,
     generic_properties,
   }
 }
@@ -53,5 +36,24 @@ export function productToDuplicateFormValues(product: Product): ProductFormValue
     ...values,
     product_code: "",
     name: `${product.name} (copia)`,
+  }
+}
+
+/** Payload de insert/update para la tabla products a partir del formulario. */
+export function formValuesToProductPayload(values: ProductFormValues) {
+  const generic_properties = Object.fromEntries(
+    (values.generic_properties ?? []).map(({ key, value }) => [key, value]),
+  )
+
+  return {
+    product_code: values.product_code.trim(),
+    name: values.name,
+    short_desc: values.short_desc ?? null,
+    description: values.description ?? null,
+    category_id: values.category_id ?? null,
+    grid_type: values.grid_type ?? null,
+    price_usd: values.price_usd,
+    active: values.active,
+    generic_properties,
   }
 }

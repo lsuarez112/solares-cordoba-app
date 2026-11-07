@@ -35,7 +35,7 @@ export function AppSidebar() {
       <SidebarHeader className="bg-background">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild title="JRJ Gestión">
+            <SidebarMenuButton size="lg" asChild title="Solares Córdoba">
               <Link to="/dashboard">
                 <img
                   src="/favicon.svg"
@@ -43,7 +43,7 @@ export function AppSidebar() {
                   className="size-4 shrink-0"
                   aria-hidden
                 />
-                <span className="truncate font-semibold">JRJ Gestión</span>
+                <span className="truncate font-semibold">Solares Córdoba</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

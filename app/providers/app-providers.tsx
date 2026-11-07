@@ -5,11 +5,9 @@ import type { User } from "@supabase/supabase-js"
 import type { ReactNode } from "react"
 
 import { CategoriesStoreSync } from "~/components/stores/categories-store-sync"
-import { CompaniesStoreSync } from "~/components/stores/companies-store-sync"
 import { PermissionsStoreSync } from "~/components/stores/permissions-store-sync"
 import { ProductsStoreSync } from "~/components/stores/products-store-sync"
 import { RolesStoreSync } from "~/components/stores/roles-store-sync"
-import { SuppliersStoreSync } from "~/components/stores/suppliers-store-sync"
 import { UsersStoreSync } from "~/components/stores/users-store-sync"
 import { Toaster } from "~/components/ui/sonner"
 import { TooltipProvider } from "~/components/ui/tooltip"
@@ -35,8 +33,6 @@ export function AppProviders({
       <PermissionsStoreSync />
       <ProductsStoreSync />
       <CategoriesStoreSync />
-      <SuppliersStoreSync />
-      <CompaniesStoreSync />
       <TooltipProvider>
         {children}
         <Toaster />

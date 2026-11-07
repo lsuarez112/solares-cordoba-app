@@ -5,7 +5,6 @@ import {
   RefreshCcw,
   Search,
   Tags,
-  Truck,
 } from "lucide-react"
 
 import { TableEmptyState } from "~/components/ui/table-empty-state"
@@ -20,8 +19,6 @@ export type ProductsTableEmptyContext = {
   search: string
   categoryId: string
   categoryName?: string
-  supplierId: string
-  supplierName?: string
   gridType: "all" | GridType
   statusFilter: ProductStatusFilter
   canCreate: boolean
@@ -37,8 +34,6 @@ export function ProductsTableEmpty({
   search,
   categoryId,
   categoryName,
-  supplierId,
-  supplierName,
   gridType,
   statusFilter,
   canCreate,
@@ -93,45 +88,6 @@ export function ProductsTableEmpty({
         icon={Search}
         title="Sin resultados de búsqueda"
         description={`No encontramos productos que coincidan con "${search.trim()}". Probá con otro término o limpiá los filtros.`}
-        actions={
-          <>
-            <Button type="button" variant="outline" onClick={onClearFilters}>
-              <FilterX data-icon="inline-start" />
-              Limpiar filtros
-            </Button>
-            {refreshButton}
-          </>
-        }
-      />
-    )
-  }
-
-  if (supplierId !== "all" && supplierName) {
-    return (
-      <TableEmptyState
-        icon={Truck}
-        title="Sin productos de este proveedor"
-        description={`No hay productos asociados a "${supplierName}". Elegí otro proveedor o limpiá los filtros.`}
-        actions={
-          <>
-            <Button type="button" variant="outline" onClick={onClearFilters}>
-              <FilterX data-icon="inline-start" />
-              Limpiar filtros
-            </Button>
-            {refreshButton}
-          </>
-        }
-      />
-    )
-  }
-
-  if (supplierId === "none") {
-    return (
-      <TableEmptyState
-        icon={Truck}
-        muted
-        title="Sin productos sin proveedor"
-        description="Todos los productos visibles tienen un proveedor asignado con los filtros actuales."
         actions={
           <>
             <Button type="button" variant="outline" onClick={onClearFilters}>
@@ -202,7 +158,7 @@ export function ProductsTableEmpty({
       all: "Todos",
       active: "activos",
       inactive: "inactivos",
-      stock_alert: "con alerta de stock",
+      no_price: "sin precio",
     }
     return (
       <TableEmptyState

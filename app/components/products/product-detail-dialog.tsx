@@ -6,19 +6,12 @@ import {
   ClipboardCopy,
   Copy,
   FileText,
-  History,
-  Layers,
-  Link2,
-  Mail,
   MessageCircle,
   MoreHorizontal,
-  Package,
-  PackageMinus,
   Pencil,
   PowerOff,
   Trash2,
   TriangleAlert,
-  Truck,
   X,
 } from "lucide-react"
 
@@ -49,11 +42,8 @@ import {
   displayTextField,
   emptyFieldLabel,
   parseProductGenericProperties,
-  parseProductLinks,
 } from "~/lib/products/product-display.utils"
-import { isStockAlert } from "~/lib/products/product-list.utils"
-import { getProductSupplierDisplay } from "~/lib/products/product-supplier.utils"
-import { supplierWhatsAppUrl } from "~/lib/suppliers/supplier-display.utils"
+import { hasNoPrice } from "~/lib/products/product-list.utils"
 
 type ProductDetailDialogProps = {
   product: Product
@@ -77,11 +67,7 @@ export function ProductDetailDialog({
     onDuplicate,
   })
 
-  const links = parseProductLinks(product.links)
   const properties = parseProductGenericProperties(product.generic_properties)
-  const supplierDisplay = getProductSupplierDisplay(product)
-  const supplierWhatsApp =
-    product.supplier?.whatsapp && supplierWhatsAppUrl(product.supplier.whatsapp)
 
   const handleClose = () => onOpenChange(false)
 
@@ -96,7 +82,7 @@ export function ProductDetailDialog({
             <div className="flex min-w-0 flex-col gap-1">
               <DialogTitle className="text-base">{product.name}</DialogTitle>
               <DialogDescription className="font-mono text-xs">
-                Código interno: {product.product_code}
+                Código: {product.product_code}
               </DialogDescription>
             </div>
 
@@ -153,22 +139,6 @@ export function ProductDetailDialog({
                       </>
                     ) : null}
 
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Próximamente</DropdownMenuLabel>
-                      <DropdownMenuItem disabled>
-                        <History data-icon="inline-start" />
-                        Ver movimientos de stock
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled>
-                        <FileText data-icon="inline-start" />
-                        Ver presupuestos que lo usan
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled>
-                        <PackageMinus data-icon="inline-start" />
-                        Actualizar stock rápido
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
 
                     {actions.canToggleActive || actions.canDelete ? (
                       <>
@@ -231,27 +201,13 @@ export function ProductDetailDialog({
                   Inactivo
                 </Badge>
               )}
-              {product.is_composite ? (
-                <Badge
-                  variant="secondary"
-                  className="border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300"
-                >
-                  <Layers data-icon="inline-start" className="text-blue-600" />
-                  Kit
-                </Badge>
-              ) : (
-                <Badge variant="secondary">
-                  <Package data-icon="inline-start" className="text-muted-foreground" />
-                  Simple
-                </Badge>
-              )}
-              {isStockAlert(product) ? (
+              {hasNoPrice(product) ? (
                 <Badge
                   variant="secondary"
                   className="border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
                 >
                   <TriangleAlert data-icon="inline-start" className="text-amber-600" />
-                  Alerta stock
+                  Sin precio
                 </Badge>
               ) : null}
             </div>
@@ -276,18 +232,8 @@ export function ProductDetailDialog({
 
             <dl className="grid grid-cols-2 gap-3">
               <div>
-                <dt className="text-xs text-muted-foreground">Código interno</dt>
+                <dt className="text-xs text-muted-foreground">Código</dt>
                 <dd className="font-mono">{product.product_code}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">
-                  Código del proveedor
-                </dt>
-                <dd className="font-mono">
-                  {product.supplier_sku?.trim()
-                    ? product.supplier_sku
-                    : emptyFieldLabel("código del proveedor")}
-                </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Categoría</dt>
@@ -314,84 +260,6 @@ export function ProductDetailDialog({
                     : emptyFieldLabel("tipo de red")}
                 </dd>
               </div>
-              <div className="col-span-2">
-                <dt className="text-xs text-muted-foreground">Proveedor</dt>
-                <dd>
-                  {supplierDisplay ? (
-                    <div className="flex flex-col gap-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary">
-                          <Truck data-icon="inline-start" />
-                          {supplierDisplay.name}
-                        </Badge>
-                        {product.supplier?.prefix ? (
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {product.supplier.prefix}
-                          </Badge>
-                        ) : null}
-                        {supplierDisplay.currency ? (
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {supplierDisplay.currency}
-                          </Badge>
-                        ) : null}
-                        {supplierDisplay.active === false ? (
-                          <Badge variant="secondary">Inactivo</Badge>
-                        ) : null}
-                      </div>
-                      {supplierDisplay.taxId ? (
-                        <span className="text-xs text-muted-foreground">
-                          CUIT: {supplierDisplay.taxId}
-                        </span>
-                      ) : null}
-                      {supplierDisplay.contactName ? (
-                        <span className="text-xs text-muted-foreground">
-                          Contacto: {supplierDisplay.contactName}
-                        </span>
-                      ) : null}
-                      {supplierDisplay.phone ? (
-                        <span className="text-xs text-muted-foreground">
-                          Tel.: {supplierDisplay.phone}
-                        </span>
-                      ) : null}
-                      {supplierDisplay.paymentDays != null &&
-                      supplierDisplay.paymentDays > 0 ? (
-                        <span className="text-xs text-muted-foreground">
-                          Plazo de pago: {supplierDisplay.paymentDays} días
-                        </span>
-                      ) : null}
-                      {supplierDisplay.rating != null ? (
-                        <span className="text-xs text-muted-foreground">
-                          Rating: {"★".repeat(Math.round(supplierDisplay.rating))}
-                        </span>
-                      ) : null}
-                      <div className="flex flex-wrap gap-2">
-                        {supplierDisplay.email ? (
-                          <a
-                            href={`mailto:${supplierDisplay.email}`}
-                            className="inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
-                          >
-                            <Mail className="size-3.5" />
-                            {supplierDisplay.email}
-                          </a>
-                        ) : null}
-                        {supplierWhatsApp && product.supplier?.whatsapp ? (
-                          <a
-                            href={supplierWhatsApp}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-700"
-                          >
-                            <MessageCircle className="size-3.5" />
-                            WhatsApp
-                          </a>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : (
-                    emptyFieldLabel("proveedor")
-                  )}
-                </dd>
-              </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Precio USD</dt>
                 <dd className="tabular-nums">
@@ -399,49 +267,16 @@ export function ProductDetailDialog({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Stock</dt>
-                <dd className="tabular-nums">{product.stock}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Alerta stock</dt>
+                <dt className="text-xs text-muted-foreground">
+                  Precio actualizado
+                </dt>
                 <dd className="tabular-nums">
-                  {product.stock_alert_at != null
-                    ? product.stock_alert_at
-                    : emptyFieldLabel("alerta de stock")}
+                  {product.price_updated_at
+                    ? new Date(product.price_updated_at).toLocaleDateString("es-AR")
+                    : emptyFieldLabel("fecha")}
                 </dd>
               </div>
             </dl>
-
-            <section className="flex flex-col gap-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                Links y recursos
-              </p>
-              {links.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {links.map((link) => (
-                    <Badge
-                      key={`${link.label}-${link.url}`}
-                      variant="outline"
-                      asChild
-                    >
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={link.url}
-                      >
-                        <Link2 data-icon="inline-start" />
-                        {link.label}
-                      </a>
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">
-                  {emptyFieldLabel("links")}
-                </p>
-              )}
-            </section>
 
             <section className="flex flex-col gap-2">
               <p className="text-xs font-medium text-muted-foreground">

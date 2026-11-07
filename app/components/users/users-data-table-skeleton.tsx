@@ -10,7 +10,7 @@ import {
 import { TableScrollArea } from "~/components/ui/table-scroll-area"
 
 const SKELETON_ROWS = 8
-const SKELETON_COLUMNS = 8
+const SKELETON_COLUMNS = 7
 
 export function UsersDataTableSkeleton() {
   return (

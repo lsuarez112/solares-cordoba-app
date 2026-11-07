@@ -1,21 +1,42 @@
-# React Router + shadcn/ui
+# Presupuestador Solar — Solares Córdoba
 
-This is a template for a new React Router project with React, TypeScript, and shadcn/ui.
+App mobile-first para que los vendedores armen presupuestos de sistemas fotovoltaicos: cliente → pedido → sugerencia de kit (IA) → ajuste → PDF y mensaje de WhatsApp.
 
-## Adding components
+- Especificación: [SPEC-V0.md](SPEC-V0.md)
+- Análisis y plan por fases: [docs/GAP-V0.md](docs/GAP-V0.md)
 
-To add components to your app, run the following command:
+## Stack
+
+React Router 7 (SSR) · TypeScript · shadcn/ui · Tailwind 4 · Zustand · Zod · react-hook-form · Supabase (Auth, Postgres, Storage, Edge Functions) · Vitest · Deploy en Vercel.
+
+## Setup local
 
 ```bash
-npx shadcn@latest add button
+pnpm install
+cp .env.example .env.local   # completar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY
+pnpm dev                     # http://localhost:5173
 ```
 
-This will place the ui components in the `components` directory.
+## Scripts
 
-## Using components
+| Script | Qué hace |
+|---|---|
+| `pnpm dev` | Servidor de desarrollo |
+| `pnpm typecheck` | Genera tipos de rutas y corre `tsc` |
+| `pnpm test` | Tests unitarios (Vitest, `app/**/*.test.ts`) |
+| `pnpm build` | Build de producción (preset de Vercel) |
+| `pnpm db:push` | Aplica las migraciones de `supabase/migrations` al proyecto vinculado |
+| `pnpm db:types` | Genera los tipos de la DB en `app/lib/supabase/database.types.ts` |
 
-To use the components in your app, import them as follows:
+## Supabase
 
-```tsx
-import { Button } from "@/components/ui/button";
+```bash
+pnpm exec supabase login
+pnpm exec supabase link --project-ref <project-ref>
 ```
+
+Las migraciones viven en `supabase/migrations/` y las Edge Functions en `supabase/functions/`. Los secrets (por ejemplo `ANTHROPIC_API_KEY`) se cargan con `supabase secrets set` y nunca van al front.
+
+## Deploy
+
+Vercel con el repo vinculado a Git. Variables de entorno en Vercel: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.

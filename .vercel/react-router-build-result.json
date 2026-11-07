@@ -1,0 +1,370 @@
+{
+  "buildManifest": {
+    "serverBundles": {
+      "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0": {
+        "id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+        "file": "build/server/nodejs_eyJydW50aW1lIjoibm9kZWpzIn0/index.js",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    },
+    "routeIdToServerBundleId": {
+      "root": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/login": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/login-redirect": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/register": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth-callback": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/unauthorized": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/dashboard": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/presupuestos": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/clientes": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/productos": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/productos-tipos": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/kits": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/config-permisos": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/permisos-usuarios": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/config-general": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
+    },
+    "routes": {
+      "root": {
+        "id": "root",
+        "file": "app/root.tsx",
+        "path": "",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "layouts/public-layout": {
+        "id": "layouts/public-layout",
+        "parentId": "root",
+        "file": "app/layouts/public-layout.tsx",
+        "config": {}
+      },
+      "layouts/auth-layout": {
+        "id": "layouts/auth-layout",
+        "parentId": "layouts/public-layout",
+        "file": "app/layouts/auth-layout.tsx",
+        "config": {}
+      },
+      "routes/login": {
+        "id": "routes/login",
+        "parentId": "layouts/auth-layout",
+        "file": "app/routes/login.tsx",
+        "index": true,
+        "config": {}
+      },
+      "routes/login-redirect": {
+        "id": "routes/login-redirect",
+        "parentId": "layouts/auth-layout",
+        "file": "app/routes/login-redirect.tsx",
+        "path": "login",
+        "config": {}
+      },
+      "routes/register": {
+        "id": "routes/register",
+        "parentId": "layouts/auth-layout",
+        "file": "app/routes/register.tsx",
+        "path": "register",
+        "config": {}
+      },
+      "routes/auth-callback": {
+        "id": "routes/auth-callback",
+        "parentId": "layouts/public-layout",
+        "file": "app/routes/auth-callback.tsx",
+        "path": "auth/callback",
+        "config": {}
+      },
+      "routes/unauthorized": {
+        "id": "routes/unauthorized",
+        "parentId": "layouts/public-layout",
+        "file": "app/routes/unauthorized.tsx",
+        "path": "unauthorized",
+        "config": {}
+      },
+      "layouts/app-layout": {
+        "id": "layouts/app-layout",
+        "parentId": "root",
+        "file": "app/layouts/app-layout.tsx",
+        "config": {}
+      },
+      "routes/dashboard": {
+        "id": "routes/dashboard",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/dashboard.tsx",
+        "path": "dashboard",
+        "config": {}
+      },
+      "routes/presupuestos": {
+        "id": "routes/presupuestos",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/presupuestos.tsx",
+        "path": "presupuestos",
+        "config": {}
+      },
+      "routes/clientes": {
+        "id": "routes/clientes",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/clientes.tsx",
+        "path": "clientes",
+        "config": {}
+      },
+      "routes/productos": {
+        "id": "routes/productos",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/productos.tsx",
+        "path": "productos",
+        "config": {}
+      },
+      "routes/productos-tipos": {
+        "id": "routes/productos-tipos",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/productos-tipos.tsx",
+        "path": "productos/tipos",
+        "config": {}
+      },
+      "routes/kits": {
+        "id": "routes/kits",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/kits.tsx",
+        "path": "kits",
+        "config": {}
+      },
+      "routes/config-permisos": {
+        "id": "routes/config-permisos",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/config-permisos.tsx",
+        "path": "config/permisos",
+        "config": {}
+      },
+      "routes/permisos-usuarios": {
+        "id": "routes/permisos-usuarios",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/permisos-usuarios.tsx",
+        "path": "config/permisos/usuarios",
+        "config": {}
+      },
+      "routes/config-general": {
+        "id": "routes/config-general",
+        "parentId": "layouts/app-layout",
+        "file": "app/routes/config-general.tsx",
+        "path": "config/general",
+        "config": {}
+      }
+    }
+  },
+  "reactRouterConfig": {
+    "appDirectory": "D:/Proyectos/Solares/react-router-app/app",
+    "basename": "/",
+    "buildDirectory": "D:/Proyectos/Solares/react-router-app/build",
+    "future": {
+      "unstable_optimizeDeps": false,
+      "v8_passThroughRequests": false,
+      "unstable_trailingSlashAwareDataRequests": false,
+      "unstable_previewServerPrerendering": false,
+      "v8_middleware": false,
+      "v8_splitRouteModules": false,
+      "v8_viteEnvironmentApi": false
+    },
+    "routes": {
+      "root": {
+        "id": "root",
+        "file": "root.tsx",
+        "path": ""
+      },
+      "layouts/public-layout": {
+        "id": "layouts/public-layout",
+        "parentId": "root",
+        "file": "layouts/public-layout.tsx"
+      },
+      "layouts/auth-layout": {
+        "id": "layouts/auth-layout",
+        "parentId": "layouts/public-layout",
+        "file": "layouts/auth-layout.tsx"
+      },
+      "routes/login": {
+        "id": "routes/login",
+        "parentId": "layouts/auth-layout",
+        "file": "routes/login.tsx",
+        "index": true
+      },
+      "routes/login-redirect": {
+        "id": "routes/login-redirect",
+        "parentId": "layouts/auth-layout",
+        "file": "routes/login-redirect.tsx",
+        "path": "login"
+      },
+      "routes/register": {
+        "id": "routes/register",
+        "parentId": "layouts/auth-layout",
+        "file": "routes/register.tsx",
+        "path": "register"
+      },
+      "routes/auth-callback": {
+        "id": "routes/auth-callback",
+        "parentId": "layouts/public-layout",
+        "file": "routes/auth-callback.tsx",
+        "path": "auth/callback"
+      },
+      "routes/unauthorized": {
+        "id": "routes/unauthorized",
+        "parentId": "layouts/public-layout",
+        "file": "routes/unauthorized.tsx",
+        "path": "unauthorized"
+      },
+      "layouts/app-layout": {
+        "id": "layouts/app-layout",
+        "parentId": "root",
+        "file": "layouts/app-layout.tsx"
+      },
+      "routes/dashboard": {
+        "id": "routes/dashboard",
+        "parentId": "layouts/app-layout",
+        "file": "routes/dashboard.tsx",
+        "path": "dashboard"
+      },
+      "routes/presupuestos": {
+        "id": "routes/presupuestos",
+        "parentId": "layouts/app-layout",
+        "file": "routes/presupuestos.tsx",
+        "path": "presupuestos"
+      },
+      "routes/clientes": {
+        "id": "routes/clientes",
+        "parentId": "layouts/app-layout",
+        "file": "routes/clientes.tsx",
+        "path": "clientes"
+      },
+      "routes/productos": {
+        "id": "routes/productos",
+        "parentId": "layouts/app-layout",
+        "file": "routes/productos.tsx",
+        "path": "productos"
+      },
+      "routes/productos-tipos": {
+        "id": "routes/productos-tipos",
+        "parentId": "layouts/app-layout",
+        "file": "routes/productos-tipos.tsx",
+        "path": "productos/tipos"
+      },
+      "routes/kits": {
+        "id": "routes/kits",
+        "parentId": "layouts/app-layout",
+        "file": "routes/kits.tsx",
+        "path": "kits"
+      },
+      "routes/config-permisos": {
+        "id": "routes/config-permisos",
+        "parentId": "layouts/app-layout",
+        "file": "routes/config-permisos.tsx",
+        "path": "config/permisos"
+      },
+      "routes/permisos-usuarios": {
+        "id": "routes/permisos-usuarios",
+        "parentId": "layouts/app-layout",
+        "file": "routes/permisos-usuarios.tsx",
+        "path": "config/permisos/usuarios"
+      },
+      "routes/config-general": {
+        "id": "routes/config-general",
+        "parentId": "layouts/app-layout",
+        "file": "routes/config-general.tsx",
+        "path": "config/general"
+      }
+    },
+    "routeDiscovery": {
+      "mode": "lazy",
+      "manifestPath": "/__manifest"
+    },
+    "serverBuildFile": "index.js",
+    "serverModuleFormat": "esm",
+    "ssr": true,
+    "subResourceIntegrity": false,
+    "allowedActionOrigins": false,
+    "unstable_routeConfig": [
+      {
+        "id": "root",
+        "path": "",
+        "file": "root.tsx",
+        "children": [
+          {
+            "file": "layouts/public-layout.tsx",
+            "children": [
+              {
+                "file": "layouts/auth-layout.tsx",
+                "children": [
+                  {
+                    "file": "routes/login.tsx",
+                    "index": true
+                  },
+                  {
+                    "file": "routes/login-redirect.tsx",
+                    "path": "login"
+                  },
+                  {
+                    "file": "routes/register.tsx",
+                    "path": "register"
+                  }
+                ]
+              },
+              {
+                "file": "routes/auth-callback.tsx",
+                "path": "auth/callback"
+              },
+              {
+                "file": "routes/unauthorized.tsx",
+                "path": "unauthorized"
+              }
+            ]
+          },
+          {
+            "file": "layouts/app-layout.tsx",
+            "children": [
+              {
+                "file": "routes/dashboard.tsx",
+                "path": "dashboard"
+              },
+              {
+                "file": "routes/presupuestos.tsx",
+                "path": "presupuestos"
+              },
+              {
+                "file": "routes/clientes.tsx",
+                "path": "clientes"
+              },
+              {
+                "file": "routes/productos.tsx",
+                "path": "productos"
+              },
+              {
+                "file": "routes/productos-tipos.tsx",
+                "path": "productos/tipos"
+              },
+              {
+                "file": "routes/kits.tsx",
+                "path": "kits"
+              },
+              {
+                "file": "routes/config-permisos.tsx",
+                "path": "config/permisos"
+              },
+              {
+                "file": "routes/permisos-usuarios.tsx",
+                "path": "config/permisos/usuarios"
+              },
+              {
+                "file": "routes/config-general.tsx",
+                "path": "config/general"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "viteConfig": {
+    "build": {
+      "assetsDir": "assets"
+    }
+  }
+}

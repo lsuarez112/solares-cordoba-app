@@ -1,5 +1,4 @@
 import { create } from "zustand"
-import { z } from "zod"
 import {
   ProductSchema,
   ProductCategorySchema,
@@ -11,6 +10,7 @@ import type {
 } from "~/domain/products/products.schemas"
 import { devLog } from "~/lib/dev-log"
 import { parseProductsFromViewRows } from "~/lib/products/map-product-view-row"
+import { formValuesToProductPayload } from "~/lib/products/product-form.utils"
 import {
   PRODUCT_TABLE_SELECT,
   PRODUCT_VIEW_SELECT,
@@ -123,30 +123,9 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
     devLog("[products-store] createProduct →", values)
     const supabase = createClient()
 
-    const generic_properties = Object.fromEntries(
-      (values.generic_properties ?? []).map(({ key, value }) => [key, value]),
-    )
-
     const { data, error } = await supabase
       .from("products")
-      .insert({
-        product_code: values.product_code,
-        name: values.name,
-        short_desc: values.short_desc ?? null,
-        description: values.description ?? null,
-        category_id: values.category_id ?? null,
-        grid_type: values.grid_type ?? null,
-        supplier_id: values.supplier_id ?? null,
-        supplier_sku: values.supplier_sku?.trim() || null,
-        price_usd: values.price_usd,
-        cost_usd: values.cost_usd ?? null,
-        stock: values.stock,
-        stock_alert_at: values.stock_alert_at ?? null,
-        is_composite: values.is_composite,
-        active: values.active,
-        links: values.links,
-        generic_properties,
-      })
+      .insert(formValuesToProductPayload(values))
       .select(PRODUCT_TABLE_SELECT)
       .single()
 
@@ -172,30 +151,9 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
     devLog("[products-store] updateProduct →", { id, values })
     const supabase = createClient()
 
-    const generic_properties = Object.fromEntries(
-      (values.generic_properties ?? []).map(({ key, value }) => [key, value]),
-    )
-
     const { data, error } = await supabase
       .from("products")
-      .update({
-        product_code: values.product_code,
-        name: values.name,
-        short_desc: values.short_desc ?? null,
-        description: values.description ?? null,
-        category_id: values.category_id ?? null,
-        grid_type: values.grid_type ?? null,
-        supplier_id: values.supplier_id ?? null,
-        supplier_sku: values.supplier_sku?.trim() || null,
-        price_usd: values.price_usd,
-        cost_usd: values.cost_usd ?? null,
-        stock: values.stock,
-        stock_alert_at: values.stock_alert_at ?? null,
-        is_composite: values.is_composite,
-        active: values.active,
-        links: values.links,
-        generic_properties,
-      })
+      .update(formValuesToProductPayload(values))
       .eq("id", id)
       .select(PRODUCT_TABLE_SELECT)
       .single()

@@ -1,5 +1,4 @@
-import { CatalogBrowsePage } from "~/components/catalog/catalog-browse-page"
-import { KITS_COLUMNS } from "~/data/catalog-mocks"
+import { PlaceholderPage } from "~/components/pages/placeholder-page"
 import { metaFromRouteHandle } from "~/routing/route-page"
 import type { AppRouteHandle } from "~/routing/route-handle.types"
 
@@ -16,11 +15,9 @@ export function meta({ matches }: Route.MetaArgs) {
 
 export default function KitsPage() {
   return (
-    <CatalogBrowsePage
+    <PlaceholderPage
       title="Kits"
-      description="Exploración de kits prearmados."
-      columns={KITS_COLUMNS}
-      data={[]}
+      description="Kits predefinidos y reglas de armado (se implementa en F2)."
     />
   )
 }

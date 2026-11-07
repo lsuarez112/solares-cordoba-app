@@ -1,8 +1,5 @@
 import type { Product } from "~/domain/products/products.schemas"
-import {
-  parseProductGenericProperties,
-  parseProductLinks,
-} from "~/lib/products/product-display.utils"
+import { parseProductGenericProperties } from "~/lib/products/product-display.utils"
 import { GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
 
 const COPY_SEPARATOR = "─".repeat(36)
@@ -13,21 +10,19 @@ function getProps(product: Product) {
   )
 }
 
-function getLinks(product: Product) {
-  return parseProductLinks(product.links)
-}
-
-export function buildWhatsAppUrl(text: string): string {
+export function buildWhatsAppUrl(text: string, phone?: string | null): string {
   const encoded = encodeURIComponent(text)
-  return `https://wa.me/?text=${encoded}`
+  const digits = phone?.replace(/\D/g, "") ?? ""
+  return digits
+    ? `https://wa.me/${digits}?text=${encoded}`
+    : `https://wa.me/?text=${encoded}`
 }
 
 export function buildWhatsAppText(product: Product): string {
   const props = getProps(product)
-  const links = getLinks(product)
   const lines: string[] = []
 
-  lines.push(`☀️ *${product.name}*`)
+  lines.push(`*${product.name}*`)
 
   const meta = [
     product.product_code,
@@ -49,33 +44,18 @@ export function buildWhatsAppText(product: Product): string {
   if (props.length > 0) {
     lines.push("*Especificaciones técnicas*")
     props.forEach(([key, value]) => {
-      lines.push(`• ${key}: ${value}`)
+      lines.push(`- ${key}: ${value}`)
     })
     lines.push("")
   }
 
-  lines.push("*Precio*")
-  lines.push(`💵 USD ${product.price_usd.toFixed(2)}`)
-
-  if (product.stock_alert_at != null) {
-    lines.push(`📦 Stock: ${product.stock} (alerta en ${product.stock_alert_at})`)
-  } else if (product.stock > 0) {
-    lines.push(`📦 Stock: ${product.stock}`)
-  }
-
-  if (links.length > 0) {
-    lines.push("")
-    links.forEach(({ label, url }) => {
-      lines.push(`📎 ${label}: ${url}`)
-    })
-  }
+  lines.push(`Precio: USD ${product.price_usd.toFixed(2)}`)
 
   return lines.join("\n")
 }
 
 export function buildCopyText(product: Product): string {
   const props = getProps(product)
-  const links = getLinks(product)
   const lines: string[] = []
 
   lines.push(product.name.toUpperCase())
@@ -110,27 +90,5 @@ export function buildCopyText(product: Product): string {
   lines.push("PRECIO")
   lines.push(`Venta:  USD ${product.price_usd.toFixed(2)}`)
 
-  if (product.stock > 0 || product.stock_alert_at != null) {
-    lines.push(`Stock: ${product.stock}`)
-    if (product.stock_alert_at != null) {
-      lines.push(`Alerta: ${product.stock_alert_at}`)
-    }
-  }
-
-  if (links.length > 0) {
-    lines.push("")
-    lines.push("LINKS")
-    const maxLabel = Math.max(...links.map((l) => l.label.length))
-    links.forEach(({ label, url }) => {
-      lines.push(`${label.padEnd(maxLabel + 2)}${url}`)
-    })
-  }
-
   return lines.join("\n")
 }
-
-/** @deprecated Usar buildCopyText */
-export const buildProductSpecsClipboardText = buildCopyText
-
-/** @deprecated Usar buildWhatsAppText */
-export const buildProductWhatsAppText = buildWhatsAppText
