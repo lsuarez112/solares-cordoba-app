@@ -17,6 +17,7 @@ export const ModuleSchema = z.enum([
   "technical_visits",
   "warranties",
   "user_profiles",
+  "companies",
   "configs",
   "exchange_rates",
   "user_settings",

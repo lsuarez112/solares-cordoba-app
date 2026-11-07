@@ -30,12 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select"
+import type { UserCompanySummary } from "~/domain/user-companies/user-companies.types"
 import type { AvailableRole, User } from "~/domain/users/users.types"
 import type { UserStatusFilter } from "~/domain/users/users.types"
 
 type UsersDataTableProps = {
   data: User[]
   availableRoles: AvailableRole[]
+  companiesByUserId?: Record<string, UserCompanySummary[]>
   statusFilter: UserStatusFilter
   loading?: boolean
   onRefresh?: () => void
@@ -44,13 +46,14 @@ type UsersDataTableProps = {
 export function UsersDataTable({
   data,
   availableRoles,
+  companiesByUserId = {},
   statusFilter,
   loading = false,
   onRefresh,
 }: UsersDataTableProps) {
   const columns = React.useMemo(
-    () => createUsersTableColumns(availableRoles),
-    [availableRoles],
+    () => createUsersTableColumns({ availableRoles, companiesByUserId }),
+    [availableRoles, companiesByUserId],
   )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],

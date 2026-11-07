@@ -3,12 +3,14 @@
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 
+import { UserCompaniesBadges } from "~/components/users/user-companies-badges"
 import { UserNameEditLink } from "~/components/users/user-name-edit-link"
 import { UserRowActions } from "~/components/users/user-row-actions"
 import { UserRoleBadge } from "~/components/users/user-role-badge"
 import { UserStatusBadge } from "~/components/users/user-status-badge"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import type { UserCompanySummary } from "~/domain/user-companies/user-companies.types"
 import type { AvailableRole, User } from "~/domain/users/users.types"
 import { cn } from "~/lib/utils"
 
@@ -49,9 +51,15 @@ function SortableHeader({
   )
 }
 
-export function createUsersTableColumns(
-  availableRoles: AvailableRole[],
-): ColumnDef<User>[] {
+type CreateUsersTableColumnsOptions = {
+  availableRoles: AvailableRole[]
+  companiesByUserId?: Record<string, UserCompanySummary[]>
+}
+
+export function createUsersTableColumns({
+  availableRoles,
+  companiesByUserId = {},
+}: CreateUsersTableColumnsOptions): ColumnDef<User>[] {
   return [
   {
     accessorKey: "fullName",
@@ -91,6 +99,15 @@ export function createUsersTableColumns(
       <SortableHeader column={column} title="Actualizado" />
     ),
     cell: ({ row }) => formatDateTime(row.original.updatedAt),
+  },
+  {
+    id: "companies",
+    header: "Empresas",
+    cell: ({ row }) => (
+      <UserCompaniesBadges
+        companies={companiesByUserId[row.original.id] ?? []}
+      />
+    ),
   },
   {
     accessorKey: "notificationsEnabled",

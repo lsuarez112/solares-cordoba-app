@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 import {
   BoxesIcon,
+  Building2Icon,
   ChartLineIcon,
   ClipboardListIcon,
   FileBarChartIcon,
@@ -35,6 +36,7 @@ export const SIDEBAR_NAV_ICON_MAP: Record<SidebarIconKey, LucideIcon> = {
   clipboard: ClipboardListIcon,
   sales: TrendingUpIcon,
   shield: ShieldIcon,
+  building: Building2Icon,
 }
 
 export function getSidebarNavIcon(

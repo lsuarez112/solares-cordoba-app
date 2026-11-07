@@ -152,6 +152,29 @@ function DialogDescription({
   )
 }
 
+function DialogScrollableContent({
+  className,
+  fill = false,
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** Ocupa el espacio restante en diálogos con header/footer fijos (`p-0`). */
+  fill?: boolean
+}) {
+  return (
+    <div
+      data-slot="dialog-scrollable-content"
+      className={cn(
+        "no-scrollbar overflow-y-auto",
+        fill
+          ? "min-h-0 flex-1 px-4 py-4"
+          : "-mx-4 max-h-[50vh] px-4",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 export {
   Dialog,
   DialogClose,
@@ -161,6 +184,7 @@ export {
   DialogHeader,
   DialogOverlay,
   DialogPortal,
+  DialogScrollableContent,
   DialogTitle,
   DialogTrigger,
 }

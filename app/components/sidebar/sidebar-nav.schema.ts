@@ -17,6 +17,7 @@ export type SidebarIconKey =
   | "clipboard"
   | "sales"
   | "shield"
+  | "building"
 
 type SidebarNavAccess = {
   access?: ModuleAccess[]

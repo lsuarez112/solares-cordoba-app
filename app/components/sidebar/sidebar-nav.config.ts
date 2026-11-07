@@ -183,6 +183,15 @@ export const SIDEBAR_NAV: SidebarNavConfig = {
           ],
         },
         {
+          id: "config-empresas",
+          type: "link",
+          title: "Empresas",
+          description: "Directorio de empresas",
+          to: "/config/empresas",
+          icon: "building",
+          access: [{ module: "companies", action: "read" }],
+        },
+        {
           id: "config-general",
           type: "link",
           title: "Configuración general",

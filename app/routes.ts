@@ -31,6 +31,7 @@ export default [
     route("config/usuario", "routes/config-usuario.tsx"),
     route("config/permisos", "routes/config-permisos.tsx"),
     route("config/permisos/usuarios", "routes/permisos-usuarios.tsx"),
+    route("config/empresas", "routes/config-empresas.tsx"),
     route("config/general", "routes/config-general.tsx"),
   ]),
 ] satisfies RouteConfig

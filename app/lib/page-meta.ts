@@ -1,4 +1,4 @@
-export const APP_TITLE = "Solares Córdoba - Gestión"
+export const APP_TITLE = "JRJ Gestión"
 
 export function pageTitle(page?: string): string {
   if (!page) return APP_TITLE

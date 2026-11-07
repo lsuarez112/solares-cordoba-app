@@ -68,6 +68,7 @@ export const PERMISSION_SECTIONS: PermissionSectionConfig[] = [
     label: "Administración",
     modules: [
       { module: "user_profiles", label: "Usuarios" },
+      { module: "companies", label: "Empresas" },
       { module: "configs", label: "Configuración" },
       { module: "exchange_rates", label: "Tipos de cambio" },
       { module: "user_settings", label: "Preferencias de usuario" },
