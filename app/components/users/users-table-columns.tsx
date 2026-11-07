@@ -1,16 +1,14 @@
 "use client"
 
-import type { Column, ColumnDef } from "@tanstack/react-table"
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
+import type { ColumnDef } from "@tanstack/react-table"
+import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 
 import { UserNameEditLink } from "~/components/users/user-name-edit-link"
 import { UserRowActions } from "~/components/users/user-row-actions"
 import { UserRoleBadge } from "~/components/users/user-role-badge"
 import { UserStatusBadge } from "~/components/users/user-status-badge"
 import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
 import type { AvailableRole, User } from "~/domain/users/users.types"
-import { cn } from "~/lib/utils"
 
 const dateTimeFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "short",
@@ -22,32 +20,6 @@ function formatDateTime(value: string | null) {
   return dateTimeFormatter.format(new Date(value))
 }
 
-function SortableHeader({
-  column,
-  title,
-}: {
-  column: Column<User, unknown>
-  title: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      className={cn("h-8 px-0")}
-      onClick={() => column.toggleSorting(sorted === "asc")}
-    >
-      {title}
-      {sorted === "asc" ? (
-        <ArrowUp data-icon="inline-end" />
-      ) : sorted === "desc" ? (
-        <ArrowDown data-icon="inline-end" />
-      ) : (
-        <ArrowUpDown data-icon="inline-end" />
-      )}
-    </Button>
-  )
-}
 
 export function createUsersTableColumns(
   availableRoles: AvailableRole[],

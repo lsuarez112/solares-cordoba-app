@@ -1,11 +1,10 @@
 "use client"
 
-import type { Column, ColumnDef } from "@tanstack/react-table"
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
+import type { ColumnDef } from "@tanstack/react-table"
+import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 import { ProductNameLink } from "~/components/products/product-name-link"
 import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
 import type { Product } from "~/domain/products/products.schemas"
 import { getCategoryIcon } from "~/lib/categories/category-icons"
 import { parseProductGenericProperties } from "~/lib/products/product-display.utils"
@@ -17,34 +16,6 @@ import { hasNoPrice } from "~/lib/products/product-list.utils"
 import { truncateText } from "~/lib/text.utils"
 import { cn } from "~/lib/utils"
 
-function SortableHeader({
-  column,
-  title,
-  className,
-}: {
-  column: Column<Product, unknown>
-  title: string
-  className?: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      className={cn("h-8 px-0", className)}
-      onClick={() => column.toggleSorting(sorted === "asc")}
-    >
-      {title}
-      {sorted === "asc" ? (
-        <ArrowUp data-icon="inline-end" />
-      ) : sorted === "desc" ? (
-        <ArrowDown data-icon="inline-end" />
-      ) : (
-        <ArrowUpDown data-icon="inline-end" />
-      )}
-    </Button>
-  )
-}
 
 const DESCRIPTION_MAX_LENGTH = 60
 

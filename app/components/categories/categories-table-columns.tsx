@@ -1,7 +1,7 @@
 "use client"
 
-import type { Column, ColumnDef } from "@tanstack/react-table"
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
+import type { ColumnDef } from "@tanstack/react-table"
+import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 import { Link } from "react-router"
 
 import { CategoryNameLink } from "./category-name-link"
@@ -9,36 +9,7 @@ import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import type { Category } from "~/domain/categories/categories.schemas"
 import { getCategoryIcon } from "~/lib/categories/category-icons"
-import { cn } from "~/lib/utils"
 
-function SortableHeader({
-  column,
-  title,
-  className,
-}: {
-  column: Column<CategoryRow, unknown>
-  title: string
-  className?: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      className={cn("h-8 px-0", className)}
-      onClick={() => column.toggleSorting(sorted === "asc")}
-    >
-      {title}
-      {sorted === "asc" ? (
-        <ArrowUp data-icon="inline-end" />
-      ) : sorted === "desc" ? (
-        <ArrowDown data-icon="inline-end" />
-      ) : (
-        <ArrowUpDown data-icon="inline-end" />
-      )}
-    </Button>
-  )
-}
 
 export type CategoryRow = Category & {
   productCount: number
