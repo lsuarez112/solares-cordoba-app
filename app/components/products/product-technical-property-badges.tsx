@@ -1,6 +1,7 @@
 import { Cpu } from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
+import { formatPropertyValue } from "~/lib/products/product-display.utils"
 import { cn } from "~/lib/utils"
 
 type ProductTechnicalPropertyBadgesProps = {
@@ -44,7 +45,7 @@ export function ProductTechnicalPropertyBadges({
           {compact ? null : (
             <Cpu data-icon="inline-start" className="text-violet-600" />
           )}
-          {compact ? value : `${key}: ${value}`}
+          {compact ? formatPropertyValue(key, value) : `${key}: ${value}`}
         </Badge>
       ))}
       {hidden > 0 ? (

@@ -23,3 +23,18 @@ export function parseProductGenericProperties(
     }),
   )
 }
+
+const PROPERTY_UNITS: Record<string, string> = {
+  potencia_wp: "Wp",
+  potencia_w: "W",
+  pv_max_w: "W",
+  capacidad_kwh: "kWh",
+  hp: "HP",
+  mppt: "MPPT",
+}
+
+/** Valor de una propiedad con su unidad (ej. potencia_wp 460 → "460 Wp"). */
+export function formatPropertyValue(key: string, value: string): string {
+  const unit = PROPERTY_UNITS[key]
+  return unit && value && !value.endsWith(unit) ? `${value} ${unit}` : value
+}

@@ -60,7 +60,7 @@ Fecha: 2026-11-06 · Base: `SPEC-V0.md` · Estado: **v2, con decisiones del 2026
 
 ## 3. Qué se crea
 
-- **DB**: `app_settings`, `kits`, `kit_items`, `assembly_rules`, `clients`, `budgets`, `budget_revisions`, `budget_items`, `ai_requests`, `price_imports`, la secuencia de numeración, los helpers, RLS, las RPCs, el bucket `budget-pdfs` y la vista `v_kits_with_totals`.
+- **DB**: `app_settings`, `kits`, `kit_items`, `assembly_rules`, `kit_options`, `solar_zones`, `appliance_presets`, `clients`, `quotes` (cada fila es una revisión), `quote_items`, `ai_requests`, `price_imports`, la secuencia de numeración, los helpers, RLS, las RPCs, el bucket `quote-pdfs` y la vista `v_kits_with_totals`.
 - **Edge Functions**: `suggest-quote` (IA) y `fetch-exchange-rate` (dolarapi).
 - **Front**: configuración (empresa, presupuesto y cotización), ABM de kits y reglas, actualización masiva de precios, clientes (ficha, aviso de duplicado y unificación), wizard mobile de presupuesto, listado y detalle con revisiones, PDF, mensaje WhatsApp, Web Share y PWA.
 - **Tests**: Vitest para la lógica pura (totales, parser de precios, dimensionamiento, mensaje, teléfono).
@@ -73,15 +73,15 @@ Fecha: 2026-11-06 · Base: `SPEC-V0.md` · Estado: **v2, con decisiones del 2026
 |---|---|---|
 | 4.1 | Roles | RBAC del repo + rol `vendedor` (D2). RLS de tablas nuevas según la spec: usuario autenticado y activo (`is_active_user()`). El acceso fino queda en el front |
 | 4.2 | Empresa | Tabla `companies` con **una fila**. `app_settings` guarda solo parámetros de presupuesto. El PDF toma razón social, CUIT, contacto y logo de `companies` |
-| 4.3 | `settings` → **`app_settings`** | Fila única (`check (id = 1)`): `default_validity_days`, `budget_footer`, `number_prefix`, `rate_mode (api/manual)`. El IVA por defecto es fijo (21 %) por D7 |
-| 4.4 | `quotes` → **`budgets`** | Coincide con el módulo de permisos `budgets` y la ruta `/presupuestos`. La Edge Function conserva el nombre `suggest-quote` |
+| 4.3 | `settings` → **`app_settings`** | Fila única (`check (id = 1)`): `default_validity_days`, `default_iva_pct` (21), `quote_footer`, `number_prefix`, `rate_mode (api/manual)` y las constantes de dimensionamiento (η, HSP, tolerancia, DoD) |
+| 4.4 | `quotes` (spec) | Se usa **`quotes`**, como la spec y la DB. El módulo de permisos `budgets` pasa a `quotes`. Cada fila de `quotes` es una revisión: comparten `number` y llevan `revision` (0, 1, 2…) |
 | 4.5 | `code` / `attributes` → **`product_code` / `generic_properties`** | D4. En el contrato con la IA el campo se llama `kit_id` (ver §5), así que el modelo no maneja códigos de producto en el flujo principal |
 | 4.6 | Cotización | Se mantiene `usd_to_ars`. Se agregan `source`, `fetched_at` y `created_by`. La cotización vigente sale de `current_exchange_rate()` según `app_settings.rate_mode` |
 | 4.7 | Kits | `kits` (`name`, `grid_type`, `kwp`, `battery_kwh`, `inverter_kw`, `notes`, `active`, `sort_order`) + `kit_items` (`kit_id`, `product_id`, `qty`). La vista `v_kits_with_totals` calcula el precio del kit desde los productos |
 | 4.8 | Numeración | Secuencia asignada **al emitir**. Display `P-000042` y `P-000042-R1` (prefijo configurable) |
 | 4.9 | PWA | Manifest + íconos + service worker mínimo, sin `vite-plugin-pwa` (no encaja con RR7 SSR y V0 no pide modo offline) |
 | 4.10 | Deploy | Vercel con el preset `@vercel/react-router`. Variables `VITE_SUPABASE_*` en Vercel. Las claves de IA quedan **solo** en los secrets de Supabase |
-| 4.11 | Importes | Los calcula siempre la DB al emitir (RPC `issue_budget`). El cliente calcula solo para la vista previa, con la misma fórmula testeada |
+| 4.11 | Importes | Los calcula siempre la DB al emitir (RPC `issue_quote`). El cliente calcula solo para la vista previa, con la misma fórmula testeada |
 | 4.12 | Import de precios | Parseo y preview en el cliente. Se aplica con la RPC `apply_price_import`, que actualiza y registra en `price_imports` en una transacción, en lotes de 500 |
 | 4.13 | IA + structured output | En Sonnet 5.5 y Haiku 5.5 el `tool_choice` forzado (`any`/`tool`) da error 400. Se usa `output_config.format` (JSON schema) para la respuesta y `strict: true` en las tools |
 
@@ -168,11 +168,11 @@ Migraciones (todas en `supabase/migrations/`):
 3. `products.price_updated_at` + trigger; columnas nuevas de `exchange_rates`; `current_exchange_rate()`; vista de productos recreada.
 4. `app_settings`, `kits`, `kit_items`, `assembly_rules`, `v_kits_with_totals`.
 5. `clients` con `phone_normalized`.
-6. `budgets`, `budget_revisions`, `budget_items` y la secuencia de numeración.
+6. `quotes` (una fila por revisión), `quote_items` y la secuencia de numeración.
 7. `ai_requests`, `price_imports`.
 8. RLS + trigger que impide modificar revisiones emitidas.
-9. RPCs: `issue_budget(revision_id, iva_pct)`, `create_budget_revision(budget_id)`, `duplicate_budget(budget_id)`, `create_budget_from_kit(client_id, kit_id, input)`, `apply_price_import(rows, file_name)`, `find_clients_by_phone(phone)`, `merge_clients(keep_id, merge_ids)`, `suggest_kit_candidates(params)` (el filtro del paso [4]).
-10. Bucket `budget-pdfs`; seed del rol `vendedor` y de `app_settings`.
+9. RPCs: `issue_quote(quote_id, iva_pct)`, `create_quote_revision(quote_id)`, `duplicate_quote(quote_id)`, `create_quote_from_kit(client_id, kit_id, input, option_codes)`, `kit_bom(kit_id, option_codes)`, `apply_price_import(rows, file_name)`, `find_clients_by_phone(phone)`, `merge_clients(keep_id, merge_ids)`, `suggest_kit_candidates(params)` (el filtro del paso [4]).
+10. Bucket `quote-pdfs`; permisos de roles; seed de `app_settings`, zonas, equipos, reglas, categorías, propiedades y kits.
 
 **Cómo probar:** `supabase db reset` en local (Docker) o en un branch, y correr los scripts de `supabase/tests/`:
 - emitir un presupuesto, cambiar el precio y comprobar que el emitido no cambia;
@@ -208,7 +208,7 @@ Migraciones (todas en `supabase/migrations/`):
 
 ### F5 — PDF + WhatsApp + Web Share
 
-- `@react-pdf/renderer` con lazy import, subida a `budget-pdfs/<budget>/<revision>.pdf` y URL firmada.
+- `@react-pdf/renderer` con lazy import, subida a `quote-pdfs/<quote_id>.pdf` y URL firmada.
 - Mensaje compacto (§8 de la spec) con formato `es-AR`; copiar, `wa.me` con el teléfono del cliente, `navigator.share({ files })` con descarga como fallback.
 
 **Cómo probar:** snapshot del mensaje del ejemplo de la spec; en el celular, compartir el PDF a WhatsApp.
