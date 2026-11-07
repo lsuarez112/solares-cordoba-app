@@ -3,6 +3,7 @@
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { ProductNameLink } from "~/components/products/product-name-link"
+import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import type { Product } from "~/domain/products/products.schemas"
@@ -111,6 +112,18 @@ export function productsTableColumns(
         )
       )
     },
+  },
+  {
+    id: "properties",
+    header: "Propiedades",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <ProductTechnicalPropertyBadges
+        items={parseProductGenericProperties(row.original.generic_properties)}
+        max={3}
+        compact
+      />
+    ),
   },
   {
     id: "categoryId",

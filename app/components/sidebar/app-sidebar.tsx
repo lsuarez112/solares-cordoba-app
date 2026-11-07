@@ -1,93 +1,146 @@
 import { Link, useLocation } from "react-router"
-import { LogOutIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon, SunIcon } from "lucide-react"
 
-import { Button } from "~/components/ui/button"
-import { ScrollArea } from "~/components/ui/scroll-area"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "~/components/ui/sidebar"
 import { useAuth } from "~/hooks/use-auth"
 
-import { renderSectionEntry } from "./app-sidebar-nav"
+import { NavEntry } from "./app-sidebar-nav"
 import { SIDEBAR_NAV } from "./sidebar-nav.config"
 import { filterSidebarNavByPermissions } from "./sidebar-nav.utils"
 
+function initials(name: string) {
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "U"
+  )
+}
+
+function NavUser() {
+  const { profile, supabaseUser, logout } = useAuth()
+  const { isMobile } = useSidebar()
+  if (!profile) return null
+
+  const name = profile.full_name?.trim() || "Usuario"
+  const email = supabaseUser?.email ?? ""
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent text-xs font-medium">
+                {initials(name)}
+              </span>
+              <span className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{name}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {profile.role?.name ?? email}
+                </span>
+              </span>
+              <ChevronsUpDownIcon className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+            side={isMobile ? "bottom" : "right"}
+            align="end"
+            sideOffset={4}
+          >
+            <DropdownMenuLabel className="font-normal">
+              <div className="grid text-sm leading-tight">
+                <span className="truncate font-medium">{name}</span>
+                {email ? (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {email}
+                  </span>
+                ) : null}
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => void logout()}>
+              <LogOutIcon />
+              Cerrar sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
+
 export function AppSidebar() {
   const { pathname } = useLocation()
-  const { profile, logout } = useAuth()
+  const { profile } = useAuth()
 
   const nav = profile
     ? filterSidebarNavByPermissions(SIDEBAR_NAV, profile)
     : { sections: [] }
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader className="bg-background">
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild title="Solares Córdoba">
+            <SidebarMenuButton size="lg" asChild tooltip="Solares Córdoba">
               <Link to="/dashboard">
-                <img
-                  src="/favicon.svg"
-                  alt=""
-                  className="size-4 shrink-0"
-                  aria-hidden
-                />
-                <span className="truncate font-semibold">Solares Córdoba</span>
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <SunIcon className="size-4" />
+                </span>
+                <span className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Solares Córdoba</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Presupuestos
+                  </span>
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="min-h-0 flex-1 overflow-hidden bg-background">
-        <ScrollArea className="h-full min-h-0">
-          {nav.sections.map((section) => (
-            <SidebarGroup key={section.id}>
-              <SidebarGroupLabel title={section.description}>
-                {section.label}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {section.entries.map((entry) =>
-                    renderSectionEntry(pathname, entry),
-                  )}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
-        </ScrollArea>
+      <SidebarContent>
+        {nav.sections.map((section) => (
+          <SidebarGroup key={section.id}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarMenu>
+              {section.entries.map((entry) => (
+                <NavEntry key={entry.id} pathname={pathname} entry={entry} />
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t bg-background p-2">
-        {profile && (
-          <div className="flex flex-col gap-2 group-data-[collapsible=icon]:items-center">
-            <p className="truncate px-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-              {profile.full_name ?? "Usuario"}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-0"
-              onClick={logout}
-              title="Cerrar sesión"
-            >
-              <LogOutIcon className="hidden group-data-[collapsible=icon]:block" />
-              <span className="group-data-[collapsible=icon]:hidden">Salir</span>
-            </Button>
-          </div>
-        )}
+      <SidebarFooter>
+        <NavUser />
       </SidebarFooter>
 
       <SidebarRail />

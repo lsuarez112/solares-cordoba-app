@@ -1,128 +1,73 @@
-import type { ReactNode } from "react"
+import { ChevronRightIcon } from "lucide-react"
 import { Link } from "react-router"
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible"
 import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "~/components/ui/sidebar"
 
 import { getSidebarNavIcon } from "./sidebar-nav-icons"
 import type {
   SidebarNavLink,
-  SidebarNavPlaceholder,
   SidebarNavSectionEntry,
   SidebarNavSubmenu,
-  SidebarNavSubmenuItem,
 } from "./sidebar-nav.schema"
 import { isRouteActive } from "./sidebar-nav.utils"
 
-function renderSubmenuItem(
-  pathname: string,
-  item: SidebarNavSubmenuItem,
-): ReactNode {
-  if (item.type === "link") {
-    return renderLinkAsSubButton(pathname, item)
-  }
-  return renderPlaceholderAsSubButton(item)
-}
-
-function renderLinkAsSubButton(
-  pathname: string,
-  item: SidebarNavLink,
-): ReactNode {
-  const Icon = getSidebarNavIcon(item.icon)
-  return (
-    <SidebarMenuSubItem key={item.id}>
-      <SidebarMenuSubButton
-        asChild
-        isActive={pathname === item.to}
-        title={item.description ?? item.title}
-      >
-        <Link to={item.to}>
-          {Icon ? <Icon /> : null}
-          <span>{item.title}</span>
-        </Link>
-      </SidebarMenuSubButton>
-    </SidebarMenuSubItem>
-  )
-}
-
-function renderPlaceholderAsSubButton(
-  item: SidebarNavPlaceholder,
-): ReactNode {
-  return (
-    <SidebarMenuSubItem key={item.id}>
-      <SidebarMenuSubButton asChild>
-        <button
-          type="button"
-          disabled
-          className="w-full"
-          title={item.description}
-        >
-          <span>{item.title}</span>
-        </button>
-      </SidebarMenuSubButton>
-    </SidebarMenuSubItem>
-  )
-}
-
-function renderSubmenu(pathname: string, entry: SidebarNavSubmenu): ReactNode {
+function NavLinkItem({
+  pathname,
+  entry,
+}: {
+  pathname: string
+  entry: SidebarNavLink
+}) {
   const Icon = getSidebarNavIcon(entry.icon)
-  const anyChildActive = entry.items.some(
-    (i) => i.type === "link" && isRouteActive(pathname, i.to),
-  )
-  const hubActive = entry.to ? isRouteActive(pathname, entry.to) : false
-  const isParentActive = entry.to ? hubActive : anyChildActive
-
   return (
-    <SidebarMenuItem key={entry.id} className="mb-2">
-      {entry.to ? (
-        <SidebarMenuButton
-          asChild
-          isActive={isParentActive}
-          tooltip={entry.title}
-          title={entry.description}
-        >
-          <Link to={entry.to}>
-            {Icon ? <Icon /> : null}
-            <span>{entry.title}</span>
-          </Link>
-        </SidebarMenuButton>
-      ) : (
-        <SidebarMenuButton
-          isActive={isParentActive}
-          tooltip={entry.title}
-          title={entry.description}
-        >
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={isRouteActive(pathname, entry.to)}
+        tooltip={entry.title}
+      >
+        <Link to={entry.to}>
           {Icon ? <Icon /> : null}
           <span>{entry.title}</span>
-        </SidebarMenuButton>
-      )}
-      <SidebarMenuSub>
-        {entry.items.map((item) => renderSubmenuItem(pathname, item))}
-      </SidebarMenuSub>
+        </Link>
+      </SidebarMenuButton>
     </SidebarMenuItem>
   )
 }
 
-export function renderSectionEntry(
-  pathname: string,
-  entry: SidebarNavSectionEntry,
-): ReactNode {
-  if (entry.type === "link") {
-    const Icon = getSidebarNavIcon(entry.icon)
+function NavSubmenuItem({
+  pathname,
+  entry,
+}: {
+  pathname: string
+  entry: SidebarNavSubmenu
+}) {
+  const { state, isMobile } = useSidebar()
+  const Icon = getSidebarNavIcon(entry.icon)
+  const links = entry.items.filter(
+    (item): item is SidebarNavLink => item.type === "link",
+  )
+  const isActive = links.some((item) => isRouteActive(pathname, item.to))
+
+  // Colapsado (solo íconos): el ícono navega a la ruta principal del submenú.
+  if (state === "collapsed" && !isMobile) {
+    const to = entry.to ?? links[0]?.to
     return (
-      <SidebarMenuItem key={entry.id}>
-        <SidebarMenuButton
-          asChild
-          isActive={isRouteActive(pathname, entry.to)}
-          tooltip={entry.title}
-          title={entry.description ?? entry.title}
-        >
-          <Link to={entry.to}>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild isActive={isActive} tooltip={entry.title}>
+          <Link to={to ?? "#"}>
             {Icon ? <Icon /> : null}
             <span>{entry.title}</span>
           </Link>
@@ -131,5 +76,43 @@ export function renderSectionEntry(
     )
   }
 
-  return renderSubmenu(pathname, entry)
+  return (
+    <Collapsible asChild defaultOpen={isActive} className="group/collapsible">
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton tooltip={entry.title}>
+            {Icon ? <Icon /> : null}
+            <span>{entry.title}</span>
+            <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {links.map((item) => (
+              <SidebarMenuSubItem key={item.id}>
+                <SidebarMenuSubButton asChild isActive={pathname === item.to}>
+                  <Link to={item.to}>
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  )
+}
+
+export function NavEntry({
+  pathname,
+  entry,
+}: {
+  pathname: string
+  entry: SidebarNavSectionEntry
+}) {
+  if (entry.type === "link") {
+    return <NavLinkItem pathname={pathname} entry={entry} />
+  }
+  return <NavSubmenuItem pathname={pathname} entry={entry} />
 }
