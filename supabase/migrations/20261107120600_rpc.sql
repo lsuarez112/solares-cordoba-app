@@ -26,7 +26,7 @@ begin
 
   if old.status = 'issued' then
     if current_setting('app.merging_clients', true) = 'on' then
-      allowed := allowed || 'client_id';
+      allowed := array_append(allowed, 'client_id');
     end if;
     if (to_jsonb(new) - allowed) is distinct from (to_jsonb(old) - allowed) then
       raise exception 'El presupuesto emitido no se puede modificar: creá una revisión'
@@ -44,7 +44,7 @@ $$;
 -- ---------------------------------------------------------------------------
 create or replace function public.kit_bom(p_kit_id uuid, p_option_codes text[] default '{}')
 returns table (product_id uuid, product_code text, name text, qty numeric, price_usd numeric, sort_order int)
-language plpgsql volatile set search_path = public as $
+language plpgsql volatile set search_path = public as $$
 #variable_conflict use_column
 declare
   opt record;

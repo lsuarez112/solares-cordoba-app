@@ -10,8 +10,8 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:push": "supabase db push",
-    "db:types": "supabase gen types typescript --linked > app/lib/supabase/database.types.ts",
+    "db:push": "supabase db push --remote",
+    "db:types": "supabase gen types typescript --remote > app/lib/supabase/database.types.ts",
     "db:dry-run": "node scripts/db/dry-run.mjs",
     "db:seed-catalog": "node scripts/catalog/build-seed.mjs"
   },

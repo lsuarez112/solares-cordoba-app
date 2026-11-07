@@ -159,7 +159,7 @@ begin
 end;
 $$;
 
-do $ begin
+do $$ begin
   if not exists (
     select 1 from pg_trigger
     where tgname = 'on_auth_user_created' and tgrelid = 'auth.users'::regclass
@@ -168,7 +168,7 @@ do $ begin
       after insert on auth.users
       for each row execute function public.handle_new_user();
   end if;
-end $;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Storage: logos de empresa (público)
