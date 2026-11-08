@@ -16,6 +16,7 @@ import { RolesDataTableSkeleton } from "~/components/roles/roles-data-table-skel
 import { RolesTableEmpty } from "~/components/roles/roles-table-empty"
 import { createRolesTableColumns } from "~/components/roles/roles-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
+import { StatusLegend } from "~/components/ui/status-indicator"
 import { DataTableToolbar } from "~/components/ui/data-table-toolbar"
 import type { RoleListItem, RoleStatusFilter } from "~/domain/roles/roles.types"
 
@@ -64,6 +65,8 @@ export function RolesDataTable({
   )
 
   const table = useReactTable({
+    // El estado se muestra como ícono junto al nombre; la columna queda solo para filtrar.
+    initialState: { columnVisibility: { active: false } },
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -121,6 +124,7 @@ export function RolesDataTable({
         showRowCount
         totalCount={data.length}
         rowCountLabel="roles"
+        legend={<StatusLegend />}
       />
     </div>
   )

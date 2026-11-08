@@ -1,7 +1,14 @@
 "use client"
 
 import type { ColumnDef } from "@tanstack/react-table"
-import { AlertTriangle, Copy, MoreHorizontal, Trash2 } from "lucide-react"
+import {
+  AlertTriangle,
+  CircleCheck,
+  CircleMinus,
+  Copy,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -13,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
-import { Switch } from "~/components/ui/switch"
+import { StatusIcon, statusFromActive } from "~/components/ui/status-indicator"
 import type { Kit } from "~/domain/kits/kits.schemas"
 import { GRID_TYPE_COLORS, GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
 import { cn } from "~/lib/utils"
@@ -49,10 +56,11 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
       cell: ({ row }) => (
         <button
           type="button"
-          className="flex max-w-[22rem] min-w-0 items-baseline gap-2 text-left hover:underline"
+          className="flex max-w-[18rem] min-w-0 items-center gap-2 text-left hover:underline"
           onClick={() => o.onOpen(row.original)}
           title={row.original.description ?? undefined}
         >
+          <StatusIcon status={statusFromActive(row.original.active)} />
           <span className="shrink-0 font-mono text-xs text-muted-foreground">
             {row.original.code}
           </span>
@@ -88,7 +96,7 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
       header: ({ column }) => <SortableHeader column={column} title="Fases" />,
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {row.original.phases === "tri" ? "Trifásico" : "Mono"}
+          {row.original.phases === "tri" ? "Tri" : "Mono"}
         </span>
       ),
       filterFn: equalsFilter("phases"),
@@ -178,14 +186,7 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
       header: ({ column }) => (
         <SortableHeader column={column} title="Activo" className="mx-auto" />
       ),
-      cell: ({ row }) => (
-        <Switch
-          checked={row.original.active}
-          onCheckedChange={(active) => o.onToggleActive(row.original, active)}
-          disabled={!o.canUpdate}
-          aria-label="Activo"
-        />
-      ),
+      cell: ({ row }) => <StatusIcon status={statusFromActive(row.original.active)} />,
       filterFn: (row, _id, value) => {
         if (!value) return true
         return value === "active" ? row.original.active : !row.original.active
@@ -207,6 +208,14 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
             <DropdownMenuItem onSelect={() => o.onOpen(row.original)}>
               {o.canUpdate ? "Editar" : "Ver"}
             </DropdownMenuItem>
+            {o.canUpdate ? (
+              <DropdownMenuItem
+                onSelect={() => o.onToggleActive(row.original, !row.original.active)}
+              >
+                {row.original.active ? <CircleMinus /> : <CircleCheck />}
+                {row.original.active ? "Desactivar" : "Activar"}
+              </DropdownMenuItem>
+            ) : null}
             {o.canCreate ? (
               <DropdownMenuItem onSelect={() => o.onDuplicate(row.original)}>
                 <Copy />

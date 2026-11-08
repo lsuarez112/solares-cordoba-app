@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table"
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
+import { StatusIcon, statusFromActive } from "~/components/ui/status-indicator"
 
 import { RoleActiveBadge } from "~/components/roles/role-active-badge"
 import { RoleBadgeEditLink } from "~/components/roles/role-badge-edit-link"
@@ -53,11 +54,14 @@ export function createRolesTableColumns({
       accessorKey: "name",
       header: ({ column }) => <SortableHeader column={column} title="Nombre" />,
       cell: ({ row }) => (
-        <RoleBadgeEditLink
-          role={row.original}
-          canUpdate={canUpdate}
-          onOpenEdit={onOpenEdit}
-        />
+        <div className="flex items-center gap-2">
+          <StatusIcon status={statusFromActive(row.original.active)} />
+          <RoleBadgeEditLink
+            role={row.original}
+            canUpdate={canUpdate}
+            onOpenEdit={onOpenEdit}
+          />
+        </div>
       ),
     },
     {

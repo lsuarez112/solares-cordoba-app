@@ -15,6 +15,7 @@ import {
 import { UsersDataTableSkeleton } from "~/components/users/users-data-table-skeleton"
 import { UsersTableEmpty } from "~/components/users/users-table-empty"
 import { DataTableView } from "~/components/ui/data-table"
+import { StatusLegend } from "~/components/ui/status-indicator"
 import {
   DataTableToolbar,
   FILTER_ALL,
@@ -52,6 +53,8 @@ export function UsersDataTable({
   })
 
   const table = useReactTable({
+    // El estado se muestra como ícono junto al nombre; la columna queda solo para filtrar.
+    initialState: { columnVisibility: { status: false } },
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -134,6 +137,7 @@ export function UsersDataTable({
         showRowCount
         totalCount={data.length}
         rowCountLabel="usuarios"
+        legend={<StatusLegend statuses={["active", "pending", "inactive"]} />}
       />
     </div>
   )

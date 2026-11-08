@@ -3,11 +3,22 @@ import { ScrollArea as ScrollAreaPrimitive } from "radix-ui"
 
 import { cn } from "~/lib/utils"
 
+type ScrollOrientation = "vertical" | "horizontal" | "both"
+
 function ScrollArea({
   className,
+  viewportClassName,
+  viewportRef,
+  orientation = "vertical",
   children,
   ...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+}: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
+  /** Clases del viewport: para limitar la altura usar max-h acá (no en el root). */
+  viewportClassName?: string
+  viewportRef?: React.Ref<HTMLDivElement>
+  /** Barras a mostrar. Las tablas usan "both". */
+  orientation?: ScrollOrientation
+}) {
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
@@ -15,12 +26,17 @@ function ScrollArea({
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
+        ref={viewportRef}
         data-slot="scroll-area-viewport"
-        className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+        className={cn(
+          "size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1",
+          viewportClassName,
+        )}
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar />
+      {orientation !== "horizontal" ? <ScrollBar /> : null}
+      {orientation !== "vertical" ? <ScrollBar orientation="horizontal" /> : null}
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   )

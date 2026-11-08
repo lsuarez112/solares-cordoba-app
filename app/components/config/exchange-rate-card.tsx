@@ -34,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table"
+import { TableScrollArea } from "~/components/ui/table-scroll-area"
 import {
   ManualRateFormSchema,
   type AppSettings,
@@ -231,8 +232,9 @@ export function ExchangeRateCard({
 
         {history.length > 0 ? (
           <div className="overflow-hidden rounded-lg border">
+            <TableScrollArea maxHeightClassName="max-h-96">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Fuente</TableHead>
@@ -262,6 +264,7 @@ export function ExchangeRateCard({
                 ))}
               </TableBody>
             </Table>
+            </TableScrollArea>
           </div>
         ) : null}
       </CardContent>

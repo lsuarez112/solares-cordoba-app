@@ -68,6 +68,10 @@ type DataTableViewProps<TData> = {
   showRowCount?: boolean
   totalCount?: number
   rowCountLabel?: string
+  /** Leyenda al pie (ej. íconos de estado). */
+  legend?: React.ReactNode
+  /** Alto máximo del área con scroll de la tabla (clase max-h-*). */
+  maxHeightClassName?: string
 }
 
 export function DataTableView<TData>({
@@ -79,15 +83,17 @@ export function DataTableView<TData>({
   showRowCount = false,
   totalCount,
   rowCountLabel = "registros",
+  legend,
+  maxHeightClassName,
 }: DataTableViewProps<TData>) {
   const filteredCount = table.getFilteredRowModel().rows.length
 
   return (
     <div className="min-w-0">
       <div className="overflow-hidden rounded-lg border bg-card">
-        <TableScrollArea>
+        <TableScrollArea maxHeightClassName={maxHeightClassName}>
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-card">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -142,16 +148,18 @@ export function DataTableView<TData>({
         </TableScrollArea>
       </div>
 
-      {showPagination ? (
+      {showPagination || legend ? (
         <div className="flex flex-wrap items-center justify-between gap-3 py-4">
-          {showRowCount && typeof totalCount === "number" ? (
-            <p className="text-sm text-muted-foreground">
-              Mostrando {filteredCount} de {totalCount} {rowCountLabel}
-            </p>
-          ) : (
-            <span />
-          )}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {showRowCount && typeof totalCount === "number" ? (
+              <p className="text-sm text-muted-foreground">
+                Mostrando {filteredCount} de {totalCount} {rowCountLabel}
+              </p>
+            ) : null}
+            {legend}
+          </div>
 
+          {showPagination ? (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -170,6 +178,7 @@ export function DataTableView<TData>({
               Siguiente
             </Button>
           </div>
+          ) : null}
         </div>
       ) : null}
     </div>

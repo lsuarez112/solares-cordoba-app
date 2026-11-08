@@ -285,7 +285,7 @@ export function ProductBrowserDialog({
         />
 
         <div
-          className="min-h-0 flex-1 overflow-y-auto [&_tbody_tr]:cursor-pointer"
+          className="min-h-0 flex-1 [&_tbody_tr]:cursor-pointer"
           onClick={(e) => {
             const tr = (e.target as HTMLElement).closest("tbody tr")
             const rowIndex = tr ? Array.from(tr.parentElement?.children ?? []).indexOf(tr) : -1
@@ -301,6 +301,7 @@ export function ProductBrowserDialog({
             showRowCount
             totalCount={products.length}
             rowCountLabel="productos"
+            maxHeightClassName="max-h-[50svh]"
           />
         </div>
 

@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table"
+import { TableScrollArea } from "~/components/ui/table-scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import {
   buildPriceImportRows,
@@ -235,9 +236,10 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
                   </span>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-auto rounded-lg border">
+                <div className="min-h-0 overflow-hidden rounded-lg border">
+                  <TableScrollArea maxHeightClassName="max-h-[45svh]">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
                       <TableRow>
                         <TableHead>Fila</TableHead>
                         <TableHead>Código</TableHead>
@@ -270,6 +272,7 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
                       ))}
                     </TableBody>
                   </Table>
+                  </TableScrollArea>
                 </div>
                 {visibleRows.length > 500 ? (
                   <p className="text-xs text-muted-foreground">
@@ -280,7 +283,7 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
             ) : null}
           </TabsContent>
 
-          <TabsContent value="history" className="min-h-0 overflow-auto">
+          <TabsContent value="history" className="min-h-0">
             {history === null ? (
               <div className="flex justify-center p-8">
                 <Spinner />
@@ -290,8 +293,10 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
                 Todavía no hay importaciones.
               </p>
             ) : (
+              <div className="overflow-hidden rounded-lg border">
+              <TableScrollArea maxHeightClassName="max-h-[55svh]">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-10 bg-background">
                   <TableRow>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Archivo</TableHead>
@@ -319,6 +324,8 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
                   ))}
                 </TableBody>
               </Table>
+              </TableScrollArea>
+              </div>
             )}
           </TabsContent>
         </Tabs>

@@ -16,6 +16,7 @@ import { ProductsDataTableSkeleton } from "~/components/products/products-data-t
 import { ProductsTableEmpty } from "~/components/products/products-table-empty"
 import { productsTableColumns } from "~/components/products/products-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
+import { StatusLegend } from "~/components/ui/status-indicator"
 import {
   DataTableToolbar,
   FILTER_ALL,
@@ -82,6 +83,8 @@ export function ProductsDataTable({
   )
 
   const table = useReactTable({
+    // El estado se muestra como ícono junto al nombre; la columna queda solo para filtrar.
+    initialState: { columnVisibility: { status: false } },
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -207,6 +210,7 @@ export function ProductsDataTable({
         showRowCount
         totalCount={data.length}
         rowCountLabel="productos"
+        legend={<StatusLegend />}
       />
     </div>
   )

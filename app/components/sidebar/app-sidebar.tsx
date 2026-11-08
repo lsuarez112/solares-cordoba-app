@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
+import { ScrollArea } from "~/components/ui/scroll-area"
 import {
   Sidebar,
   SidebarContent,
@@ -126,7 +127,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="overflow-hidden">
+        <ScrollArea className="min-h-0 flex-1">
         {nav.sections.map((section) => (
           <SidebarGroup key={section.id}>
             <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
@@ -137,6 +139,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroup>
         ))}
+        </ScrollArea>
       </SidebarContent>
 
       <SidebarFooter>

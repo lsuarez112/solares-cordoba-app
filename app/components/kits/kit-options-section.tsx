@@ -40,6 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table"
+import { TableScrollArea } from "~/components/ui/table-scroll-area"
 import {
   KIT_OPTION_KIND_LABELS,
   type KitFormValues,
@@ -297,6 +298,7 @@ function OptionChangesTable({
     <div className="flex flex-col gap-2">
       {fields.length > 0 ? (
         <div className="overflow-hidden rounded-md border">
+          <TableScrollArea maxHeightClassName="max-h-80">
           <Table>
             <TableHeader>
               <TableRow>
@@ -368,6 +370,7 @@ function OptionChangesTable({
               })}
             </TableBody>
           </Table>
+          </TableScrollArea>
         </div>
       ) : null}
 

@@ -17,6 +17,7 @@ import {
   type KitsTableColumnsOptions,
 } from "~/components/kits/kits-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
+import { StatusLegend } from "~/components/ui/status-indicator"
 import {
   DataTableToolbar,
   FILTER_ALL,
@@ -47,6 +48,8 @@ export function KitsDataTable({ data, ...options }: KitsDataTableProps) {
   )
 
   const table = useReactTable({
+    // El estado se muestra como ícono junto al nombre; la columna queda solo para filtrar.
+    initialState: { columnVisibility: { status: false } },
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -135,6 +138,7 @@ export function KitsDataTable({ data, ...options }: KitsDataTableProps) {
         showRowCount
         totalCount={data.length}
         rowCountLabel="kits"
+        legend={<StatusLegend />}
       />
     </div>
   )

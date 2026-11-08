@@ -34,7 +34,7 @@ import {
 import { FormControl, FormField, FormItem, FormMessage } from "~/components/ui/form"
 import { DeleteIconButton } from "~/components/ui/icon-action-button"
 import { Input } from "~/components/ui/input"
-import { ScrollArea } from "~/components/ui/scroll-area"
+import { TableScrollArea } from "~/components/ui/table-scroll-area"
 import {
   Table,
   TableBody,
@@ -149,7 +149,7 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
       ) : null}
 
       <div className="overflow-hidden rounded-lg border bg-card">
-        <ScrollArea className={cn(fields.length > 12 && "h-[32rem]")}>
+        <TableScrollArea maxHeightClassName="max-h-[32rem]">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-card">
@@ -211,7 +211,7 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
               </TableBody>
             </Table>
           </DndContext>
-        </ScrollArea>
+        </TableScrollArea>
       </div>
 
       <FormField

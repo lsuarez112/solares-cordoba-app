@@ -42,7 +42,7 @@ export type DataTableFilter = {
   allLabel: string
   options: Array<{ value: string; label: string }>
   onChange: (value: string) => void
-  /** Ancho fijo del select en desktop (clase Tailwind). */
+  /** @deprecated El select se ajusta al texto; se ignora. */
   widthClassName?: string
 }
 
@@ -136,7 +136,7 @@ export function DataTableToolbar({
             onValueChange={filter.onChange}
           >
             <SelectTrigger
-              className={cn("shrink-0", filter.widthClassName ?? "w-40")}
+              className="w-auto shrink-0 whitespace-nowrap"
               aria-label={filter.label}
             >
               <SelectValue placeholder={filter.label} />

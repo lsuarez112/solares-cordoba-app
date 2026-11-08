@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table"
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
+import { StatusIcon } from "~/components/ui/status-indicator"
 
 import { UserNameEditLink } from "~/components/users/user-name-edit-link"
 import { UserRowActions } from "~/components/users/user-row-actions"
@@ -30,7 +31,12 @@ export function createUsersTableColumns(
     header: ({ column }) => (
       <SortableHeader column={column} title="Nombre Completo" />
     ),
-    cell: ({ row }) => <UserNameEditLink user={row.original} />,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <StatusIcon status={row.original.status} />
+        <UserNameEditLink user={row.original} />
+      </div>
+    ),
   },
   {
     accessorKey: "roleName",

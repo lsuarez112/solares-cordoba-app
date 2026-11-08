@@ -5,6 +5,7 @@ import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 import { ProductNameLink } from "~/components/products/product-name-link"
 import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
+import { StatusIcon, statusFromActive } from "~/components/ui/status-indicator"
 import type { Product } from "~/domain/products/products.schemas"
 import { getCategoryIcon } from "~/lib/categories/category-icons"
 import { parseProductGenericProperties } from "~/lib/products/product-display.utils"
@@ -48,21 +49,34 @@ export function productsTableColumns(
       const description =
         product.short_desc?.trim() || product.description?.trim() || ""
 
+      const properties = parseProductGenericProperties(product.generic_properties)
+
       return (
-        <div className="flex max-w-[34rem] min-w-0 items-baseline gap-2">
-          <ProductNameLink
-            product={product}
-            onOpenEdit={onOpenEdit}
-            onDuplicate={onDuplicate}
-            className="shrink-0"
-          />
-          {description ? (
-            <span
-              className="min-w-0 truncate text-xs text-muted-foreground"
-              title={description}
-            >
-              {truncateText(description, DESCRIPTION_MAX_LENGTH)}
-            </span>
+        <div className="flex max-w-[36rem] min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <StatusIcon status={statusFromActive(product.active)} />
+            <ProductNameLink
+              product={product}
+              onOpenEdit={onOpenEdit}
+              onDuplicate={onDuplicate}
+              className="shrink-0"
+            />
+            {description ? (
+              <span
+                className="min-w-0 truncate text-xs text-muted-foreground"
+                title={description}
+              >
+                {truncateText(description, DESCRIPTION_MAX_LENGTH)}
+              </span>
+            ) : null}
+          </div>
+          {properties.length > 0 ? (
+            <div className="flex min-w-0 items-center gap-1.5 pl-5.5">
+              <span className="shrink-0 text-[11px] text-muted-foreground/70">
+                Propiedades
+              </span>
+              <ProductTechnicalPropertyBadges items={properties} max={4} compact />
+            </div>
           ) : null}
         </div>
       )
@@ -83,18 +97,6 @@ export function productsTableColumns(
         )
       )
     },
-  },
-  {
-    id: "properties",
-    header: "Propiedades",
-    enableSorting: false,
-    cell: ({ row }) => (
-      <ProductTechnicalPropertyBadges
-        items={parseProductGenericProperties(row.original.generic_properties)}
-        max={3}
-        compact
-      />
-    ),
   },
   {
     id: "categoryId",

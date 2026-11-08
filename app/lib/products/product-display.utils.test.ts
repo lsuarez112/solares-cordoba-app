@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   formatPropertyValue,
+  orderProductProperties,
   parseProductGenericProperties,
 } from "./product-display.utils"
 
@@ -25,6 +26,34 @@ describe("parseProductGenericProperties", () => {
     ).toEqual([
       { key: "tipo", value: "panel" },
       { key: "potencia_wp", value: "460" },
+    ])
+  })
+})
+
+describe("orderProductProperties", () => {
+  const items = [
+    { key: "notas", value: "ARK — siempre con 575978" },
+    { key: "dod", value: "95%" },
+    { key: "capacidad_kwh", value: "16" },
+    { key: "tipo", value: "batería" },
+    { key: "quimica", value: "LiFePO4" },
+  ]
+
+  it("ordena por importancia", () => {
+    expect(orderProductProperties(items).map((i) => i.key)).toEqual([
+      "tipo",
+      "capacidad_kwh",
+      "quimica",
+      "notas",
+      "dod",
+    ])
+  })
+
+  it("en compacto oculta notas y datos de detalle", () => {
+    expect(orderProductProperties(items, { compact: true }).map((i) => i.key)).toEqual([
+      "tipo",
+      "capacidad_kwh",
+      "quimica",
     ])
   })
 })
