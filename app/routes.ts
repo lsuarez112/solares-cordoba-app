@@ -11,8 +11,11 @@ export default [
       index("routes/login.tsx"),
       route("login", "routes/login-redirect.tsx"),
       route("register", "routes/register.tsx"),
+      route("recuperar-clave", "routes/recuperar-clave.tsx"),
     ]),
+    route("restablecer-clave", "routes/restablecer-clave.tsx"),
     route("auth/callback", "routes/auth-callback.tsx"),
+    route("auth/confirm", "routes/auth-confirm.tsx"),
     route("unauthorized", "routes/unauthorized.tsx"),
   ]),
   layout("layouts/app-layout.tsx", [

@@ -127,6 +127,13 @@ export default function LoginPage() {
             />
           </AuthFormField>
 
+          <Link
+            to="/recuperar-clave"
+            className="-mt-2 self-end text-xs text-muted-foreground hover:text-foreground hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+
           {error ? (
             <AuthFormAlert title="No pudimos iniciar sesión">{error}</AuthFormAlert>
           ) : null}

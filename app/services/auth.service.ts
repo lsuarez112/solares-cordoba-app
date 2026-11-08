@@ -24,6 +24,22 @@ export async function signUp(params: {
   })
 }
 
+/** Ruta donde el usuario define la contraseña nueva tras abrir el link del mail. */
+export const PASSWORD_RESET_PATH = "/restablecer-clave"
+
+/** Envía el mail de recuperación. El link vuelve por /auth/callback → /restablecer-clave. */
+export async function requestPasswordReset(email: string) {
+  const supabase = createClient()
+  const redirectTo = `${getAuthCallbackUrl()}?redirect=${encodeURIComponent(PASSWORD_RESET_PATH)}`
+  return supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+}
+
+/** Cambia la contraseña del usuario con sesión activa (la del link de recuperación). */
+export async function updatePassword(password: string) {
+  const supabase = createClient()
+  return supabase.auth.updateUser({ password })
+}
+
 export async function signOut() {
   const supabase = createClient()
   return supabase.auth.signOut()
