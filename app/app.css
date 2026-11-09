@@ -137,6 +137,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* Scrolls nativos que quedan (menús, selects): finos y con el color de la
+       barra de ScrollArea, para que no se vea la barra del sistema. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
     }
   html {
     @apply font-sans overflow-x-hidden;
@@ -176,7 +180,16 @@
   }
   /** Contenedor de scroll vertical del área principal (sin desborde horizontal). */
   .page-scroll {
-    @apply flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto;
+    @apply min-h-0 min-w-0 flex-1 overflow-hidden;
+  }
+  /* Radix envuelve el contenido en un div display:table (crece a lo ancho y rompe
+     el min-w-0 de las tablas): se fuerza a bloque para que no haya scroll horizontal. */
+  .page-scroll-viewport {
+    overflow-x: hidden !important;
+  }
+  .page-scroll-viewport > div {
+    display: block !important;
+    min-width: 0 !important;
   }
 
   /** Contenido de página: texto envuelve; tablas scrollean en su propio contenedor. */

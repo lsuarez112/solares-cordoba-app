@@ -34,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { Button } from "~/components/ui/button"
+import { ScrollArea } from "~/components/ui/scroll-area"
 import { Switch } from "~/components/ui/switch"
 import {
   Select,
@@ -128,9 +129,10 @@ export function ProductFormModal({
 
               <TabsContent
                 value="general"
-                className="flex-1 overflow-y-auto pt-2"
+                className="flex min-h-0 flex-1 flex-col"
               >
-                <div className="flex flex-col gap-4">
+                <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+                <div className="flex flex-col gap-4 pt-2 pr-3">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -280,13 +282,15 @@ export function ProductFormModal({
                   </div>
 
                 </div>
+                </ScrollArea>
               </TabsContent>
 
               <TabsContent
                 value="precios"
-                className="flex-1 overflow-y-auto pt-2"
+                className="flex min-h-0 flex-1 flex-col"
               >
-                <div className="flex flex-col gap-4">
+                <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+                <div className="flex flex-col gap-4 pt-2 pr-3">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -341,13 +345,15 @@ export function ProductFormModal({
                     )}
                   />
                 </div>
+                </ScrollArea>
               </TabsContent>
 
               <TabsContent
                 value="detalles"
-                className="flex-1 overflow-y-auto pt-2"
+                className="flex min-h-0 flex-1 flex-col"
               >
-                <div className="flex flex-col gap-4">
+                <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+                <div className="flex flex-col gap-4 pt-2 pr-3">
 
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
@@ -412,6 +418,7 @@ export function ProductFormModal({
                     ))}
                   </div>
                 </div>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
 

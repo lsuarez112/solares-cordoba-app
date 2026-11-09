@@ -22,6 +22,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogScrollableContent,
 } from "~/components/ui/dialog"
 import {
   DropdownMenu,
@@ -146,7 +147,7 @@ export function CategoryDetailDialog({
             </div>
           </DialogHeader>
 
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
+          <DialogScrollableContent fill className="flex flex-col gap-4 text-sm">
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant="secondary"
@@ -209,7 +210,7 @@ export function CategoryDetailDialog({
                 </div>
               </div>
             ) : null}
-          </div>
+          </DialogScrollableContent>
         </DialogContent>
       </Dialog>
 

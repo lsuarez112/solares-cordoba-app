@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
+import { ScrollArea } from "~/components/ui/scroll-area"
 import { cn } from "~/lib/utils"
 import { Button } from "~/components/ui/button"
 import { XIcon } from "lucide-react"
@@ -155,23 +156,23 @@ function DialogDescription({
 function DialogScrollableContent({
   className,
   fill = false,
+  children,
   ...props
 }: React.ComponentProps<"div"> & {
   /** Ocupa el espacio restante en diálogos con header/footer fijos (`p-0`). */
   fill?: boolean
 }) {
+  // Scroll con la barra de shadcn (ScrollArea), no la nativa.
   return (
-    <div
+    <ScrollArea
       data-slot="dialog-scrollable-content"
-      className={cn(
-        "no-scrollbar overflow-y-auto",
-        fill
-          ? "min-h-0 flex-1 px-4 py-4"
-          : "-mx-4 max-h-[50vh] px-4",
-        className
-      )}
-      {...props}
-    />
+      className={cn(fill ? "min-h-0 flex-1" : "-mx-4")}
+      viewportClassName={cn("[&>div]:!block", !fill && "max-h-[50vh]")}
+    >
+      <div className={cn(fill ? "px-4 py-4" : "px-4", className)} {...props}>
+        {children}
+      </div>
+    </ScrollArea>
   )
 }
 

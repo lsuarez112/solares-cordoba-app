@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogScrollableContent,
 } from "~/components/ui/dialog"
 import {
   Form,
@@ -153,7 +154,7 @@ export function ClientFormDialog({
 
         <Form {...form}>
           <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
+            <DialogScrollableContent fill className="flex flex-col gap-4">
               {text("name", "Nombre *", { placeholder: "Ej: Juan Pérez", autoFocus: true })}
               {text("phone", "Teléfono (WhatsApp)", {
                 placeholder: "Ej: 351 123 4567",
@@ -209,7 +210,7 @@ export function ClientFormDialog({
                   </FormItem>
                 )}
               />
-            </div>
+            </DialogScrollableContent>
 
             <DialogFooter className="shrink-0 border-t px-4 py-3">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

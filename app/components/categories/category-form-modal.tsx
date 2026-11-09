@@ -9,6 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogScrollableContent,
 } from "~/components/ui/dialog"
 import {
   Form,
@@ -72,7 +73,7 @@ export function CategoryFormModal() {
             onSubmit={onSubmit}
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+            <DialogScrollableContent fill className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -215,7 +216,7 @@ export function CategoryFormModal() {
               {submitError ? (
                 <p className="text-sm text-destructive">{submitError}</p>
               ) : null}
-            </div>
+            </DialogScrollableContent>
 
             <DialogFooter className="shrink-0 border-t px-4 py-3">
               <Button type="button" variant="outline" onClick={closeModal}>

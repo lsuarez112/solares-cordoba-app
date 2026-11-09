@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogScrollableContent,
 } from "~/components/ui/dialog"
 import {
   Field,
@@ -131,7 +132,7 @@ export function UserEditDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+          <DialogScrollableContent fill className="space-y-3 !py-3">
             <section className="space-y-2">
               <h3 className="text-xs font-semibold">Información general</h3>
 
@@ -262,7 +263,7 @@ export function UserEditDialog({
                 {submitError}
               </p>
             ) : null}
-          </div>
+          </DialogScrollableContent>
 
           <DialogFooter className="border-t bg-background px-4 py-3">
             <DialogClose asChild>
