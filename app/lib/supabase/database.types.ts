@@ -99,6 +99,13 @@ export type Database = {
             referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ai_requests_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
+            referencedColumns: ["id"]
+          },
         ]
       }
       app_settings: {
@@ -114,6 +121,8 @@ export type Database = {
           kwp_tolerance_pct: number
           number_prefix: string
           quote_footer: string | null
+          quote_logo_mode: string
+          quote_logo_url: string | null
           rate_mode: string
           system_efficiency: number
           updated_at: string
@@ -131,6 +140,8 @@ export type Database = {
           kwp_tolerance_pct?: number
           number_prefix?: string
           quote_footer?: string | null
+          quote_logo_mode?: string
+          quote_logo_url?: string | null
           rate_mode?: string
           system_efficiency?: number
           updated_at?: string
@@ -148,6 +159,8 @@ export type Database = {
           kwp_tolerance_pct?: number
           number_prefix?: string
           quote_footer?: string | null
+          quote_logo_mode?: string
+          quote_logo_url?: string | null
           rate_mode?: string
           system_efficiency?: number
           updated_at?: string
@@ -695,6 +708,13 @@ export type Database = {
             referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
+            referencedColumns: ["id"]
+          },
         ]
       }
       quotes: {
@@ -800,6 +820,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "v_clients_list"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quotes_kit_id_fkey"
             columns: ["kit_id"]
             isOneToOne: false
@@ -818,6 +845,13 @@ export type Database = {
             columns: ["source_quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_source_quote_id_fkey"
+            columns: ["source_quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
             referencedColumns: ["id"]
           },
         ]
@@ -903,6 +937,7 @@ export type Database = {
           phone: string | null
           preferred_currency: string
           role_id: string
+          theme: string | null
           timezone: string
           updated_at: string | null
         }
@@ -917,6 +952,7 @@ export type Database = {
           phone?: string | null
           preferred_currency?: string
           role_id: string
+          theme?: string | null
           timezone?: string
           updated_at?: string | null
         }
@@ -931,6 +967,7 @@ export type Database = {
           phone?: string | null
           preferred_currency?: string
           role_id?: string
+          theme?: string | null
           timezone?: string
           updated_at?: string | null
         }
@@ -946,6 +983,26 @@ export type Database = {
       }
     }
     Views: {
+      v_clients_list: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          created_by: string | null
+          cuit: string | null
+          email: string | null
+          id: string | null
+          issued_count: number | null
+          last_quote_at: string | null
+          name: string | null
+          notes: string | null
+          phone: string | null
+          phone_normalized: string | null
+          quotes_count: number | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       v_kits_with_totals: {
         Row: {
           active: boolean | null
@@ -1000,6 +1057,80 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_quotes_list: {
+        Row: {
+          client_city: string | null
+          client_id: string | null
+          client_name: string | null
+          client_phone: string | null
+          created_at: string | null
+          display_number: string | null
+          grid_type: Database["public"]["Enums"]["grid_type_enum"] | null
+          id: string | null
+          is_current: boolean | null
+          issued_at: string | null
+          items_count: number | null
+          iva_pct: number | null
+          kit_code: string | null
+          kit_id: string | null
+          kit_name: string | null
+          number: number | null
+          revision: number | null
+          seller_id: string | null
+          source_quote_id: string | null
+          status: string | null
+          subtotal_usd: number | null
+          total_ars: number | null
+          total_usd: number | null
+          updated_at: string | null
+          usd_ars: number | null
+          valid_until: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "v_clients_list"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "kits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "v_kits_with_totals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_source_quote_id_fkey"
+            columns: ["source_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_source_quote_id_fkey"
+            columns: ["source_quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
             referencedColumns: ["id"]
           },
         ]
@@ -1144,10 +1275,52 @@ export type Database = {
       }
       normalize_phone: { Args: { phone: string }; Returns: string }
       normalize_product_code: { Args: { code: string }; Returns: string }
+      product_usage: { Args: { p_product_id: string }; Returns: Json }
       quote_display_number: {
         Args: { q: Database["public"]["Tables"]["quotes"]["Row"] }
         Returns: string
       }
+      save_quote_draft: {
+        Args: { p_items: Json; p_patch: Json; p_quote_id: string }
+        Returns: {
+          ai_summary: Json | null
+          client_id: string
+          client_notes: string | null
+          created_at: string
+          grid_type: Database["public"]["Enums"]["grid_type_enum"] | null
+          id: string
+          input: Json
+          is_current: boolean
+          issued_at: string | null
+          issued_by: string | null
+          iva_pct: number
+          iva_usd: number | null
+          kit_id: string | null
+          notes: string | null
+          number: number | null
+          pdf_path: string | null
+          rate_date: string | null
+          rate_source: string | null
+          revision: number
+          seller_id: string | null
+          sizing: Json | null
+          source_quote_id: string | null
+          status: string
+          subtotal_usd: number | null
+          total_ars: number | null
+          total_usd: number | null
+          updated_at: string
+          usd_ars: number | null
+          valid_until: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_my_theme: { Args: { p_theme: string }; Returns: undefined }
       suggest_kit_candidates: {
         Args: {
           p_battery_kwh?: number

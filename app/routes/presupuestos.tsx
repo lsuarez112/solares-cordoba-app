@@ -1,4 +1,4 @@
-import { PlaceholderPage } from "~/components/pages/placeholder-page"
+import { QuotesPage } from "~/components/quotes/quotes-page"
 import { metaFromRouteHandle } from "~/routing/route-page"
 import type { AppRouteHandle } from "~/routing/route-handle.types"
 
@@ -13,11 +13,6 @@ export function meta({ matches }: Route.MetaArgs) {
   return metaFromRouteHandle(matches)
 }
 
-export default function PresupuestosPage() {
-  return (
-    <PlaceholderPage
-      title="Presupuestos"
-      description="Creación y seguimiento de presupuestos comerciales."
-    />
-  )
+export default function PresupuestosRoute() {
+  return <QuotesPage />
 }

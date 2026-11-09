@@ -21,7 +21,10 @@ export default [
   layout("layouts/app-layout.tsx", [
     route("dashboard", "routes/dashboard.tsx"),
     route("presupuestos", "routes/presupuestos.tsx"),
+    route("presupuestos/nuevo", "routes/presupuesto-nuevo.tsx"),
+    route("presupuestos/:quoteId", "routes/presupuesto-detalle.tsx"),
     route("clientes", "routes/clientes.tsx"),
+    route("clientes/:clientId", "routes/cliente-detalle.tsx"),
     route("productos", "routes/productos.tsx"),
     route("productos/tipos", "routes/productos-tipos.tsx"),
     route("kits", "routes/kits.tsx"),

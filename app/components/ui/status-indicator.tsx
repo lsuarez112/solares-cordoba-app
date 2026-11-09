@@ -1,13 +1,15 @@
-import { CircleCheck, CircleMinus, Clock, type LucideIcon } from "lucide-react"
+import { CircleCheck, CircleMinus, Clock, FileCheck2, FilePen, type LucideIcon } from "lucide-react"
 
 import { cn } from "~/lib/utils"
 
-export type StatusKind = "active" | "inactive" | "pending"
+export type StatusKind = "active" | "inactive" | "pending" | "draft" | "issued"
 
 const STATUS_META: Record<StatusKind, { label: string; icon: LucideIcon; className: string }> = {
   active: { label: "Activo", icon: CircleCheck, className: "text-emerald-600 dark:text-emerald-400" },
   inactive: { label: "Inactivo", icon: CircleMinus, className: "text-muted-foreground/60" },
   pending: { label: "Pendiente", icon: Clock, className: "text-amber-600 dark:text-amber-400" },
+  draft: { label: "Borrador", icon: FilePen, className: "text-amber-600 dark:text-amber-400" },
+  issued: { label: "Emitido", icon: FileCheck2, className: "text-emerald-600 dark:text-emerald-400" },
 }
 
 export function statusFromActive(active: boolean): StatusKind {

@@ -1,4 +1,4 @@
-import { PlaceholderPage } from "~/components/pages/placeholder-page"
+import { ClientsPage } from "~/components/clients/clients-page"
 import { metaFromRouteHandle } from "~/routing/route-page"
 import type { AppRouteHandle } from "~/routing/route-handle.types"
 
@@ -13,11 +13,6 @@ export function meta({ matches }: Route.MetaArgs) {
   return metaFromRouteHandle(matches)
 }
 
-export default function ClientesPage() {
-  return (
-    <PlaceholderPage
-      title="Clientes"
-      description="Gestión de clientes y cuentas comerciales."
-    />
-  )
+export default function ClientesRoute() {
+  return <ClientsPage />
 }

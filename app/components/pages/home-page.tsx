@@ -1,0 +1,136 @@
+"use client"
+
+import * as React from "react"
+import { Link } from "react-router"
+import { ArrowRight, FilePlus2, FileText, Users } from "lucide-react"
+
+import { Button } from "~/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
+import { Skeleton } from "~/components/ui/skeleton"
+import { StatusIcon } from "~/components/ui/status-indicator"
+import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import { usePermission } from "~/hooks/use-permission"
+import { formatDateTime } from "~/lib/dates"
+import { GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
+import { formatArs, formatUsd } from "~/lib/quotes/quote-totals"
+import { quotesService } from "~/services/quotes.service"
+
+function QuoteRow({ q }: { q: QuoteListItem }) {
+  return (
+    <Link
+      to={`/presupuestos/${q.id}`}
+      className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50"
+    >
+      <StatusIcon status={q.status === "issued" ? "issued" : "draft"} />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm font-medium">{q.client_name}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          {q.display_number ?? "Borrador"}
+          {q.grid_type ? ` · ${GRID_TYPE_LABELS[q.grid_type]}` : ""}
+          {q.kit_code ? ` · ${q.kit_code}` : ""}
+        </span>
+      </span>
+      <span className="shrink-0 text-right font-mono text-xs tabular-nums">
+        USD {formatUsd(q.total_usd ?? q.subtotal_usd)}
+      </span>
+    </Link>
+  )
+}
+
+/** Inicio: último presupuesto, recientes y "Nuevo presupuesto" (pensado para el celular). */
+export function HomePage() {
+  const canCreate = usePermission("quotes", "create")
+  const [quotes, setQuotes] = React.useState<QuoteListItem[] | null>(null)
+
+  React.useEffect(() => {
+    quotesService.latest(6).then(setQuotes).catch(() => setQuotes([]))
+  }, [])
+
+  const last = quotes?.[0] ?? null
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">Inicio</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/clientes">
+              <Users data-icon="inline-start" />
+              Clientes
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/presupuestos">
+              <FileText data-icon="inline-start" />
+              Presupuestos
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {canCreate ? (
+        <Button asChild size="lg" className="h-14 text-base">
+          <Link to="/presupuestos/nuevo">
+            <FilePlus2 data-icon="inline-start" />
+            Nuevo presupuesto
+          </Link>
+        </Button>
+      ) : null}
+
+      {quotes === null ? (
+        <Skeleton className="h-40" />
+      ) : last ? (
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
+            <CardTitle className="text-sm text-muted-foreground">Último presupuesto</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 px-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="flex items-center gap-2">
+                  <StatusIcon status={last.status === "issued" ? "issued" : "draft"} />
+                  <span className="font-mono text-sm">{last.display_number ?? "Borrador"}</span>
+                </span>
+                <span className="truncate text-lg font-semibold">{last.client_name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {last.kit_name ?? "Sin kit"} · {formatDateTime(last.issued_at ?? last.updated_at)}
+                </span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="font-mono text-lg font-semibold tabular-nums">
+                  USD {formatUsd(last.total_usd ?? last.subtotal_usd)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {last.status === "issued" ? formatArs(last.total_ars) : "borrador, sin IVA"}
+                </span>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="self-start" asChild>
+              <Link to={`/presupuestos/${last.id}`}>
+                {last.status === "draft" ? "Continuar" : "Abrir"}
+                <ArrowRight data-icon="inline-end" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          Todavía no hay presupuestos.
+        </p>
+      )}
+
+      {quotes && quotes.length > 1 ? (
+        <Card className="gap-2 py-3">
+          <CardHeader className="px-4">
+            <CardTitle className="text-sm">Recientes</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col px-2">
+            {quotes.slice(1).map((q) => (
+              <QuoteRow key={q.id} q={q} />
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+    </div>
+  )
+}

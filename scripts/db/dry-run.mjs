@@ -1,5 +1,5 @@
 // Ensayo de las migraciones contra la DB vinculada SIN dejar cambios:
-// corre todas las migraciones + supabase/tests/f1_smoke.sql en una transacción
+// corre todas las migraciones + supabase/tests/*_smoke.sql en una transacción
 // que termina con una excepción forzada (rollback). El resultado viene en el
 // mensaje de error: "DRY_RUN_OK ..." si todo pasó, o el error real si algo falló.
 //
@@ -14,11 +14,23 @@ import { spawnSync } from "node:child_process"
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..")
 const MIG = join(ROOT, "supabase", "migrations")
 
-const parts = ["begin;"]
+// La secuencia de números no vuelve atrás con el rollback: se guarda y se restaura
+// (setval tampoco es transaccional, así que la restauración queda aplicada).
+const parts = [
+  "begin;",
+  "select set_config('test.seq', (select last_value || ',' || is_called from public.quote_number_seq), true);",
+]
 for (const file of readdirSync(MIG).filter((f) => f.endsWith(".sql")).sort()) {
   parts.push(`-- >>> ${file}\n${readFileSync(join(MIG, file), "utf8")}`)
 }
-parts.push(readFileSync(join(ROOT, "supabase", "tests", "f1_smoke.sql"), "utf8"))
+// Pruebas de humo de cada fase, en orden (f1_smoke.sql, f3_smoke.sql...).
+const TESTS = join(ROOT, "supabase", "tests")
+for (const file of readdirSync(TESTS).filter((f) => /_smoke.sql$/.test(f)).sort()) {
+  parts.push(`-- >>> ${file}
+${readFileSync(join(TESTS, file), "utf8")}`)
+}
+parts.push(`reset role;
+select setval('public.quote_number_seq', split_part(current_setting('test.seq'), ',', 1)::bigint, split_part(current_setting('test.seq'), ',', 2)::boolean);`)
 parts.push(`do $$ begin raise exception 'DRY_RUN_OK %', current_setting('test.log', true); end $$;`)
 
 const out = join(mkdtempSync(join(tmpdir(), "dry-run-")), "dry-run.sql")
