@@ -78,7 +78,7 @@ export function ClientsPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex max-w-3xl flex-col gap-1.5">
           <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="line-clamp-2 text-sm text-muted-foreground sm:line-clamp-none">
             Fichas con el historial de presupuestos. Un teléfono repetido solo se avisa; los
             duplicados se pueden unificar sin perder presupuestos.
           </p>
@@ -98,7 +98,7 @@ export function ClientsPage() {
       </div>
 
       {clients ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="stagger-x flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
             <Users data-icon="inline-start" />
             Total

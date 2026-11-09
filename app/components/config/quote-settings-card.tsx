@@ -132,7 +132,7 @@ export function QuoteSettingsCard({
         <form onSubmit={onSubmit}>
           <CardContent>
             <fieldset disabled={!canEdit} className="flex flex-col gap-6">
-              <div className="grid items-start gap-4 sm:grid-cols-3">
+              <div className="stagger-x grid items-start gap-4 sm:grid-cols-3">
                 <FormField
                   control={form.control}
                   name="number_prefix"
@@ -168,7 +168,7 @@ export function QuoteSettingsCard({
 
               <Separator />
               <p className="text-sm font-medium">Dimensionamiento</p>
-              <div className="grid items-start gap-4 sm:grid-cols-3">{SIZING_FIELDS.map(renderNumber)}</div>
+              <div className="stagger-x grid items-start gap-4 sm:grid-cols-3">{SIZING_FIELDS.map(renderNumber)}</div>
             </fieldset>
           </CardContent>
           {canEdit ? (

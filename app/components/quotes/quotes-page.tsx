@@ -44,7 +44,7 @@ export function QuotesPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex max-w-3xl flex-col gap-1.5">
           <h1 className="text-2xl font-semibold tracking-tight">Presupuestos</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="line-clamp-2 text-sm text-muted-foreground sm:line-clamp-none">
             Un emitido no se modifica: al editarlo se crea una revisión (R1, R2…) que reemplaza a la
             anterior cuando se emite. Los borradores toman los precios vigentes hasta que se emiten.
           </p>
@@ -60,7 +60,7 @@ export function QuotesPage() {
       </div>
 
       {quotes ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="stagger-x flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
             <FileText data-icon="inline-start" />
             Total

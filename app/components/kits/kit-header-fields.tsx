@@ -57,7 +57,7 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-[12rem_1fr_auto]">
+      <div className="stagger-x grid gap-4 sm:grid-cols-[12rem_1fr_auto]">
         <FormField
           control={form.control}
           name="code"
@@ -102,7 +102,7 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="stagger-x grid grid-cols-2 gap-4 sm:grid-cols-4">
         <FormField
           control={form.control}
           name="grid_type"
@@ -165,7 +165,7 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="stagger-x grid gap-4 sm:grid-cols-2">
         <FormField
           control={form.control}
           name="description"

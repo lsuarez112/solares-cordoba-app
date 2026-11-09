@@ -17,7 +17,8 @@ import {
   type KitsTableColumnsOptions,
 } from "~/components/kits/kits-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
-import { StatusLegend } from "~/components/ui/status-indicator"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
+import { StatusIcon, StatusLegend, statusFromActive } from "~/components/ui/status-indicator"
 import {
   DataTableToolbar,
   FILTER_ALL,
@@ -139,6 +140,30 @@ export function KitsDataTable({ data, ...options }: KitsDataTableProps) {
         totalCount={data.length}
         rowCountLabel="kits"
         legend={<StatusLegend />}
+        mobileCard={(row, { actions, cell }) => {
+          const k = row.original
+          return (
+            <MobileRowCard
+              to={`/kits/${k.id}`}
+              leading={<StatusIcon status={statusFromActive(k.active)} />}
+              title={k.name}
+              subtitle={
+                <>
+                  <span className="font-mono">{k.code}</span> · {k.kwp.toLocaleString("es-AR")} kWp
+                  {k.battery_kwh > 0 ? ` · ${k.battery_kwh.toLocaleString("es-AR")} kWh` : ""}
+                </>
+              }
+              meta={
+                <>
+                  {cell("grid_type")}
+                  {k.phases === "tri" ? cell("phases") : null}
+                </>
+              }
+              trailing={<span className="text-xs">{cell("prices")}</span>}
+              actions={actions}
+            />
+          )
+        }}
       />
     </div>
   )

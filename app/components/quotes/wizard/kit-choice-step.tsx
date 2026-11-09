@@ -148,7 +148,7 @@ export function KitChoiceStep({ sizing, candidates, kits, budgetCap, value, onCh
             No hay kits activos de este tipo. Elegí otro abajo o cargá los ítems a mano.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="stagger-y flex flex-col gap-2">
             {candidates.map((c, index) => {
               const active = value.kitId === c.kit_id
               const cov = coverage(c.kwp)

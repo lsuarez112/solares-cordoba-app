@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table"
 
 import {
+  quoteDate,
   quotesTableColumns,
   type QuotesTableColumnsOptions,
 } from "~/components/quotes/quotes-table-columns"
@@ -22,9 +23,12 @@ import {
   FILTER_ALL,
   type DataTableFilter,
 } from "~/components/ui/data-table-toolbar"
-import { StatusLegend } from "~/components/ui/status-indicator"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
+import { StatusIcon, StatusLegend } from "~/components/ui/status-indicator"
 import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import { formatDate } from "~/lib/dates"
 import { GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
+import { formatArs, formatUsd } from "~/lib/quotes/quote-totals"
 
 type QuotesDataTableProps = QuotesTableColumnsOptions & {
   data: QuoteListItem[]
@@ -131,6 +135,41 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
         rowCountLabel="presupuestos"
         legend={<StatusLegend statuses={["draft", "issued"]} />}
         maxHeightClassName={maxHeightClassName}
+        mobileCard={(row, { actions }) => {
+          const q = row.original
+          const isDraft = q.status === "draft"
+          return (
+            <MobileRowCard
+              to={`/presupuestos/${q.id}`}
+              leading={<StatusIcon status={isDraft ? "draft" : "issued"} />}
+              title={
+                <>
+                  <span className="font-mono text-xs">{q.display_number ?? "Borrador"}</span>
+                  {hideClient ? null : <span className="ml-2">{q.client_name}</span>}
+                </>
+              }
+              subtitle={[q.grid_type ? GRID_TYPE_LABELS[q.grid_type] : null, q.kit_code, formatDate(quoteDate(q))]
+                .filter(Boolean)
+                .join(" · ")}
+              meta={
+                isDraft || q.is_current ? null : (
+                  <span className="text-xs text-muted-foreground">reemplazado</span>
+                )
+              }
+              trailing={
+                <span className="flex flex-col items-end">
+                  <span className="font-mono text-sm font-semibold tabular-nums">
+                    USD {formatUsd(q.total_usd ?? q.subtotal_usd)}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {isDraft ? "+ IVA" : formatArs(q.total_ars)}
+                  </span>
+                </span>
+              }
+              actions={actions}
+            />
+          )
+        }}
       />
     </div>
   )

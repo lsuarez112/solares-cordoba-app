@@ -12,11 +12,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { formatPrefixLabel } from "~/lib/prefix-label.utils"
+import { parseProductGenericProperties } from "~/lib/products/product-display.utils"
 import { ProductsDataTableSkeleton } from "~/components/products/products-data-table-skeleton"
 import { ProductsTableEmpty } from "~/components/products/products-table-empty"
 import { productsTableColumns } from "~/components/products/products-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
-import { StatusLegend } from "~/components/ui/status-indicator"
+import { ProductNameLink } from "~/components/products/product-name-link"
+import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
+import { StatusIcon, StatusLegend, statusFromActive } from "~/components/ui/status-indicator"
 import {
   DataTableToolbar,
   FILTER_ALL,
@@ -211,6 +215,36 @@ export function ProductsDataTable({
         totalCount={data.length}
         rowCountLabel="productos"
         legend={<StatusLegend />}
+        mobileCard={(row, { actions, cell }) => {
+          const p = row.original
+          const properties = parseProductGenericProperties(p.generic_properties)
+          return (
+            <MobileRowCard
+              leading={<StatusIcon status={statusFromActive(p.active)} />}
+              title={
+                <ProductNameLink
+                  product={p}
+                  onOpenEdit={onOpenEdit}
+                  onDuplicate={onDuplicate}
+                  className="max-w-full truncate text-left"
+                />
+              }
+              subtitle={
+                <>
+                  <span className="font-mono">{p.product_code}</span>
+                  {p.category ? ` · ${p.category.name}` : ""}
+                </>
+              }
+              meta={
+                properties.length > 0 ? (
+                  <ProductTechnicalPropertyBadges items={properties} max={3} compact />
+                ) : null
+              }
+              trailing={cell("price_usd")}
+              actions={actions}
+            />
+          )
+        }}
       />
     </div>
   )

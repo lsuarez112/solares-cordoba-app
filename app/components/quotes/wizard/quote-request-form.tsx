@@ -88,7 +88,7 @@ export function QuoteRequestForm({ value, onChange, zones, presets, textAssist }
   const batteryOn = value.grid_type === "OFF-GRID" || (value.grid_type === "HYBRID" && value.battery_wanted)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="stagger-y flex flex-col gap-6">
       {/* Pedido en texto libre: en F4 la IA lo interpreta. */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="request-text">Pedido del cliente</Label>

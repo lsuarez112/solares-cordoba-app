@@ -50,6 +50,9 @@
 
 /* Paleta inspirada en Notion (claro / oscuro). */
 :root {
+    /* Series del gráfico de Inicio (validadas: dataviz validate_palette). */
+    --chart-issued: #059669;
+    --chart-draft: #f59e0b;
     --background: #ffffff;
     --foreground: #37352f;
     --card: #ffffff;
@@ -85,6 +88,8 @@
 }
 
 .dark {
+    --chart-issued: #059669;
+    --chart-draft: #d97706;
     --background: #191919;
     --foreground: #d4d4d4;
     --card: #202020;
@@ -167,4 +172,74 @@
 
 [data-sonner-toast] [data-description] {
   color: #d4d4d8 !important;
+}
+/* ===========================================================================
+   Animaciones de carga: sutiles y baratas (solo opacity/transform, una vez).
+   - Skeleton: un brillo diagonal fijo a la pantalla que recorre todos los
+     skeletons a la vez (de izquierda a derecha y de arriba hacia abajo).
+   - .row-in: filas que aparecen de arriba hacia abajo (--i = índice).
+   - .stagger-x / .stagger-y: los hijos aparecen de izquierda a derecha / de
+     arriba hacia abajo.
+   fill-mode "backwards": al terminar no queda ningún transform aplicado (no
+   pisa los transforms del drag & drop).
+   =========================================================================== */
+@keyframes skeleton-sweep {
+  from { background-position: 120% 0; }
+  to { background-position: -20% 0; }
+}
+@keyframes fade-in-soft {
+  from { opacity: 0; }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+@keyframes slide-in-x {
+  from { opacity: 0; transform: translateX(-8px); }
+}
+
+@layer components {
+  .skeleton-shimmer {
+    background-color: var(--muted);
+    background-image: linear-gradient(
+      110deg,
+      transparent 35%,
+      color-mix(in oklab, var(--foreground) 7%, transparent) 50%,
+      transparent 65%
+    );
+    background-size: 250% 100%;
+    background-attachment: fixed;
+    animation:
+      skeleton-sweep 1.8s ease-in-out infinite,
+      fade-in-soft 250ms ease-out backwards;
+  }
+
+  .row-in {
+    animation: rise-in 260ms ease-out backwards;
+    animation-delay: calc(min(var(--i, 0), 14) * 22ms);
+  }
+
+  .page-in {
+    animation: fade-in-soft 200ms ease-out backwards;
+  }
+
+  .stagger-x > *,
+  .stagger-y > * {
+    animation: rise-in 280ms ease-out backwards;
+  }
+  .stagger-x > * {
+    animation-name: slide-in-x;
+  }
+  .stagger-x > :nth-child(2), .stagger-y > :nth-child(2) { animation-delay: 40ms; }
+  .stagger-x > :nth-child(3), .stagger-y > :nth-child(3) { animation-delay: 80ms; }
+  .stagger-x > :nth-child(4), .stagger-y > :nth-child(4) { animation-delay: 120ms; }
+  .stagger-x > :nth-child(5), .stagger-y > :nth-child(5) { animation-delay: 160ms; }
+  .stagger-x > :nth-child(6), .stagger-y > :nth-child(6) { animation-delay: 200ms; }
+  .stagger-x > :nth-child(7), .stagger-y > :nth-child(7) { animation-delay: 240ms; }
+  .stagger-x > :nth-child(8), .stagger-y > :nth-child(8) { animation-delay: 280ms; }
+  .stagger-x > :nth-child(n + 9), .stagger-y > :nth-child(n + 9) { animation-delay: 320ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer { animation: none; background-image: none; }
+  .row-in, .page-in, .stagger-x > *, .stagger-y > * { animation: none; }
 }

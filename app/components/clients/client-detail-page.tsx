@@ -181,7 +181,7 @@ export function ClientDetailPage({ clientId }: { clientId: string }) {
         </Alert>
       ) : null}
 
-      <div className="grid items-start gap-4 lg:grid-cols-[18rem_1fr]">
+      <div className="stagger-y grid items-start gap-4 lg:grid-cols-[18rem_1fr]">
         <Card className="gap-3 py-4">
           <CardHeader className="px-4">
             <CardTitle className="text-sm">Datos</CardTitle>

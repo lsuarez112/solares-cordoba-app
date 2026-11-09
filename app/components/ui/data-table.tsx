@@ -8,6 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type PaginationState,
+  type Row,
   type SortingState,
   type Table as TanstackTable,
   useReactTable,
@@ -72,6 +73,14 @@ type DataTableViewProps<TData> = {
   legend?: React.ReactNode
   /** Alto máximo del área con scroll de la tabla (clase max-h-*). */
   maxHeightClassName?: string
+  /**
+   * Vista de tarjetas para el celular (debajo de sm): misma fila (filtros, orden y
+   * paginación), sin scroll horizontal. `actions` es la celda de la columna "actions".
+   */
+  mobileCard?: (
+    row: Row<TData>,
+    ctx: { actions: React.ReactNode; cell: (columnId: string) => React.ReactNode },
+  ) => React.ReactNode
 }
 
 export function DataTableView<TData>({
@@ -85,12 +94,35 @@ export function DataTableView<TData>({
   rowCountLabel = "registros",
   legend,
   maxHeightClassName,
+  mobileCard,
 }: DataTableViewProps<TData>) {
   const filteredCount = table.getFilteredRowModel().rows.length
+  const rows = table.getRowModel().rows
+
+  /** Celda ya renderizada de una columna (para reutilizarla en la tarjeta mobile). */
+  const cellOf = (row: Row<TData>, columnId: string) => {
+    const cell = row.getAllCells().find((c) => c.column.id === columnId)
+    return cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null
+  }
 
   return (
     <div className="min-w-0">
-      <div className="overflow-hidden rounded-lg border bg-card">
+      {mobileCard ? (
+        <div className="flex flex-col gap-2 sm:hidden">
+          {rows.length ? (
+            rows.map((row, index) => (
+              <div key={row.id} className="row-in" style={{ "--i": index } as React.CSSProperties}>
+                {mobileCard(row, { actions: cellOf(row, "actions"), cell: (id) => cellOf(row, id) })}
+              </div>
+            ))
+          ) : (
+            <div className="rounded-lg border bg-card">
+              {emptyState ?? <p className="py-12 text-center text-sm text-muted-foreground">{emptyMessage}</p>}
+            </div>
+          )}
+        </div>
+      ) : null}
+      <div className={cn("overflow-hidden rounded-lg border bg-card", mobileCard && "hidden sm:block")}>
         <TableScrollArea maxHeightClassName={maxHeightClassName}>
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-card">
@@ -113,11 +145,13 @@ export function DataTableView<TData>({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
+              {rows.length ? (
+                rows.map((row, index) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    className="row-in"
+                    style={{ "--i": index } as React.CSSProperties}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell

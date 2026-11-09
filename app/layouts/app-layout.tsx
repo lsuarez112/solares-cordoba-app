@@ -1,4 +1,4 @@
-import { Outlet } from "react-router"
+import { Outlet, useLocation } from "react-router"
 
 import { AppHeader } from "~/components/header"
 import { AppSidebar } from "~/components/sidebar/app-sidebar"
@@ -10,6 +10,7 @@ import {
 
 /** Shell con sidebar para el área autenticada. */
 export default function AppLayout() {
+  const { pathname } = useLocation()
   return (
     <PrivateRoute>
       <SidebarProvider className="h-svh min-w-0 overflow-hidden">
@@ -17,7 +18,8 @@ export default function AppLayout() {
         <SidebarInset className="flex h-svh min-h-0 min-w-0 flex-col overflow-hidden">
           <AppHeader />
           <div className="page-scroll">
-            <div className="page-content p-4 md:p-6">
+            {/* key: cada sección entra con un fundido suave. */}
+            <div key={pathname} className="page-content page-in p-4 md:p-6">
               <Outlet />
             </div>
           </div>

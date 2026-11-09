@@ -54,6 +54,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { formatAiUsd } from "~/domain/ai/ai.schemas"
 import type { QuoteDraftLine } from "~/domain/quotes/quotes.schemas"
 import type { CurrentExchangeRate } from "~/domain/settings/settings.schemas"
+import { useIsMobile } from "~/hooks/use-mobile"
 import { usePermission } from "~/hooks/use-permission"
 import { useQuoteActions } from "~/hooks/use-quote-actions"
 import { useQuoteShare } from "~/hooks/use-quote-share"
@@ -362,7 +363,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
       ) : null}
 
       <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[1fr_20rem]">
-        <div className="flex min-w-0 flex-col gap-5">
+        <div className="stagger-y flex min-w-0 flex-col gap-5">
           {draft ? (
             <QuoteItemsEditor
               lines={draft.lines}
@@ -420,7 +421,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
           />
         </div>
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-4">
+        <div className="stagger-y flex flex-col gap-4 lg:sticky lg:top-4">
           <QuoteTotalsCard
             totals={totals}
             usdArs={isDraft ? (rate?.usd_to_ars ?? null) : quote.usd_ars}
@@ -551,6 +552,37 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
 
 /** Ítems de un emitido: precios congelados, solo lectura. */
 function IssuedItemsTable({ detail }: { detail: QuoteDetail }) {
+  const isMobile = useIsMobile()
+  if (isMobile) {
+    return (
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-medium">Ítems</h2>
+          <Badge variant="secondary">{detail.items.length}</Badge>
+        </div>
+        <ul className="flex flex-col gap-2">
+          {detail.items.map((i, index) => (
+            <li
+              key={i.id}
+              className="row-in flex flex-col gap-1 rounded-lg border bg-card p-2.5"
+              style={{ "--i": index } as React.CSSProperties}
+            >
+              <span className="line-clamp-2 text-sm">{i.description}</span>
+              <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-mono">{i.code}</span>
+                <span className="tabular-nums">
+                  {i.qty.toLocaleString("es-AR")} × {formatUsd(i.unit_price_usd)}
+                </span>
+                <span className="ml-auto font-mono text-sm font-medium text-foreground tabular-nums">
+                  {formatUsd(i.subtotal_usd)}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
@@ -570,8 +602,8 @@ function IssuedItemsTable({ detail }: { detail: QuoteDetail }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {detail.items.map((i) => (
-                <TableRow key={i.id}>
+              {detail.items.map((i, index) => (
+                <TableRow key={i.id} className="row-in" style={{ "--i": index } as React.CSSProperties}>
                   <TableCell className="truncate font-mono text-xs">{i.code}</TableCell>
                   <TableCell>
                     <HintTooltip content={i.description}>

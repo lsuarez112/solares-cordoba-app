@@ -147,7 +147,7 @@ export function CompanySettingsCard({ canEdit }: { canEdit: boolean }) {
                 disabled={!canEdit || !company}
                 onFileSelect={handleLogo}
               />
-              <fieldset disabled={!canEdit} className="grid items-start gap-4 sm:grid-cols-2">
+              <fieldset disabled={!canEdit} className="stagger-x grid items-start gap-4 sm:grid-cols-2">
                 {FIELDS.map((f) => (
                   <FormField
                     key={f.name}

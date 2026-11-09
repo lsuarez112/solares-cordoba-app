@@ -13,7 +13,9 @@ import { usePermission } from "~/hooks/use-permission"
 import { formatDateTime } from "~/lib/dates"
 import { GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
 import { formatArs, formatUsd } from "~/lib/quotes/quote-totals"
+import { computeHomeStats } from "~/lib/quotes/home-stats"
 import { quotesService } from "~/services/quotes.service"
+import { WeeklyQuotesChart } from "~/components/pages/weekly-quotes-chart"
 
 function QuoteRow({ q }: { q: QuoteListItem }) {
   return (
@@ -37,19 +39,41 @@ function QuoteRow({ q }: { q: QuoteListItem }) {
   )
 }
 
+function StatTile({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border bg-card px-3 py-2.5">
+      <span className="truncate text-[11px] text-muted-foreground">{label}</span>
+      <span className="truncate font-mono text-base font-semibold tabular-nums sm:text-lg">{value}</span>
+      <span className="truncate text-[11px] text-muted-foreground">{hint}</span>
+    </div>
+  )
+}
+
 /** Inicio: último presupuesto, recientes y "Nuevo presupuesto" (pensado para el celular). */
 export function HomePage() {
   const canCreate = usePermission("quotes", "create")
-  const [quotes, setQuotes] = React.useState<QuoteListItem[] | null>(null)
+  const [all, setAll] = React.useState<QuoteListItem[] | null>(null)
 
   React.useEffect(() => {
-    quotesService.latest(6).then(setQuotes).catch(() => setQuotes([]))
+    quotesService.list().then(setAll).catch(() => setAll([]))
   }, [])
 
+  // Recientes: la revisión vigente de cada número, por última modificación.
+  const quotes = React.useMemo(
+    () =>
+      all
+        ? all
+            .filter((q) => q.is_current)
+            .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+            .slice(0, 6)
+        : null,
+    [all],
+  )
+  const stats = React.useMemo(() => (all ? computeHomeStats(all) : null), [all])
   const last = quotes?.[0] ?? null
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+    <div className="stagger-y mx-auto flex w-full max-w-3xl flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Inicio</h1>
         <div className="flex gap-2">
@@ -69,13 +93,48 @@ export function HomePage() {
       </div>
 
       {canCreate ? (
-        <Button asChild size="lg" className="h-14 text-base">
+        <Button asChild size="lg" className="h-12 text-base">
           <Link to="/presupuestos/nuevo">
             <FilePlus2 data-icon="inline-start" />
             Nuevo presupuesto
           </Link>
         </Button>
       ) : null}
+
+      {stats === null ? (
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            <Skeleton className="h-[4.5rem]" />
+            <Skeleton className="h-[4.5rem]" />
+            <Skeleton className="h-[4.5rem]" />
+          </div>
+          <Skeleton className="h-56" />
+        </>
+      ) : (
+        <>
+          <div className="stagger-x grid grid-cols-3 gap-2">
+            <StatTile label="Este mes" value={String(stats.month.created)} hint="presupuestos" />
+            <StatTile
+              label="Emitido"
+              value={`USD ${Math.round(stats.month.issuedUsd).toLocaleString("es-AR")}`}
+              hint={`${stats.month.issued} emitido${stats.month.issued === 1 ? "" : "s"}`}
+            />
+            <StatTile
+              label="Emisión"
+              value={stats.month.issueRate != null ? `${stats.month.issueRate} %` : "—"}
+              hint="de los creados"
+            />
+          </div>
+          <Card className="gap-3 py-4">
+            <CardHeader className="px-4">
+              <CardTitle className="text-sm">Presupuestos por semana</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4">
+              <WeeklyQuotesChart weeks={stats.weeks} />
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {quotes === null ? (
         <Skeleton className="h-40" />

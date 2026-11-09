@@ -159,7 +159,7 @@ export function AiUsageTab({
                   </AlertDescription>
                 </Alert>
               ) : null}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="stagger-x grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Stat
                   label="Saldo estimado"
                   value={summary.topups_usd > 0 ? formatAiUsd(summary.balance_usd, 2) : "—"}

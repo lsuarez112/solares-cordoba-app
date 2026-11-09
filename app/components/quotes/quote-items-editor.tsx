@@ -52,6 +52,7 @@ import {
 } from "~/components/ui/table"
 import { TableScrollArea } from "~/components/ui/table-scroll-area"
 import type { Product, ProductCategory } from "~/domain/products/products.schemas"
+import { useIsMobile } from "~/hooks/use-mobile"
 import type { QuoteDraftLine, QuoteItem } from "~/domain/quotes/quotes.schemas"
 import { formatUsd, lineSubtotal } from "~/lib/quotes/quote-totals"
 import { cn } from "~/lib/utils"
@@ -100,6 +101,8 @@ export function QuoteItemsEditor({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
+  // En el celular, tarjetas (el drag & drop no admite dos listas con los mismos ids).
+  const isMobile = useIsMobile()
   const loadedCodes = React.useMemo(() => new Set(lines.map((l) => l.code)), [lines])
   const activeProducts = React.useMemo(() => products.filter((p) => p.active), [products])
 
@@ -177,6 +180,24 @@ export function QuoteItemsEditor({
             </EmptyContent>
           ) : null}
         </Empty>
+      ) : isMobile ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={lines.map((l) => l.key)} strategy={verticalListSortingStrategy}>
+            <ul className="flex flex-col gap-2">
+              {lines.map((line, index) => (
+                <SortableLineCard
+                  key={line.key}
+                  index={index}
+                  line={line}
+                  product={line.product_id ? catalogById.get(line.product_id) : undefined}
+                  canEdit={canEdit}
+                  onQty={(qty) => update(line.key, { qty })}
+                  onRemove={() => onChange(lines.filter((l) => l.key !== line.key))}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card">
           <TableScrollArea maxHeightClassName="max-h-[min(60svh,40rem)]">
@@ -197,9 +218,10 @@ export function QuoteItemsEditor({
                 </TableHeader>
                 <TableBody>
                   <SortableContext items={lines.map((l) => l.key)} strategy={verticalListSortingStrategy}>
-                    {lines.map((line) => (
+                    {lines.map((line, index) => (
                       <SortableLine
                         key={line.key}
+                        index={index}
                         line={line}
                         product={line.product_id ? catalogById.get(line.product_id) : undefined}
                         canEdit={canEdit}
@@ -228,13 +250,104 @@ export function QuoteItemsEditor({
   )
 }
 
+type LineProps = {
+  index: number
+  line: QuoteDraftLine
+  product: Product | undefined
+  canEdit: boolean
+  onQty: (qty: number) => void
+  onRemove: () => void
+}
+
+/** Texto del input de cantidad: se edita libre y se confirma si es > 0. */
+function useQtyInput(qty: number, onQty: (qty: number) => void) {
+  const [text, setText] = React.useState(String(qty))
+  React.useEffect(() => setText(String(qty)), [qty])
+  return {
+    value: text,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setText(e.target.value)
+      const n = Number(e.target.value)
+      if (Number.isFinite(n) && n > 0) onQty(n)
+    },
+    onBlur: () => setText(String(qty)),
+  }
+}
+
+/** Ítem como tarjeta (celular): descripción completa, cantidad y subtotal. */
+function SortableLineCard({ index, line, product, canEdit, onQty, onRemove }: LineProps) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
+    useSortable({ id: line.key, disabled: !canEdit })
+  const qtyInput = useQtyInput(line.qty, onQty)
+  const noPrice = !(line.unit_price_usd > 0)
+  const inactive = product != null && !product.active
+  const missing = line.product_id != null && product == null
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition, "--i": index } as React.CSSProperties}
+      className={cn("row-in flex gap-2 rounded-lg border bg-card p-2.5", isDragging && "relative z-20 shadow-md")}
+    >
+      {canEdit ? (
+        <button
+          type="button"
+          ref={setActivatorNodeRef}
+          className="-ml-1 flex cursor-grab touch-none items-center px-1 text-muted-foreground active:cursor-grabbing"
+          aria-label="Reordenar"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" />
+        </button>
+      ) : null}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div className="flex items-start gap-2">
+          <span className="line-clamp-2 min-w-0 flex-1 text-sm">{line.description}</span>
+          {canEdit ? <DeleteIconButton label="Quitar ítem" onClick={onRemove} /> : null}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="font-mono">{line.code}</span>
+          {inactive || missing ? (
+            <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="size-3" />
+              {missing ? "Ya no existe" : "Inactivo"}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-2">
+          {canEdit ? (
+            <Input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              min={0}
+              className="h-8 w-20 text-right tabular-nums"
+              aria-label="Cantidad"
+              {...qtyInput}
+            />
+          ) : (
+            <span className="tabular-nums">{line.qty.toLocaleString("es-AR")}</span>
+          )}
+          <span className={cn("font-mono text-xs tabular-nums text-muted-foreground", noPrice && "text-amber-700 dark:text-amber-400")}>
+            × {noPrice ? "sin precio" : formatUsd(line.unit_price_usd)}
+          </span>
+          <span className="ml-auto font-mono text-sm font-medium tabular-nums">{formatUsd(lineSubtotal(line))}</span>
+        </div>
+      </div>
+    </li>
+  )
+}
+
 function SortableLine({
+  index,
   line,
   product,
   canEdit,
   onQty,
   onRemove,
 }: {
+  index: number
   line: QuoteDraftLine
   product: Product | undefined
   canEdit: boolean
@@ -253,8 +366,8 @@ function SortableLine({
   return (
     <TableRow
       ref={setNodeRef}
-      style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn(isDragging && "relative z-20 bg-background shadow-md")}
+      style={{ transform: CSS.Translate.toString(transform), transition, "--i": index } as React.CSSProperties}
+      className={cn("row-in", isDragging && "relative z-20 bg-background shadow-md")}
     >
       <TableCell className="w-8 pr-0">
         {canEdit ? (

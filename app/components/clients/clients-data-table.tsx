@@ -17,11 +17,13 @@ import {
   type ClientsTableColumnsOptions,
 } from "~/components/clients/clients-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
 import {
   DataTableToolbar,
   FILTER_ALL,
   type DataTableFilter,
 } from "~/components/ui/data-table-toolbar"
+import { formatDate } from "~/lib/dates"
 import type { ClientListItem } from "~/domain/clients/clients.schemas"
 
 type ClientsDataTableProps = Omit<ClientsTableColumnsOptions, "duplicatedPhones"> & {
@@ -149,6 +151,26 @@ export function ClientsDataTable({ data, phoneFilter, ...options }: ClientsDataT
         showRowCount
         totalCount={data.length}
         rowCountLabel="clientes"
+        mobileCard={(row, { actions, cell }) => {
+          const c = row.original
+          return (
+            <MobileRowCard
+              to={`/clientes/${c.id}`}
+              title={c.name}
+              subtitle={[c.city, c.last_quote_at ? `último presupuesto ${formatDate(c.last_quote_at)}` : null]
+                .filter(Boolean)
+                .join(" · ") || "Sin presupuestos"}
+              meta={c.phone ? <span className="text-xs">{cell("phone")}</span> : null}
+              trailing={
+                <span className="flex flex-col items-end">
+                  <span className="text-sm font-semibold tabular-nums">{c.quotes_count}</span>
+                  <span className="text-[11px] text-muted-foreground">presup.</span>
+                </span>
+              }
+              actions={actions}
+            />
+          )
+        }}
       />
     </div>
   )
