@@ -57,7 +57,9 @@ export function RolesManagement() {
     return byStatus
   }, [roleItems, statusFilter])
 
-  const isInitialLoading = loading && !initialized
+  // Skeleton hasta la primera carga (o su error), también antes de que arranque.
+  const loadError = useRolesStore((s) => s.loadError)
+  const isInitialLoading = !initialized && !loadError
   const isRefreshing = loading && initialized
 
   const handleNewRole = () => openModal()

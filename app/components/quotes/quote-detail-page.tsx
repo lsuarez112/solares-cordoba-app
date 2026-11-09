@@ -9,13 +9,19 @@ import {
   FileCheck2,
   GitBranchPlus,
   History,
-  MessageCircle,
   Save,
+  Sparkles,
   Trash2,
 } from "lucide-react"
 
 import { QuoteItemsEditor, itemsToDraftLines } from "~/components/quotes/quote-items-editor"
+import {
+  QuoteRequestEditDialog,
+  storedToRequest,
+  type QuoteRequestEdit,
+} from "~/components/quotes/quote-request-edit-dialog"
 import { QuoteRequestSummary } from "~/components/quotes/quote-request-summary"
+import { QuoteShareMenu } from "~/components/quotes/quote-share-menu"
 import { IvaChoiceField, QuoteTotalsCard } from "~/components/quotes/quote-totals-card"
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import {
@@ -45,11 +51,12 @@ import {
 } from "~/components/ui/table"
 import { TableScrollArea } from "~/components/ui/table-scroll-area"
 import { Textarea } from "~/components/ui/textarea"
+import { formatAiUsd } from "~/domain/ai/ai.schemas"
 import type { QuoteDraftLine } from "~/domain/quotes/quotes.schemas"
 import type { CurrentExchangeRate } from "~/domain/settings/settings.schemas"
 import { usePermission } from "~/hooks/use-permission"
 import { useQuoteActions } from "~/hooks/use-quote-actions"
-import { whatsappLink } from "~/lib/clients/phone"
+import { useQuoteShare } from "~/hooks/use-quote-share"
 import { formatDate, formatDateTime } from "~/lib/dates"
 import { GRID_TYPE_COLORS, GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
 import {
@@ -74,6 +81,8 @@ type DraftState = {
   notes: string
   client_notes: string
   iva: IvaChoice
+  /** Pedido editado (null = sin cambios). */
+  request: QuoteRequestEdit | null
 }
 
 export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
@@ -95,6 +104,8 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
   const [busy, setBusy] = React.useState<null | "save" | "issue">(null)
   const [confirmIssue, setConfirmIssue] = React.useState(false)
   const [notFound, setNotFound] = React.useState(false)
+  const [editRequest, setEditRequest] = React.useState(false)
+  const share = useQuoteShare()
 
   const catalogById = React.useMemo(() => new Map(products.map((p) => [p.id, p])), [products])
 
@@ -136,6 +147,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
       notes: detail.quote.notes ?? "",
       client_notes: detail.quote.client_notes ?? "",
       iva: ivaChoiceFromPct(detail.quote.iva_pct),
+      request: null,
     })
     setDirty(false)
     // catalogById cambia de identidad al refrescar; alcanza con que el catálogo esté listo.
@@ -202,17 +214,31 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
   const title = listItem.display_number ?? "Borrador"
   const currentIssued = revisions.find((r) => r.is_current && r.status === "issued")
   const newerRevision = revisions.find((r) => r.revision > quote.revision)
-  const wa = whatsappLink(listItem.client_phone)
+  const requestInput = draft?.request?.input ?? quote.input
+  const requestSizing = draft?.request ? draft.request.sizing : quote.sizing
+
+  const draftPatch = (d: DraftState) => ({
+    iva_pct: ivaPct,
+    notes: d.notes,
+    client_notes: d.client_notes,
+    ...(d.request
+      ? {
+          input: d.request.input as unknown as Record<string, unknown>,
+          sizing: d.request.sizing as unknown as Record<string, unknown> | null,
+          grid_type: d.request.grid_type,
+        }
+      : {}),
+  })
 
   const save = async (): Promise<boolean> => {
     if (!draft) return false
     setBusy("save")
     try {
-      await quotesService.saveDraft(
-        quote.id,
-        { iva_pct: ivaPct, notes: draft.notes, client_notes: draft.client_notes },
-        draft.lines,
-      )
+      const saved = await quotesService.saveDraft(quote.id, draftPatch(draft), draft.lines)
+      if (draft.request) {
+        // El encabezado (tipo de sistema) y el resumen salen de la fila guardada.
+        setDetail((d) => (d ? { ...d, quote: saved, listItem: { ...d.listItem, grid_type: saved.grid_type } } : d))
+      }
       setDirty(false)
       appToast.success("Borrador guardado")
       return true
@@ -228,15 +254,11 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
     if (!draft) return
     setBusy("issue")
     try {
-      await quotesService.saveDraft(
-        quote.id,
-        { iva_pct: ivaPct, notes: draft.notes, client_notes: draft.client_notes },
-        draft.lines,
-      )
-      const issued = await quotesService.issue(quote.id, ivaPct)
+      await quotesService.saveDraft(quote.id, draftPatch(draft), draft.lines)
+      await quotesService.issue(quote.id, ivaPct)
       setDirty(false)
       setConfirmIssue(false)
-      appToast.success(`Presupuesto emitido${issued.number ? ` (N° ${issued.number})` : ""}`)
+      appToast.success(`Presupuesto ${title} emitido`)
       await load()
     } catch (error) {
       appToast.error("No se pudo emitir", { description: errorDescription(error) })
@@ -261,9 +283,14 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
               {isDraft ? "Borrador" : "Emitido"}
               {quote.number != null ? ` · ${revisionLabel(quote.revision)}` : ""}
             </Badge>
-            {quote.grid_type ? (
-              <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", GRID_TYPE_COLORS[quote.grid_type])}>
-                {GRID_TYPE_LABELS[quote.grid_type]}
+            {(draft?.request?.grid_type ?? quote.grid_type) ? (
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs font-medium",
+                  GRID_TYPE_COLORS[(draft?.request?.grid_type ?? quote.grid_type)!],
+                )}
+              >
+                {GRID_TYPE_LABELS[(draft?.request?.grid_type ?? quote.grid_type)!]}
               </span>
             ) : null}
           </div>
@@ -277,14 +304,12 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {wa ? (
-            <Button variant="outline" size="sm" asChild>
-              <a href={wa} target="_blank" rel="noopener noreferrer">
-                <MessageCircle data-icon="inline-start" className="text-green-600 dark:text-green-400" />
-                WhatsApp
-              </a>
-            </Button>
-          ) : null}
+          <QuoteShareMenu
+            quoteId={quote.id}
+            share={share}
+            clientPhone={listItem.client_phone}
+            blockedReason={dirty ? "Guardá el borrador antes de compartirlo" : null}
+          />
           {canCreate ? (
             <Button variant="outline" size="sm" onClick={() => void actions.onDuplicate(listItem)}>
               <CopyPlus data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
@@ -388,7 +413,11 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
             </div>
           </div>
 
-          <QuoteRequestSummary quote={quote} />
+          <QuoteRequestSummary
+            input={requestInput as Record<string, unknown> | null}
+            sizing={requestSizing}
+            onEdit={editable ? () => setEditRequest(true) : undefined}
+          />
         </div>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-4">
@@ -410,22 +439,22 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
           </QuoteTotalsCard>
 
           {editable ? (
-            <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:flex-col sm:border-0 sm:bg-transparent sm:p-0">
+            <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:grid-cols-1 sm:border-0 sm:bg-transparent sm:p-0">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="w-full"
                 disabled={!dirty || busy !== null}
                 onClick={() => void save()}
               >
                 {busy === "save" ? <Spinner data-icon="inline-start" /> : <Save data-icon="inline-start" />}
                 Guardar borrador
               </Button>
-              <HintTooltip content={issueBlocker ?? "Congela precios y cotización y asigna el número"}>
-                <span className="flex flex-1">
+              <HintTooltip content={issueBlocker ?? "Congela precios y cotización"}>
+                <span className="flex">
                   <Button
                     type="button"
-                    className="flex-1"
+                    className="w-full"
                     disabled={issueBlocker != null || busy !== null}
                     onClick={() => setConfirmIssue(true)}
                   >
@@ -470,12 +499,24 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
             </Card>
           ) : null}
 
+          <AiNote quote={quote} costUsd={listItem.ai_cost_usd} requests={listItem.ai_requests_count} />
+
           <p className="px-1 text-xs text-muted-foreground">
             Creado {formatDateTime(quote.created_at)}
             {quote.issued_at ? ` · emitido ${formatDateTime(quote.issued_at)}` : ""}
           </p>
         </div>
       </div>
+
+      {draft ? (
+        <QuoteRequestEditDialog
+          open={editRequest}
+          onOpenChange={setEditRequest}
+          initial={storedToRequest(requestInput as Record<string, unknown> | null, draft.request?.grid_type ?? quote.grid_type)}
+          kitGridType={listItem.kit_id ? quote.grid_type : null}
+          onApply={(request) => patchDraft({ request })}
+        />
+      ) : null}
 
       <AlertDialog open={confirmIssue} onOpenChange={(open) => busy === null && setConfirmIssue(open)}>
         <AlertDialogContent>
@@ -485,7 +526,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
               <div className="flex flex-col gap-2 text-sm">
                 <p>
                   Se congelan los precios vigentes y la cotización
-                  {rate ? ` (USD 1 = $ ${rate.usd_to_ars.toLocaleString("es-AR")})` : ""} y se asigna el número.
+                  {rate ? ` (USD 1 = $ ${rate.usd_to_ars.toLocaleString("es-AR")})` : ""} y queda como definitivo.
                   Después no se puede modificar: para cambiarlo se crea una revisión.
                 </p>
                 <p className="font-medium text-foreground">
@@ -518,21 +559,21 @@ function IssuedItemsTable({ detail }: { detail: QuoteDetail }) {
       </div>
       <div className="overflow-hidden rounded-lg border bg-card">
         <TableScrollArea maxHeightClassName="max-h-[min(60svh,40rem)]">
-          <Table>
+          <Table className="w-full min-w-[32rem] table-fixed">
             <TableHeader className="sticky top-0 z-10 bg-card">
               <TableRow>
-                <TableHead>Código</TableHead>
+                <TableHead className="w-20">Código</TableHead>
                 <TableHead>Descripción</TableHead>
-                <TableHead className="text-right">Cant.</TableHead>
-                <TableHead className="text-right">Unitario</TableHead>
-                <TableHead className="text-right">Subtotal</TableHead>
+                <TableHead className="w-16 text-right">Cant.</TableHead>
+                <TableHead className="w-24 text-right">Unitario</TableHead>
+                <TableHead className="w-24 text-right">Subtotal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {detail.items.map((i) => (
                 <TableRow key={i.id}>
-                  <TableCell className="font-mono text-xs">{i.code}</TableCell>
-                  <TableCell className="max-w-[26rem]">
+                  <TableCell className="truncate font-mono text-xs">{i.code}</TableCell>
+                  <TableCell>
                     <HintTooltip content={i.description}>
                       <span className="block truncate">{i.description}</span>
                     </HintTooltip>
@@ -547,5 +588,35 @@ function IssuedItemsTable({ detail }: { detail: QuoteDetail }) {
         </TableScrollArea>
       </div>
     </section>
+  )
+}
+
+type StoredAiSummary = {
+  select?: { reason?: string; warnings?: string[]; source?: string; followed?: boolean } | null
+} | null
+
+/** Sugerencia de la IA guardada al crear el presupuesto + costo de sus consultas. */
+function AiNote({ quote, costUsd, requests }: { quote: QuoteDetail["quote"]; costUsd: number; requests: number }) {
+  const summary = quote.ai_summary as StoredAiSummary
+  const select = summary?.select
+  if (!select?.reason && requests === 0) return null
+  return (
+    <div className="flex flex-col gap-1 rounded-lg border border-violet-200 bg-violet-50/50 p-3 text-xs dark:border-violet-900 dark:bg-violet-950/20">
+      <span className="flex items-center gap-1.5 font-medium text-foreground">
+        <Sparkles className="size-3.5 text-violet-600 dark:text-violet-400" />
+        IA
+        {requests > 0 ? (
+          <span className="ml-auto font-mono font-normal text-muted-foreground tabular-nums">
+            {requests} {requests === 1 ? "consulta" : "consultas"} · {formatAiUsd(costUsd)}
+          </span>
+        ) : null}
+      </span>
+      {select?.reason ? (
+        <p className="text-muted-foreground">
+          {select.source === "rule" ? "Kit sugerido sin IA: " : select.followed === false ? "Sugirió otro kit: " : "Kit sugerido: "}
+          {select.reason}
+        </p>
+      ) : null}
+    </div>
   )
 }

@@ -41,25 +41,27 @@ export function computeQuoteTotals(
   }
 }
 
-/** Elección de IVA en la confirmación (D7). */
+/** Elección de IVA en la confirmación (D7): 21 %, un % específico o sin IVA. */
+export type IvaMode = "standard" | "custom" | "none"
 export type IvaChoice = {
-  include: boolean
-  /** null = 21 %; un número = IVA específico. */
+  mode: IvaMode
+  /** Solo para mode = "custom". */
   custom_pct: number | null
 }
 
 export function ivaPctFromChoice(choice: IvaChoice): number {
-  if (!choice.include) return 0
+  if (choice.mode === "none") return 0
+  if (choice.mode === "standard") return STANDARD_IVA_PCT
   const custom = choice.custom_pct
-  return custom != null && Number.isFinite(custom) ? Math.min(Math.max(custom, 0), 100) : STANDARD_IVA_PCT
+  return custom != null && Number.isFinite(custom) ? Math.min(Math.max(custom, 0), 100) : 0
 }
 
 export function ivaChoiceFromPct(pct: number): IvaChoice {
-  if (!pct) return { include: false, custom_pct: null }
-  return { include: true, custom_pct: pct === STANDARD_IVA_PCT ? null : pct }
+  if (!pct) return { mode: "none", custom_pct: null }
+  return pct === STANDARD_IVA_PCT ? { mode: "standard", custom_pct: null } : { mode: "custom", custom_pct: pct }
 }
 
-/** P-000042 / P-000042-R1; null si es un borrador nunca emitido. */
+/** P-000042 / P-000042-R1; null si no tiene número. */
 export function formatQuoteNumber(
   prefix: string,
   number: number | null,

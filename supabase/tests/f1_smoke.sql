@@ -159,7 +159,7 @@ begin
   -- --------------------------------------------------------- duplicar
   v_quote := public.duplicate_quote(v_rev);
   select * into q from public.quotes where id = v_quote;
-  if q.number is not null or q.status <> 'draft' then raise exception 'duplicate_quote'; end if;
+  if q.number is null or q.number = (select number from public.quotes where id = v_rev) or q.status <> 'draft' or q.revision <> 0 then raise exception 'duplicate_quote'; end if;
   delete from public.quotes where id = v_quote;
   perform pg_temp.log(format('OK duplicate_quote'));
 

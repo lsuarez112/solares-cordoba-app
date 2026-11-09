@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { AlertTriangle, Battery, Check, PackageOpen, Sparkles, Sun } from "lucide-react"
+import { AlertTriangle, Battery, Bot, Check, PackageOpen, Sparkles, Sun } from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
+import { Button } from "~/components/ui/button"
 import { Checkbox } from "~/components/ui/checkbox"
 import { Label } from "~/components/ui/label"
 import {
@@ -14,6 +15,8 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Skeleton } from "~/components/ui/skeleton"
+import { Spinner } from "~/components/ui/spinner"
+import { formatAiUsd, type AiSelectResult } from "~/domain/ai/ai.schemas"
 import type { Kit, KitOption } from "~/domain/kits/kits.schemas"
 import type { KitCandidate } from "~/domain/quotes/quotes.schemas"
 import { GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
@@ -44,10 +47,12 @@ type KitChoiceStepProps = {
   budgetCap: number | null
   value: KitChoice
   onChange: (next: KitChoice) => void
+  /** Sugerencia con IA entre los candidatos (si está habilitada). */
+  ai?: { enabled: boolean; busy: boolean; result: AiSelectResult | null; onAsk: () => void }
 }
 
 /** Resumen del dimensionamiento + candidatos de la base (sin IA) + elección manual. */
-export function KitChoiceStep({ sizing, candidates, kits, budgetCap, value, onChange }: KitChoiceStepProps) {
+export function KitChoiceStep({ sizing, candidates, kits, budgetCap, value, onChange, ai }: KitChoiceStepProps) {
   const [options, setOptions] = React.useState<KitOption[] | null>(null)
 
   React.useEffect(() => {
@@ -119,7 +124,20 @@ export function KitChoiceStep({ sizing, candidates, kits, budgetCap, value, onCh
 
       {/* Candidatos */}
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">Kits sugeridos</h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">Kits sugeridos</h3>
+          {ai?.enabled && candidates && candidates.length > 1 ? (
+            <Button type="button" size="sm" variant="outline" disabled={ai.busy} onClick={ai.onAsk}>
+              {ai.busy ? (
+                <Spinner data-icon="inline-start" />
+              ) : (
+                <Sparkles data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
+              )}
+              {ai.busy ? "Consultando…" : ai.result ? "Volver a consultar" : "Pedir sugerencia a la IA"}
+            </Button>
+          ) : null}
+        </div>
+        {ai?.result ? <AiSuggestionNote result={ai.result} kitName={kits.find((k) => k.id === ai.result?.kit_id)?.name ?? null} /> : null}
         {candidates === null ? (
           <div className="flex flex-col gap-2">
             <Skeleton className="h-20" />
@@ -154,6 +172,12 @@ export function KitChoiceStep({ sizing, candidates, kits, budgetCap, value, onCh
                             <Badge className="h-5 bg-emerald-600 px-1.5 text-white hover:bg-emerald-600">
                               <Sparkles data-icon="inline-start" />
                               Recomendado
+                            </Badge>
+                          ) : null}
+                          {ai?.result?.kit_id === c.kit_id && ai.result.source === "ai" ? (
+                            <Badge className="h-5 bg-violet-600 px-1.5 text-white hover:bg-violet-600">
+                              <Bot data-icon="inline-start" />
+                              Elegido por IA
                             </Badge>
                           ) : null}
                           {c.phases === "tri" ? (
@@ -277,6 +301,38 @@ export function KitChoiceStep({ sizing, candidates, kits, budgetCap, value, onCh
             </ul>
           )}
         </div>
+      ) : null}
+    </div>
+  )
+}
+
+function AiSuggestionNote({ result, kitName }: { result: AiSelectResult; kitName: string | null }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-md border border-violet-200 bg-violet-50/60 p-2.5 text-sm dark:border-violet-900 dark:bg-violet-950/30">
+      <p className="flex items-start gap-1.5">
+        <Sparkles className="mt-0.5 size-3.5 shrink-0 text-violet-600 dark:text-violet-400" />
+        <span>
+          {result.source === "rule" ? (
+            <span className="font-medium">Sugerencia directa (sin IA): </span>
+          ) : kitName ? (
+            <span className="font-medium">{kitName}: </span>
+          ) : (
+            <span className="font-medium">Ningún candidato encaja: </span>
+          )}
+          {result.reason}
+          {result.cost_usd ? (
+            <span className="ml-1.5 text-xs text-muted-foreground">({formatAiUsd(result.cost_usd)})</span>
+          ) : null}
+        </span>
+      </p>
+      {result.warnings.map((w) => (
+        <p key={w} className="flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+          {w}
+        </p>
+      ))}
+      {result.missing_info.length > 0 ? (
+        <p className="text-xs text-muted-foreground">Conviene confirmar: {result.missing_info.join("; ")}.</p>
       ) : null}
     </div>
   )

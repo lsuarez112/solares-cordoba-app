@@ -24,6 +24,7 @@ import {
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
+import { Skeleton } from "~/components/ui/skeleton"
 import { Spinner } from "~/components/ui/spinner"
 import { Switch } from "~/components/ui/switch"
 import {
@@ -150,7 +151,10 @@ export function ExchangeRateCard({
       <CardContent className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border p-4">
           {loading ? (
-            <Spinner />
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-8 w-40" />
+              <Skeleton className="h-3 w-56" />
+            </div>
           ) : current ? (
             <div>
               <p className="text-2xl font-semibold tabular-nums">$ {ars(current.usd_to_ars)}</p>
@@ -230,7 +234,9 @@ export function ExchangeRateCard({
           </Form>
         ) : null}
 
-        {history.length > 0 ? (
+        {loading ? (
+          <Skeleton className="h-48" />
+        ) : history.length > 0 ? (
           <div className="overflow-hidden rounded-lg border">
             <TableScrollArea maxHeightClassName="max-h-96">
             <Table>

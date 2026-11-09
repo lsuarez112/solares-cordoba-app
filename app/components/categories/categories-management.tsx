@@ -61,7 +61,8 @@ export function CategoriesManagement() {
     [categories, productCounts],
   )
 
-  const isInitialLoading = isLoading && !hasFetched
+  // Skeleton hasta la primera respuesta (también antes de que arranque el fetch).
+  const isInitialLoading = !hasFetched
   const isRefreshing = isLoading && hasFetched
 
   return (

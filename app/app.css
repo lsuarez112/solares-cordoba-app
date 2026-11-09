@@ -128,6 +128,13 @@
   body {
     @apply bg-background text-foreground overflow-x-hidden;
     }
+  /* Tailwind 4 ya no pone cursor de mano en los botones. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label:has(> button[role="checkbox"]:not(:disabled)),
+  label:has(> button[role="radio"]:not(:disabled)) {
+    cursor: pointer;
+  }
   /* Edge agrega su propio botón "mostrar contraseña"; usamos el de PasswordInput. */
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear {

@@ -3,6 +3,7 @@
  * Puro y determinístico: no llama a la IA ni a la base.
  */
 import type { GridType } from "~/domain/products/products.schemas"
+import type { AppSettings } from "~/domain/settings/settings.schemas"
 
 export type ConsumptionPeriod = "month" | "bimonth"
 export type ConsumptionMode = "kwh" | "appliances"
@@ -62,6 +63,17 @@ export type SizingParams = {
   dod_lead: number
   battery_eff_lifepo4: number
   battery_eff_lead: number
+}
+
+export function sizingParamsFromSettings(s: AppSettings): SizingParams {
+  return {
+    efficiency: s.system_efficiency,
+    default_hsp: s.default_hsp,
+    dod_lifepo4: s.dod_lifepo4,
+    dod_lead: s.dod_lead,
+    battery_eff_lifepo4: s.battery_eff_lifepo4,
+    battery_eff_lead: s.battery_eff_lead,
+  }
 }
 
 export type SolarZoneHsp = {

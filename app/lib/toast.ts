@@ -2,6 +2,8 @@ import { toast } from "sonner"
 
 type ToastOptions = {
   description?: string
+  action?: { label: string; onClick: () => void }
+  duration?: number
 }
 
 export const appToast = {

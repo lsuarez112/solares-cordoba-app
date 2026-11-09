@@ -1,3 +1,4 @@
+import type { AiKitDraft } from "~/domain/ai/ai.schemas"
 import type { KitFormValues } from "~/domain/kits/kits.schemas"
 import type { KitDetail } from "~/services/kits.service"
 
@@ -70,4 +71,28 @@ export function nextOptionCode(
   const used = new Set(existing.map((c) => c.toUpperCase()))
   while (used.has(`${prefix}${n}`)) n += 1
   return `${prefix}${n}`
+}
+
+/**
+ * Kit armado por la IA → valores del editor. Queda inactivo hasta que alguien lo
+ * revise (un kit inactivo no se sugiere en los presupuestos).
+ */
+export function aiKitDraftToFormValues(draft: AiKitDraft): KitFormValues {
+  const k = draft.kit
+  return {
+    ...emptyKitFormValues,
+    code: k.code,
+    name: k.name,
+    grid_type: k.grid_type,
+    phases: k.phases,
+    battery_voltage: k.battery_voltage,
+    kwp: k.kwp,
+    battery_kwh: k.grid_type === "ON-GRID" ? 0 : k.battery_kwh,
+    inverter_kw: k.inverter_kw,
+    est_kwh_month: k.est_kwh_month,
+    description: k.description.slice(0, 500),
+    notes: "Armado con IA: revisar compatibilidad y cantidades antes de activarlo.",
+    active: false,
+    items: draft.items.map((i) => ({ product_code: i.product_code, qty: i.qty })),
+  }
 }

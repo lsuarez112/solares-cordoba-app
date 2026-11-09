@@ -22,6 +22,7 @@
     "@dnd-kit/utilities": "3.2.2",
     "@fontsource-variable/inter": "^5.2.8",
     "@hookform/resolvers": "^5.4.0",
+    "@react-pdf/renderer": "^4.9.0",
     "@react-router/node": "7.15.1",
     "@react-router/serve": "7.15.1",
     "@supabase/ssr": "0.10.3",

@@ -3,8 +3,8 @@
 import * as React from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Checkbox } from "~/components/ui/checkbox"
 import { Input } from "~/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import {
   STANDARD_IVA_PCT,
   formatArs,
@@ -22,7 +22,7 @@ function Row({ label, value, strong = false }: { label: React.ReactNode; value: 
   )
 }
 
-/** IVA (D7): checkbox "Incluir IVA 21 %" o "IVA específico". */
+/** IVA (D7): 21 %, un % específico o sin IVA. */
 export function IvaChoiceField({
   value,
   onChange,
@@ -34,51 +34,56 @@ export function IvaChoiceField({
 }) {
   const [customText, setCustomText] = React.useState(value.custom_pct != null ? String(value.custom_pct) : "")
   React.useEffect(() => {
-    setCustomText(value.custom_pct != null ? String(value.custom_pct) : "")
+    if (value.custom_pct != null) setCustomText(String(value.custom_pct).replace(".", ","))
   }, [value.custom_pct])
 
+  const setMode = (mode: string) => {
+    if (mode === "custom") {
+      onChange({ mode: "custom", custom_pct: value.custom_pct ?? 10.5 })
+    } else {
+      onChange({ mode: mode as IvaChoice["mode"], custom_pct: value.custom_pct })
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-2 rounded-md border p-2.5">
-      <label className="flex items-center gap-2 text-sm">
-        <Checkbox
-          checked={value.include}
-          disabled={disabled}
-          onCheckedChange={(checked) => onChange({ include: checked === true, custom_pct: value.custom_pct })}
-        />
-        Incluir IVA {value.custom_pct == null ? `${STANDARD_IVA_PCT} %` : ""}
-      </label>
-      {value.include ? (
-        <div className="flex items-center gap-2 pl-6">
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Checkbox
-              checked={value.custom_pct != null}
-              disabled={disabled}
-              onCheckedChange={(checked) =>
-                onChange({ include: true, custom_pct: checked === true ? 10.5 : null })
-              }
-            />
+    <fieldset className="flex flex-col gap-2 rounded-md border p-2.5" disabled={disabled}>
+      <legend className="sr-only">IVA</legend>
+      <RadioGroup value={value.mode} onValueChange={setMode} disabled={disabled} className="gap-1">
+        <label className="flex h-7 items-center gap-2 text-sm">
+          <RadioGroupItem value="standard" />
+          IVA {STANDARD_IVA_PCT} %
+        </label>
+        <div className="flex h-7 items-center gap-2 text-sm">
+          <label className="flex items-center gap-2">
+            <RadioGroupItem value="custom" />
             IVA específico
           </label>
-          {value.custom_pct != null ? (
-            <div className="flex items-center gap-1">
-              <Input
-                className="h-7 w-20 text-right tabular-nums"
-                inputMode="decimal"
-                disabled={disabled}
-                value={customText}
-                aria-label="Porcentaje de IVA"
-                onChange={(e) => {
-                  setCustomText(e.target.value)
-                  const n = Number(e.target.value.replace(",", "."))
-                  if (Number.isFinite(n) && n >= 0 && n <= 100) onChange({ include: true, custom_pct: n })
-                }}
-              />
-              <span className="text-sm text-muted-foreground">%</span>
-            </div>
-          ) : null}
+          <div className="ml-auto flex items-center gap-1">
+            <Input
+              className="h-7 w-16 text-right tabular-nums"
+              inputMode="decimal"
+              disabled={disabled}
+              value={value.mode === "custom" ? customText : ""}
+              placeholder="10,5"
+              aria-label="Porcentaje de IVA específico"
+              onFocus={() => value.mode !== "custom" && setMode("custom")}
+              onChange={(e) => {
+                setCustomText(e.target.value)
+                const n = Number(e.target.value.replace(",", "."))
+                if (e.target.value.trim() !== "" && Number.isFinite(n) && n >= 0 && n <= 100) {
+                  onChange({ mode: "custom", custom_pct: n })
+                }
+              }}
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
         </div>
-      ) : null}
-    </div>
+        <label className="flex h-7 items-center gap-2 text-sm">
+          <RadioGroupItem value="none" />
+          Sin IVA
+        </label>
+      </RadioGroup>
+    </fieldset>
   )
 }
 
@@ -104,7 +109,10 @@ export function QuoteTotalsCard({
       <CardContent className="flex flex-col gap-2 px-4">
         {children}
         <Row label="Subtotal" value={`USD ${formatUsd(totals.subtotal_usd)}`} />
-        <Row label={`IVA ${totals.iva_pct.toLocaleString("es-AR")} %`} value={`USD ${formatUsd(totals.iva_usd)}`} />
+        <Row
+          label={totals.iva_pct > 0 ? `IVA ${totals.iva_pct.toLocaleString("es-AR")} %` : "Sin IVA"}
+          value={`USD ${formatUsd(totals.iva_usd)}`}
+        />
         <div className="border-t pt-2">
           <Row strong label="Total USD" value={formatUsd(totals.total_usd)} />
         </div>

@@ -2,11 +2,13 @@
 
 import * as React from "react"
 import { useNavigate } from "react-router"
-import { AlertTriangle, Boxes, CircleCheck, Plus } from "lucide-react"
+import { AlertTriangle, Boxes, CircleCheck, Plus, Sparkles } from "lucide-react"
 
 import { AssemblyRulesEditor } from "~/components/kits/assembly-rules-editor"
+import { KitAiDialog } from "~/components/kits/kit-ai-dialog"
 import { KitsDataTable } from "~/components/kits/kits-data-table"
 import { Badge } from "~/components/ui/badge"
+import { BadgesSkeleton } from "~/components/ui/badges-skeleton"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
@@ -14,6 +16,7 @@ import type { Kit } from "~/domain/kits/kits.schemas"
 import { usePermission } from "~/hooks/use-permission"
 import { appToast } from "~/lib/toast"
 import { kitsService } from "~/services/kits.service"
+import { settingsService } from "~/services/settings.service"
 
 export function KitsPage() {
   const canCreate = usePermission("kits", "create")
@@ -23,6 +26,8 @@ export function KitsPage() {
   const navigate = useNavigate()
 
   const [kits, setKits] = React.useState<Kit[] | null>(null)
+  const [aiEnabled, setAiEnabled] = React.useState(false)
+  const [aiOpen, setAiOpen] = React.useState(false)
 
   const load = React.useCallback(async () => {
     try {
@@ -35,6 +40,10 @@ export function KitsPage() {
 
   React.useEffect(() => {
     void load()
+    settingsService
+      .get()
+      .then((s) => setAiEnabled(s.ai_enabled))
+      .catch(() => setAiEnabled(false))
   }, [load])
 
   const openNew = () => navigate("/kits/nuevo")
@@ -81,10 +90,18 @@ export function KitsPage() {
           </p>
         </div>
         {canCreate ? (
-          <Button size="sm" onClick={openNew}>
-            <Plus data-icon="inline-start" />
-            Nuevo kit
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {aiEnabled ? (
+              <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
+                <Sparkles data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
+                Crear con IA
+              </Button>
+            ) : null}
+            <Button size="sm" onClick={openNew}>
+              <Plus data-icon="inline-start" />
+              Nuevo kit
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -117,7 +134,9 @@ export function KitsPage() {
                 </span>
               </Badge>
             </div>
-          ) : null}
+          ) : (
+            <BadgesSkeleton count={3} />
+          )}
           {kits === null ? (
             <Skeleton className="h-80" />
           ) : (
@@ -139,6 +158,14 @@ export function KitsPage() {
         </TabsContent>
       </Tabs>
 
+      <KitAiDialog
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        onUse={(draft) => {
+          setAiOpen(false)
+          navigate("/kits/nuevo", { state: { aiKitDraft: draft } })
+        }}
+      />
     </div>
   )
 }

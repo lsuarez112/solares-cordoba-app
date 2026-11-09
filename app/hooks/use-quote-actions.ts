@@ -2,6 +2,7 @@ import * as React from "react"
 import { useNavigate } from "react-router"
 
 import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import { useQuoteShare, type QuoteShareAction } from "~/hooks/use-quote-share"
 import { appToast } from "~/lib/toast"
 import { quotesService } from "~/services/quotes.service"
 
@@ -59,5 +60,15 @@ export function useQuoteActions({ onDeleted }: { onDeleted?: (quote: QuoteRef) =
     }
   }, [])
 
-  return { onOpen, onRevise, onDuplicate, onDelete }
+  const share = useQuoteShare()
+  const { whatsapp, copyMessage, sharePdf, downloadPdf, previewPdf } = share
+  const onShare = React.useCallback(
+    (q: QuoteRef, action: QuoteShareAction) => {
+      const fn = { whatsapp, copy: copyMessage, share: sharePdf, download: downloadPdf, preview: previewPdf }[action]
+      void fn(q.id)
+    },
+    [whatsapp, copyMessage, sharePdf, downloadPdf, previewPdf],
+  )
+
+  return { onOpen, onRevise, onDuplicate, onDelete, onShare }
 }

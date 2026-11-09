@@ -181,15 +181,17 @@ export function QuoteItemsEditor({
         <div className="overflow-hidden rounded-lg border bg-card">
           <TableScrollArea maxHeightClassName="max-h-[min(60svh,40rem)]">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-              <Table>
+              {/* table-fixed: la descripción toma el ancho que sobra y se trunca (sin scroll
+                  horizontal en desktop; en el celular scrollea por el min-w). */}
+              <Table className="w-full min-w-[36rem] table-fixed">
                 <TableHeader className="sticky top-0 z-10 bg-card">
                   <TableRow>
                     <TableHead className="w-8" />
-                    <TableHead>Código</TableHead>
+                    <TableHead className="w-20">Código</TableHead>
                     <TableHead>Descripción</TableHead>
-                    <TableHead className="w-24 text-right">Cant.</TableHead>
-                    <TableHead className="text-right">Unitario</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
+                    <TableHead className="w-20 text-right">Cant.</TableHead>
+                    <TableHead className="w-24 text-right">Unitario</TableHead>
+                    <TableHead className="w-24 text-right">Subtotal</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -268,8 +270,8 @@ function SortableLine({
           </button>
         ) : null}
       </TableCell>
-      <TableCell className="font-mono text-xs">{line.code}</TableCell>
-      <TableCell className="max-w-[26rem]">
+      <TableCell className="truncate font-mono text-xs">{line.code}</TableCell>
+      <TableCell>
         <div className="flex min-w-0 items-center gap-1.5">
           <HintTooltip content={line.description}>
             <span className="block truncate">{line.description}</span>
@@ -281,7 +283,7 @@ function SortableLine({
           ) : null}
         </div>
       </TableCell>
-      <TableCell className="w-24">
+      <TableCell>
         {canEdit ? (
           <Input
             type="number"

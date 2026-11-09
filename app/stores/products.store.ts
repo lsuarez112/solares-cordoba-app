@@ -26,6 +26,8 @@ interface ProductsState {
   loading: boolean
   loadingCategories: boolean
   fetchedAt: string | null
+  /** Falló la última carga del catálogo (para no quedar en skeleton para siempre). */
+  loadError: boolean
 
   fetchAll: (options?: { force?: boolean }) => Promise<void>
   fetchCategories: () => Promise<void>
@@ -44,6 +46,7 @@ const initialState = {
   loading: false,
   loadingCategories: false,
   fetchedAt: null as string | null,
+  loadError: false,
 }
 
 export const useProductsStore = create<ProductsState>((set, get) => ({
@@ -51,7 +54,7 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
 
   fetchAll: async (options) => {
     if (get().initialized && !options?.force) return
-    set({ loading: true })
+    set({ loading: true, loadError: false })
 
     devLog("[products-store] fetchAll → v_products_with_ars")
 
@@ -63,7 +66,7 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
 
     if (error) {
       devLog("[products-store] fetchAll ← error", error.message)
-      set({ loading: false })
+      set({ loading: false, loadError: true })
       return
     }
 

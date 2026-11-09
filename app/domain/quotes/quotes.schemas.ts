@@ -36,6 +36,8 @@ export const QuoteListItemSchema = z.object({
   issued_at: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
+  ai_cost_usd: num.default(0),
+  ai_requests_count: num.default(0),
 })
 export type QuoteListItem = z.infer<typeof QuoteListItemSchema>
 

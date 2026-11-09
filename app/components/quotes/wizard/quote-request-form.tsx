@@ -59,13 +59,20 @@ type QuoteRequestFormProps = {
   onChange: (next: QuoteRequest) => void
   zones: SolarZone[]
   presets: AppliancePreset[]
+  /** Debajo del texto del cliente (p. ej. "Interpretar con IA"). */
+  textAssist?: React.ReactNode
 }
 
-export function QuoteRequestForm({ value, onChange, zones, presets }: QuoteRequestFormProps) {
+export function QuoteRequestForm({ value, onChange, zones, presets, textAssist }: QuoteRequestFormProps) {
   const set = <K extends keyof QuoteRequest>(key: K, v: QuoteRequest[K]) => onChange({ ...value, [key]: v })
   const [moreOpen, setMoreOpen] = React.useState(
     Boolean(value.zone_id || value.phases || value.budget_cap_usd || value.roof !== "unknown"),
   )
+
+  // Si la IA completa localidad, fases, techo o tope, se muestran.
+  React.useEffect(() => {
+    if (value.zone_id || value.phases || value.budget_cap_usd || value.roof !== "unknown") setMoreOpen(true)
+  }, [value.zone_id, value.phases, value.budget_cap_usd, value.roof])
 
   const setAppliance = (index: number, patch: Partial<ApplianceLine>) =>
     set(
@@ -92,9 +99,11 @@ export function QuoteRequestForm({ value, onChange, zones, presets }: QuoteReque
           onChange={(e) => set("request_text", e.target.value)}
           placeholder="Pegá lo que mandó el cliente por WhatsApp o dictalo con el micrófono del teclado."
         />
-        <p className="text-xs text-muted-foreground">
-          Queda guardado con el presupuesto. Para dimensionar completá abajo el tipo de sistema y el consumo.
-        </p>
+        {textAssist ?? (
+          <p className="text-xs text-muted-foreground">
+            Queda guardado con el presupuesto. Para dimensionar completá abajo el tipo de sistema y el consumo.
+          </p>
+        )}
       </div>
 
       <fieldset className="flex flex-col gap-2">
@@ -115,7 +124,7 @@ export function QuoteRequestForm({ value, onChange, zones, presets }: QuoteReque
                   })
                 }
                 className={cn(
-                  "flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2.5 text-left transition-colors hover:bg-muted/50",
+                  "flex cursor-pointer flex-col items-start gap-0.5 rounded-lg border px-3 py-2.5 text-left transition-colors hover:bg-muted/50",
                   active && "border-primary bg-primary/5 ring-1 ring-primary",
                 )}
               >

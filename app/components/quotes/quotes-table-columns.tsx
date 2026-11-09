@@ -2,14 +2,23 @@
 
 import type { ColumnDef } from "@tanstack/react-table"
 import { Link } from "react-router"
-import { CopyPlus, FilePen, GitBranchPlus, MessageCircle, SquareArrowOutUpRight, Trash2 } from "lucide-react"
+import {
+  CopyPlus,
+  Download,
+  FilePen,
+  GitBranchPlus,
+  MessageCircle,
+  Share2,
+  SquareArrowOutUpRight,
+  Trash2,
+} from "lucide-react"
 
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { ACTIONS_COLUMN_META, RowActionsMenu } from "~/components/ui/row-actions-menu"
 import { StatusIcon } from "~/components/ui/status-indicator"
 import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
-import { whatsappLink } from "~/lib/clients/phone"
+import type { QuoteShareAction } from "~/hooks/use-quote-share"
 import { formatDate } from "~/lib/dates"
 import { GRID_TYPE_COLORS, GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
 import { formatArs, formatUsd } from "~/lib/quotes/quote-totals"
@@ -25,6 +34,7 @@ export type QuotesTableColumnsOptions = {
   onRevise: (quote: QuoteListItem) => void
   onDuplicate: (quote: QuoteListItem) => void
   onDelete: (quote: QuoteListItem) => void
+  onShare: (quote: QuoteListItem, action: QuoteShareAction) => void
 }
 
 /** Fecha que importa: emisión si está emitido, alta si es borrador. */
@@ -178,7 +188,6 @@ export function quotesTableColumns(o: QuotesTableColumnsOptions): ColumnDef<Quot
       header: () => null,
       cell: ({ row }) => {
         const q = row.original
-        const wa = whatsappLink(q.client_phone)
         const isDraft = q.status === "draft"
         return (
           <RowActionsMenu
@@ -201,12 +210,13 @@ export function quotesTableColumns(o: QuotesTableColumnsOptions): ColumnDef<Quot
               { key: "duplicate", label: "Duplicar", icon: CopyPlus, tone: "duplicate", hidden: !o.canCreate, onSelect: () => o.onDuplicate(q) },
               {
                 key: "whatsapp",
-                label: "WhatsApp al cliente",
+                label: "Enviar por WhatsApp",
                 icon: MessageCircle,
                 tone: "share",
-                hidden: !wa,
-                onSelect: () => wa && window.open(wa, "_blank", "noopener"),
+                onSelect: () => o.onShare(q, "whatsapp"),
               },
+              { key: "share", label: "Compartir PDF", icon: Share2, tone: "share", onSelect: () => o.onShare(q, "share") },
+              { key: "download", label: "Descargar PDF", icon: Download, onSelect: () => o.onShare(q, "download") },
               {
                 key: "delete",
                 label: "Eliminar borrador",

@@ -17,6 +17,8 @@ export const AppSettingsSchema = z.object({
   dod_lead: z.coerce.number(),
   battery_eff_lifepo4: z.coerce.number(),
   battery_eff_lead: z.coerce.number(),
+  ai_enabled: z.boolean().default(true),
+  ai_low_balance_usd: z.coerce.number().default(2),
   updated_at: z.string(),
 })
 export type AppSettings = z.infer<typeof AppSettingsSchema>

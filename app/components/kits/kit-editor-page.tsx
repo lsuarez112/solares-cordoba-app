@@ -3,20 +3,23 @@
 import * as React from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowLeft, Save } from "lucide-react"
-import { Link, useBlocker, useNavigate } from "react-router"
+import { ArrowLeft, Save, Sparkles } from "lucide-react"
+import { Link, useBlocker, useLocation, useNavigate } from "react-router"
 
 import { KitBomSection } from "~/components/kits/kit-bom-section"
 import { KitHeaderFields } from "~/components/kits/kit-header-fields"
 import { KitOptionsSection } from "~/components/kits/kit-options-section"
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent } from "~/components/ui/card"
 import { Form } from "~/components/ui/form"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Spinner } from "~/components/ui/spinner"
+import type { AiKitDraft } from "~/domain/ai/ai.schemas"
 import { KitFormSchema, type KitFormValues } from "~/domain/kits/kits.schemas"
 import { usePermission } from "~/hooks/use-permission"
 import {
+  aiKitDraftToFormValues,
   duplicateKitFormValues,
   emptyKitFormValues,
   kitDetailToFormValues,
@@ -35,6 +38,9 @@ type KitEditorPageProps = {
 
 export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPageProps) {
   const navigate = useNavigate()
+  const location = useLocation()
+  /** Kit armado por la IA (Kits → Crear con IA), llega en el state de la navegación. */
+  const aiDraft = kitId || duplicateFromId ? null : ((location.state as { aiKitDraft?: AiKitDraft } | null)?.aiKitDraft ?? null)
   const canEdit = usePermission("kits", kitId ? "update" : "create")
 
   const products = useProductsStore((s) => s.products)
@@ -45,7 +51,9 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
 
   const [loading, setLoading] = React.useState(Boolean(kitId || duplicateFromId))
   const [saving, setSaving] = React.useState(false)
-  const [title, setTitle] = React.useState(kitId ? "Editar kit" : duplicateFromId ? "Duplicar kit" : "Nuevo kit")
+  const [title, setTitle] = React.useState(
+    kitId ? "Editar kit" : duplicateFromId ? "Duplicar kit" : aiDraft ? "Kit armado con IA" : "Nuevo kit",
+  )
 
   const form = useForm<KitFormValues>({
     resolver: zodResolver(KitFormSchema as never) as Resolver<KitFormValues>,
@@ -67,6 +75,12 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
     const sourceId = kitId ?? duplicateFromId
     if (!sourceId) {
       form.reset(emptyKitFormValues)
+      if (aiDraft && productsReady) {
+        // keepDefaultValues: los valores por defecto siguen vacíos, así el kit de la
+        // IA cuenta como cambios (dirty) y se puede guardar directamente.
+        const values = aiKitDraftToFormValues(aiDraft)
+        form.reset({ ...values, items: sortByGroup(values.items, catalog) }, { keepDefaultValues: true })
+      }
       return
     }
     if (!productsReady) return
@@ -88,7 +102,7 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
     }
     // catalog cambia de identidad al refrescar productos; solo importa que esté listo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kitId, duplicateFromId, productsReady, form])
+  }, [kitId, duplicateFromId, productsReady, form, aiDraft])
 
   // Aviso al salir con cambios sin guardar.
   const blocker = useBlocker(
@@ -156,6 +170,25 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
           </div>
         ) : (
           <fieldset disabled={!canEdit} className="flex min-w-0 flex-col gap-6">
+            {aiDraft ? (
+              <Alert className="border-violet-200 bg-violet-50/60 dark:border-violet-900 dark:bg-violet-950/30">
+                <Sparkles className="text-violet-600 dark:text-violet-400" />
+                <AlertTitle>Kit armado con IA: revisalo antes de guardarlo</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    Queda <strong className="font-medium text-foreground">inactivo</strong> hasta que lo actives: un kit
+                    inactivo no se sugiere en los presupuestos.
+                  </p>
+                  {aiDraft.warnings.length ? (
+                    <ul className="mt-1 list-disc pl-4">
+                      {aiDraft.warnings.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </AlertDescription>
+              </Alert>
+            ) : null}
             <Card>
               <CardContent>
                 <KitHeaderFields form={form} />

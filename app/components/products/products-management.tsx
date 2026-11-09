@@ -105,7 +105,10 @@ export function ProductsManagement() {
 
   const stats = React.useMemo(() => getProductStats(products), [products])
 
-  const isInitialLoading = loading && !initialized
+  // Hasta la primera carga (o su error) se muestra el skeleton, también en el
+  // primer render, antes de que el hook de sincronización dispare el fetch.
+  const loadError = useProductsStore((s) => s.loadError)
+  const isInitialLoading = !initialized && !loadError
   const isRefreshing = loading && initialized
 
   return (

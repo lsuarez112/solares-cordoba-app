@@ -34,6 +34,8 @@ interface RolesState {
   initialized: boolean
   loading: boolean
   fetchedAt: string | null
+  /** Falló la última carga (para no quedar en skeleton para siempre). */
+  loadError: boolean
 
   modalOpen: boolean
   editingRole: RoleListItem | null
@@ -55,6 +57,7 @@ const initialState = {
   initialized: false,
   loading: false,
   fetchedAt: null as string | null,
+  loadError: false,
   modalOpen: false,
   editingRole: null as RoleListItem | null,
 }
@@ -64,7 +67,7 @@ export const useRolesStore = create<RolesState>((set, get) => ({
 
   fetchRoles: async (options) => {
     if (get().initialized && !options?.force) return
-    set({ loading: true })
+    set({ loading: true, loadError: false })
 
     devLog("[roles-store] fetchRoles → roles", {
       force: options?.force ?? false,
@@ -78,7 +81,7 @@ export const useRolesStore = create<RolesState>((set, get) => ({
 
     if (error) {
       devLog("[roles-store] fetchRoles ← roles → error", error.message)
-      set({ loading: false })
+      set({ loading: false, loadError: true })
       return
     }
 

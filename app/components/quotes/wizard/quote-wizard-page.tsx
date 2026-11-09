@@ -4,6 +4,7 @@ import * as React from "react"
 import { Link, useNavigate, useSearchParams } from "react-router"
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, FilePlus2 } from "lucide-react"
 
+import { AiExtractAssist } from "~/components/quotes/wizard/ai-extract-assist"
 import { ClientPicker } from "~/components/quotes/wizard/client-picker"
 import { KitChoiceStep, type KitChoice } from "~/components/quotes/wizard/kit-choice-step"
 import { QuoteRequestForm } from "~/components/quotes/wizard/quote-request-form"
@@ -12,20 +13,23 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent } from "~/components/ui/card"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Spinner } from "~/components/ui/spinner"
+import type { AiExtractResult, AiSelectResult } from "~/domain/ai/ai.schemas"
 import type { ClientListItem } from "~/domain/clients/clients.schemas"
 import type { Kit } from "~/domain/kits/kits.schemas"
 import type { AppliancePreset, KitCandidate, SolarZone } from "~/domain/quotes/quotes.schemas"
 import type { AppSettings } from "~/domain/settings/settings.schemas"
 import { usePermission } from "~/hooks/use-permission"
+import { applyExtract } from "~/lib/ai/apply-extract"
 import {
   computeSizing,
   emptyQuoteRequest,
   missingMinimums,
+  sizingParamsFromSettings,
   type QuoteRequest,
-  type SizingParams,
 } from "~/lib/sizing/sizing"
 import { appToast } from "~/lib/toast"
 import { cn } from "~/lib/utils"
+import { aiService } from "~/services/ai.service"
 import { clientsService } from "~/services/clients.service"
 import { kitsService } from "~/services/kits.service"
 import { quotesService } from "~/services/quotes.service"
@@ -40,17 +44,6 @@ type WizardData = {
   presets: AppliancePreset[]
   settings: AppSettings
   kits: Kit[]
-}
-
-export function sizingParamsFromSettings(s: AppSettings): SizingParams {
-  return {
-    efficiency: s.system_efficiency,
-    default_hsp: s.default_hsp,
-    dod_lifepo4: s.dod_lifepo4,
-    dod_lead: s.dod_lead,
-    battery_eff_lifepo4: s.battery_eff_lifepo4,
-    battery_eff_lead: s.battery_eff_lead,
-  }
 }
 
 function Stepper({ step, onGo }: { step: Step; onGo: (s: Step) => void }) {
@@ -102,6 +95,11 @@ export function QuoteWizardPage() {
   const [candidates, setCandidates] = React.useState<KitCandidate[] | null>(null)
   const [choice, setChoice] = React.useState<KitChoice>({ kitId: null, optionCodes: [] })
   const [creating, setCreating] = React.useState(false)
+  const [aiBusy, setAiBusy] = React.useState<null | "extract" | "select">(null)
+  const [aiExtract, setAiExtract] = React.useState<AiExtractResult | null>(null)
+  const [aiSelect, setAiSelect] = React.useState<AiSelectResult | null>(null)
+  /** Llamadas a la IA de este wizard: se vinculan al presupuesto al crearlo. */
+  const aiRequestIds = React.useRef<string[]>([])
 
   React.useEffect(() => {
     let cancelled = false
@@ -139,6 +137,7 @@ export function QuoteWizardPage() {
     if (step !== 2 || !sizing || !request.grid_type) return
     let cancelled = false
     setCandidates(null)
+    setAiSelect(null)
     quotesService
       .suggestKits({
         grid_type: request.grid_type,
@@ -180,11 +179,72 @@ export function QuoteWizardPage() {
     }
   }
 
+  const aiEnabled = Boolean(data?.settings.ai_enabled)
+  const aiError = (error: unknown) =>
+    appToast.error("No se pudo consultar a la IA", {
+      description: error instanceof Error ? error.message : undefined,
+    })
+
+  const runExtract = async () => {
+    setAiBusy("extract")
+    try {
+      const result = await aiService.extract(request.request_text)
+      if (result.ai_request_id) aiRequestIds.current.push(result.ai_request_id)
+      setAiExtract(result)
+      setRequest((r) => applyExtract(r, result))
+      setShowMissing(false)
+    } catch (error) {
+      aiError(error)
+    } finally {
+      setAiBusy(null)
+    }
+  }
+
+  const runSelect = async () => {
+    if (!sizing || !request.grid_type) return
+    setAiBusy("select")
+    try {
+      const result = await aiService.select({
+        grid_type: request.grid_type,
+        kwh_month: sizing.kwh_month,
+        coverage_pct: request.coverage_pct,
+        battery_required: sizing.battery_kwh != null,
+        autonomy_hours: sizing.autonomy_hours,
+        phases: request.phases,
+        budget_cap_usd: request.budget_cap_usd,
+        request_text: request.request_text || null,
+        sizing: { target_kwp: sizing.target_kwp, battery_kwh: sizing.battery_kwh, hsp: sizing.hsp },
+      })
+      if (result.ai_request_id) aiRequestIds.current.push(result.ai_request_id)
+      setAiSelect(result)
+      if (result.kit_id) setChoice({ kitId: result.kit_id, optionCodes: [] })
+    } catch (error) {
+      aiError(error)
+    } finally {
+      setAiBusy(null)
+    }
+  }
+
   const create = async () => {
     if (!data || !clientId) return
     setCreating(true)
     try {
       const input = { ...request, zone_name: zone?.name ?? null }
+      const aiSummary =
+        aiExtract || aiSelect
+          ? {
+              extract: aiExtract ? { notes: aiExtract.notes, missing_info: aiExtract.missing_info } : null,
+              select: aiSelect
+                ? {
+                    kit_id: aiSelect.kit_id,
+                    source: aiSelect.source,
+                    reason: aiSelect.reason,
+                    warnings: aiSelect.warnings,
+                    followed: aiSelect.kit_id === choice.kitId,
+                  }
+                : null,
+            }
+          : null
       const id = choice.kitId
         ? await quotesService.createFromKit({
             client_id: clientId,
@@ -192,6 +252,7 @@ export function QuoteWizardPage() {
             option_codes: choice.optionCodes,
             input,
             sizing,
+            ai_summary: aiSummary,
           })
         : await quotesService.createEmpty({
             client_id: clientId,
@@ -200,7 +261,9 @@ export function QuoteWizardPage() {
             sizing,
             iva_pct: data.settings.default_iva_pct,
             validity_days: data.settings.default_validity_days,
+            ai_summary: aiSummary,
           })
+      await aiService.linkRequests(id, aiRequestIds.current)
       appToast.success("Borrador creado: revisá los ítems y emitilo")
       navigate(`/presupuestos/${id}`, { replace: true })
     } catch (error) {
@@ -250,7 +313,23 @@ export function QuoteWizardPage() {
             />
           ) : step === 1 ? (
             <div className="flex flex-col gap-4">
-              <QuoteRequestForm value={request} onChange={setRequest} zones={data.zones} presets={data.presets} />
+              <QuoteRequestForm
+                value={request}
+                onChange={setRequest}
+                zones={data.zones}
+                presets={data.presets}
+                textAssist={
+                  aiEnabled ? (
+                    <AiExtractAssist
+                      text={request.request_text}
+                      enabled={aiEnabled}
+                      busy={aiBusy === "extract"}
+                      result={aiExtract}
+                      onRun={() => void runExtract()}
+                    />
+                  ) : undefined
+                }
+              />
               {showMissing && missing.length > 0 ? (
                 <Alert className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                   <AlertTriangle className="text-amber-600" />
@@ -273,6 +352,7 @@ export function QuoteWizardPage() {
               budgetCap={request.budget_cap_usd}
               value={choice}
               onChange={setChoice}
+              ai={{ enabled: aiEnabled, busy: aiBusy === "select", result: aiSelect, onAsk: () => void runSelect() }}
             />
           ) : null}
         </CardContent>

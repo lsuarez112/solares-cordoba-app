@@ -35,6 +35,9 @@ export type QuoteDetail = {
 
 export type DraftPatch = {
   client_id?: string
+  grid_type?: GridType | null
+  input?: Record<string, unknown>
+  sizing?: Record<string, unknown> | null
   iva_pct?: number
   notes?: string
   client_notes?: string
@@ -129,6 +132,7 @@ export const quotesService = {
     option_codes: string[]
     input: QuoteRequest
     sizing: SizingResult | null
+    ai_summary?: Record<string, unknown> | null
   }): Promise<string> {
     const supabase = createClient()
     const { data, error } = await supabase.rpc("create_quote_from_kit", {
@@ -137,6 +141,7 @@ export const quotesService = {
       p_input: params.input,
       p_option_codes: params.option_codes,
       p_sizing: params.sizing ?? undefined,
+      p_ai_summary: (params.ai_summary ?? undefined) as never,
     })
     if (error) fail("createFromKit", error)
     return z.string().parse(data)
@@ -150,6 +155,7 @@ export const quotesService = {
     sizing: SizingResult | null
     iva_pct: number
     validity_days: number
+    ai_summary?: Record<string, unknown> | null
   }): Promise<string> {
     const supabase = createClient()
     const validUntil = new Date(Date.now() + params.validity_days * 86_400_000)
@@ -164,6 +170,7 @@ export const quotesService = {
         sizing: params.sizing,
         iva_pct: params.iva_pct,
         valid_until: validUntil,
+        ai_summary: (params.ai_summary ?? null) as never,
       })
       .select("id")
       .single()

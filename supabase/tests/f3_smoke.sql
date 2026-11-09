@@ -44,12 +44,12 @@ begin
   -- Vistas de listado.
   select * into r from public.v_quotes_list where id = v_quote;
   if r.items_count <> 3 or r.subtotal_usd <> (select sum(subtotal_usd) from public.quote_items where quote_id = v_quote)
-     or r.client_name <> 'F3 Smoke' or r.kit_code <> 'KIT_ON_MEDIO' or r.display_number is not null then
+     or r.client_name <> 'F3 Smoke' or r.kit_code <> 'KIT_ON_MEDIO' or r.display_number is null then
     raise exception 'v_quotes_list borrador: %', row_to_json(r);
   end if;
   select quotes_count into n from public.v_clients_list where id = v_client;
   if n <> 1 then raise exception 'v_clients_list quotes_count = %', n; end if;
-  perform pg_temp.log('OK vistas');
+  perform pg_temp.log(format('OK vistas (borrador %s)', r.display_number));
 
   -- Emisión: toma el precio vigente (50) y el IVA elegido.
   q := public.issue_quote(v_quote, 10.5);

@@ -6,6 +6,7 @@ import { FileCheck2, FilePen, FileText, Plus } from "lucide-react"
 
 import { QuotesDataTable } from "~/components/quotes/quotes-data-table"
 import { Badge } from "~/components/ui/badge"
+import { BadgesSkeleton } from "~/components/ui/badges-skeleton"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
 import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
@@ -80,7 +81,9 @@ export function QuotesPage() {
             </span>
           </Badge>
         </div>
-      ) : null}
+      ) : (
+        <BadgesSkeleton count={3} />
+      )}
 
       {quotes === null ? (
         <Skeleton className="h-80" />

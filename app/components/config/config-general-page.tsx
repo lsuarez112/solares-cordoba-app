@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { AiUsageTab } from "~/components/config/ai-usage-tab"
 import { CompanySettingsCard } from "~/components/config/company-settings-card"
 import { ExchangeRateCard } from "~/components/config/exchange-rate-card"
 import { QuoteLogoCard } from "~/components/config/quote-logo-card"
@@ -30,7 +31,7 @@ export function ConfigGeneralPage() {
       <div className="flex flex-col gap-1.5">
         <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
         <p className="text-sm text-muted-foreground">
-          Empresa, parámetros de presupuesto y cotización del dólar.
+          Empresa, parámetros de presupuesto, cotización del dólar y consumo de IA.
         </p>
       </div>
 
@@ -39,6 +40,7 @@ export function ConfigGeneralPage() {
           <TabsTrigger value="company">Empresa</TabsTrigger>
           <TabsTrigger value="quotes">Presupuestos</TabsTrigger>
           <TabsTrigger value="rate">Cotización</TabsTrigger>
+          <TabsTrigger value="ai">IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="company">
@@ -62,6 +64,13 @@ export function ConfigGeneralPage() {
               canAddRate={canAddRate}
               onSettingsChange={setSettings}
             />
+          ) : (
+            <Skeleton className="h-96" />
+          )}
+        </TabsContent>
+        <TabsContent value="ai">
+          {settings ? (
+            <AiUsageTab settings={settings} canEdit={canEdit} onSettingsChange={setSettings} />
           ) : (
             <Skeleton className="h-96" />
           )}

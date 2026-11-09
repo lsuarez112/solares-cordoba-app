@@ -41,15 +41,15 @@ describe("computeQuoteTotals", () => {
 
 describe("IVA (D7)", () => {
   it("checkbox 21 %, específico o sin IVA", () => {
-    expect(ivaPctFromChoice({ include: true, custom_pct: null })).toBe(21)
-    expect(ivaPctFromChoice({ include: true, custom_pct: 10.5 })).toBe(10.5)
-    expect(ivaPctFromChoice({ include: false, custom_pct: 10.5 })).toBe(0)
+    expect(ivaPctFromChoice({ mode: "standard", custom_pct: null })).toBe(21)
+    expect(ivaPctFromChoice({ mode: "custom", custom_pct: 10.5 })).toBe(10.5)
+    expect(ivaPctFromChoice({ mode: "none", custom_pct: 10.5 })).toBe(0)
   })
 
   it("ida y vuelta desde el porcentaje guardado", () => {
-    expect(ivaChoiceFromPct(21)).toEqual({ include: true, custom_pct: null })
-    expect(ivaChoiceFromPct(10.5)).toEqual({ include: true, custom_pct: 10.5 })
-    expect(ivaChoiceFromPct(0)).toEqual({ include: false, custom_pct: null })
+    expect(ivaChoiceFromPct(21)).toEqual({ mode: "standard", custom_pct: null })
+    expect(ivaChoiceFromPct(10.5)).toEqual({ mode: "custom", custom_pct: 10.5 })
+    expect(ivaChoiceFromPct(0)).toEqual({ mode: "none", custom_pct: null })
   })
 })
 

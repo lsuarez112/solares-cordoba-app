@@ -40,11 +40,21 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "date", desc: true }])
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize })
 
-  const { canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete } = options
+  const { canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete, onShare } = options
   const columns = React.useMemo(
     () =>
-      quotesTableColumns({ canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete }),
-    [canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete],
+      quotesTableColumns({
+        canCreate,
+        canUpdate,
+        canDelete,
+        hideClient,
+        onOpen,
+        onRevise,
+        onDuplicate,
+        onDelete,
+        onShare,
+      }),
+    [canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete, onShare],
   )
 
   const table = useReactTable({

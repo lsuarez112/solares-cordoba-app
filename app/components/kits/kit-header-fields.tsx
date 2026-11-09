@@ -112,6 +112,8 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
               <Select
                 value={field.value}
                 onValueChange={(value) => {
+                  // Radix dispara "" al resetear el formulario: se ignora.
+                  if (!value) return
                   field.onChange(value)
                   if (value === "ON-GRID") form.setValue("battery_kwh", 0)
                 }}
@@ -138,7 +140,7 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
           render={({ field }) => (
             <FormItem>
               <FormLabel>Fases</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value} onValueChange={(value) => value && field.onChange(value)}>
                 <FormControl>
                   <SelectTrigger className="w-full">
                     <SelectValue />

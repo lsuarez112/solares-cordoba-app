@@ -48,6 +48,8 @@ interface UsersState {
   loadingBasic: boolean
   loadingFull: boolean
   fullFetchedAt: string | null
+  /** Falló la última carga completa (para no quedar en skeleton para siempre). */
+  fullLoadError: boolean
 
   fetchBasic: () => Promise<void>
   fetchFull: (options?: { force?: boolean }) => Promise<void>
@@ -67,6 +69,7 @@ const initialState = {
   loadingBasic: false,
   loadingFull: false,
   fullFetchedAt: null as string | null,
+  fullLoadError: false,
 }
 
 export const useUsersStore = create<UsersState>((set, get) => ({
@@ -111,7 +114,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
 
   fetchFull: async (options) => {
     if (get().fullInitialized && !options?.force) return
-    set({ loadingFull: true })
+    set({ loadingFull: true, fullLoadError: false })
 
     devLog(
       "[users-store] fetchFull → user_profiles (+ roles), roles (active = true)",
@@ -138,7 +141,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
         user_profiles: usersError?.message ?? null,
         roles: rolesError?.message ?? null,
       })
-      set({ loadingFull: false })
+      set({ loadingFull: false, fullLoadError: true })
       return
     }
 

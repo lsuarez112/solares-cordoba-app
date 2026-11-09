@@ -55,7 +55,9 @@ export function UsersManagement() {
     [users, statusFilter],
   )
 
-  const isInitialLoading = loadingFull && !fullInitialized
+  // Skeleton hasta la primera carga (o su error), también antes de que arranque.
+  const fullLoadError = useUsersStore((s) => s.fullLoadError)
+  const isInitialLoading = !fullInitialized && !fullLoadError
   const isRefreshing = loadingFull && fullInitialized
 
   const handleRefresh = React.useCallback(() => {

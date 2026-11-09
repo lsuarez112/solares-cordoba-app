@@ -39,6 +39,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_credit_topups: {
+        Row: {
+          amount_usd: number
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          topped_at: string
+        }
+        Insert: {
+          amount_usd: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          topped_at?: string
+        }
+        Update: {
+          amount_usd?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          topped_at?: string
+        }
+        Relationships: []
+      }
       ai_requests: {
         Row: {
           cache_read_tokens: number | null
@@ -110,6 +137,8 @@ export type Database = {
       }
       app_settings: {
         Row: {
+          ai_enabled: boolean
+          ai_low_balance_usd: number
           battery_eff_lead: number
           battery_eff_lifepo4: number
           default_hsp: number
@@ -129,6 +158,8 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          ai_enabled?: boolean
+          ai_low_balance_usd?: number
           battery_eff_lead?: number
           battery_eff_lifepo4?: number
           default_hsp?: number
@@ -148,6 +179,8 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          ai_enabled?: boolean
+          ai_low_balance_usd?: number
           battery_eff_lead?: number
           battery_eff_lifepo4?: number
           default_hsp?: number
@@ -983,6 +1016,55 @@ export type Database = {
       }
     }
     Views: {
+      v_ai_requests_list: {
+        Row: {
+          cache_read_tokens: number | null
+          cache_write_tokens: number | null
+          client_name: string | null
+          cost_usd: number | null
+          created_at: string | null
+          created_by: string | null
+          duration_ms: number | null
+          error: string | null
+          id: string | null
+          model: string | null
+          quote_id: string | null
+          quote_number: string | null
+          step: string | null
+          tokens_in: number | null
+          tokens_out: number | null
+          user_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_requests_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_requests_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_ai_usage_summary: {
+        Row: {
+          balance_usd: number | null
+          errors_count: number | null
+          last_topup_at: string | null
+          requests_count: number | null
+          requests_month: number | null
+          spent_month_usd: number | null
+          spent_usd: number | null
+          topups_usd: number | null
+        }
+        Relationships: []
+      }
       v_clients_list: {
         Row: {
           address: string | null
@@ -1063,6 +1145,8 @@ export type Database = {
       }
       v_quotes_list: {
         Row: {
+          ai_cost_usd: number | null
+          ai_requests_count: number | null
           client_city: string | null
           client_id: string | null
           client_name: string | null
@@ -1249,6 +1333,10 @@ export type Database = {
           qty: number
           sort_order: number
         }[]
+      }
+      link_ai_requests: {
+        Args: { p_ids: string[]; p_quote_id: string }
+        Returns: number
       }
       merge_clients: {
         Args: { p_keep_id: string; p_merge_ids: string[] }

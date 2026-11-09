@@ -9,6 +9,7 @@ import { ClientFormDialog } from "~/components/clients/client-form-dialog"
 import { ClientMergeDialog } from "~/components/clients/client-merge-dialog"
 import { ClientsDataTable } from "~/components/clients/clients-data-table"
 import { Badge } from "~/components/ui/badge"
+import { BadgesSkeleton } from "~/components/ui/badges-skeleton"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
 import type { ClientListItem } from "~/domain/clients/clients.schemas"
@@ -120,7 +121,9 @@ export function ClientsPage() {
             </button>
           ) : null}
         </div>
-      ) : null}
+      ) : (
+        <BadgesSkeleton count={2} />
+      )}
 
       {clients === null ? (
         <Skeleton className="h-80" />
