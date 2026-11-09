@@ -144,7 +144,15 @@ export function HomePage() {
       ) : last ? (
         <Card className="gap-3 py-4">
           <CardHeader className="px-4">
-            <CardTitle className="text-sm text-muted-foreground">Último presupuesto</CardTitle>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-sm text-muted-foreground">Último presupuesto</CardTitle>
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/presupuestos/${last.id}`}>
+                  {last.status === "draft" ? "Continuar" : "Abrir"}
+                  <ArrowRight data-icon="inline-end" />
+                </Link>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 px-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -167,12 +175,6 @@ export function HomePage() {
                 </span>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="self-start" asChild>
-              <Link to={`/presupuestos/${last.id}`}>
-                {last.status === "draft" ? "Continuar" : "Abrir"}
-                <ArrowRight data-icon="inline-end" />
-              </Link>
-            </Button>
           </CardContent>
         </Card>
       ) : (
