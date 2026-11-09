@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 
 import { CategoryDetailDialog } from "./category-detail-dialog"
 import { Button } from "~/components/ui/button"
@@ -31,18 +32,19 @@ export function CategoryNameLink({
 
   return (
     <>
-      <Button
-        type="button"
-        variant="link"
-        className={cn(
-          "h-auto max-w-xs justify-start truncate p-0 font-medium text-foreground",
-          className,
-        )}
-        title={isTruncated ? category.name : undefined}
-        onClick={() => setOpen(true)}
-      >
-        {displayName}
-      </Button>
+      <HintTooltip content={isTruncated ? category.name : undefined}>
+        <Button
+          type="button"
+          variant="link"
+          className={cn(
+            "h-auto max-w-xs justify-start truncate p-0 font-medium text-foreground",
+            className,
+          )}
+          onClick={() => setOpen(true)}
+        >
+          {displayName}
+        </Button>
+      </HintTooltip>
 
       <CategoryDetailDialog
         category={category}

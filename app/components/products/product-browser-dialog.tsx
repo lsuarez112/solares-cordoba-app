@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import {
   getCoreRowModel,
   getFilteredRowModel,
@@ -165,9 +166,11 @@ export function ProductBrowserDialog({
         header: ({ column }) => <SortableHeader column={column} title="Producto" />,
         cell: ({ row }) => (
           <div className="flex max-w-[26rem] min-w-0 flex-col">
-            <span className="truncate" title={row.original.name}>
-              {row.original.name}
-            </span>
+            <HintTooltip content={row.original.name}>
+              <span className="truncate">
+                {row.original.name}
+              </span>
+            </HintTooltip>
             <ProductTechnicalPropertyBadges
               items={parseProductGenericProperties(row.original.generic_properties)}
               max={3}

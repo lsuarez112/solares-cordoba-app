@@ -1,20 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { MoreHorizontal } from "lucide-react"
+import { CircleCheck, CircleMinus, Copy, Pencil, ShieldCheck } from "lucide-react"
 
 import { UserEditDialog } from "~/components/users/user-edit-dialog"
-import { Button } from "~/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
+import { RowActionsMenu } from "~/components/ui/row-actions-menu"
 import type { User } from "~/domain/users/users.types"
+import { usePermission } from "~/hooks/use-permission"
 import { appToast } from "~/lib/toast"
 import { useUsersStore } from "~/stores/users.store"
 
@@ -24,46 +16,59 @@ type UserRowActionsProps = {
 
 export function UserRowActions({ user }: UserRowActionsProps) {
   const updateUser = useUsersStore((state) => state.updateUser)
+  const toggleActive = useUsersStore((state) => state.toggleActive)
+  const canUpdate = usePermission("user_profiles", "update")
   const [editOpen, setEditOpen] = React.useState(false)
+
+  const setActive = async (active: boolean) => {
+    await toggleActive(user.id, active)
+    appToast.success(active ? "Cuenta activada" : "Cuenta desactivada", {
+      description: user.fullName ?? undefined,
+    })
+  }
+
+  const isActive = user.status === "active"
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm">
-            <span className="sr-only">Abrir menú</span>
-            <MoreHorizontal />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(user.id)}
-            >
-              Copiar ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {user.status === "pending" ? (
-              <DropdownMenuItem>Activar cuenta</DropdownMenuItem>
-            ) : null}
-            <DropdownMenuItem
-              onSelect={(event) => {
-                event.preventDefault()
-                setEditOpen(true)
-              }}
-            >
-              Editar usuario
-            </DropdownMenuItem>
-            <DropdownMenuItem>Cambiar rol</DropdownMenuItem>
-            {user.status === "active" ? (
-              <DropdownMenuItem variant="destructive">
-                Desactivar
-              </DropdownMenuItem>
-            ) : null}
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <RowActionsMenu
+        actions={[
+          {
+            key: "edit",
+            label: "Editar usuario",
+            icon: Pencil,
+            tone: "edit",
+            hidden: !canUpdate,
+            onSelect: () => setEditOpen(true),
+          },
+          {
+            key: "role",
+            label: "Cambiar rol",
+            icon: ShieldCheck,
+            tone: "neutral",
+            hidden: !canUpdate,
+            onSelect: () => setEditOpen(true),
+          },
+          {
+            key: "toggle",
+            label: isActive ? "Desactivar" : "Activar cuenta",
+            icon: isActive ? CircleMinus : CircleCheck,
+            tone: isActive ? "deactivate" : "activate",
+            hidden: !canUpdate,
+            onSelect: () => void setActive(!isActive),
+          },
+          {
+            key: "copy",
+            label: "Copiar ID",
+            icon: Copy,
+            tone: "neutral",
+            onSelect: () => {
+              void navigator.clipboard.writeText(user.id)
+              appToast.success("ID copiado")
+            },
+          },
+        ]}
+      />
 
       <UserEditDialog
         user={user}

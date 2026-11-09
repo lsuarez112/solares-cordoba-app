@@ -1,6 +1,8 @@
 import { Separator } from "~/components/ui/separator"
 import { SidebarTrigger } from "~/components/ui/sidebar"
 
+import { ThemeToggleButton } from "~/components/theme/theme-toggle"
+
 import { RouteHeaderBreadcrumb } from "./route-header-breadcrumb"
 
 export function AppHeader() {
@@ -14,6 +16,7 @@ export function AppHeader() {
       <div className="min-w-0 flex-1">
         <RouteHeaderBreadcrumb />
       </div>
+      <ThemeToggleButton />
     </div>
   )
 }

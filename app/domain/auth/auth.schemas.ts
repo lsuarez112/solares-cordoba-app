@@ -53,6 +53,7 @@ export const UserProfileBaseSchema = z.object({
   timezone: z.string(),
   preferred_currency: z.string(),
   notifications_enabled: z.boolean(),
+  theme: z.enum(["light", "dark", "system"]).nullable().optional(),
 })
 
 /** Perfil de sesión: user_profiles + rol resuelto en roles.service. */

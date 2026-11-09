@@ -468,6 +468,7 @@ export function ProductFormModal({
           onOpenChange={deleteActions.setDeleteDialogOpen}
           isDeleting={deleteActions.isDeleting}
           onConfirm={deleteActions.handleDeleteConfirm}
+          onDeactivate={deleteActions.handleToggleActive}
         />
       ) : null}
     </Dialog>

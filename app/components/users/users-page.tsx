@@ -39,42 +39,34 @@ type UsersPageSummaryProps = {
 
 function UsersPageSummary({ stats }: UsersPageSummaryProps) {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <Users data-icon="inline-start" />
-          Total
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.total}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <CheckCircle2 data-icon="inline-start" className="text-green-600" />
-          Activos
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.active}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <Clock data-icon="inline-start" className="text-amber-600" />
-          Pendientes
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.pending}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <CircleX data-icon="inline-start" className="text-destructive" />
-          Inactivos
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.inactive}</span>
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Users data-icon="inline-start" />
+            Total
+            <span className="font-semibold text-foreground tabular-nums">{stats.total}</span>
+          </Badge>
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <CheckCircle2 data-icon="inline-start" className="text-green-600" />
+            Activos
+            <span className="font-semibold text-foreground tabular-nums">{stats.active}</span>
+          </Badge>
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Clock data-icon="inline-start" className="text-amber-600" />
+            Pendientes
+            <span className="font-semibold text-foreground tabular-nums">{stats.pending}</span>
+          </Badge>
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <CircleX data-icon="inline-start" className="text-destructive" />
+            Inactivos
+            <span className="font-semibold text-foreground tabular-nums">{stats.inactive}</span>
+          </Badge>
     </div>
   )
 }
 
 function UsersPageSummarySkeleton() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+    <div className="flex flex-wrap items-center gap-2">
       {Array.from({ length: 4 }).map((_, index) => (
         <div key={index} className="flex items-center gap-2">
           <Skeleton className="h-5 w-20" />

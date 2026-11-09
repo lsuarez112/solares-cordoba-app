@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { useFieldArray, useWatch, type Control, type UseFormReturn } from "react-hook-form"
-import { ChevronDown, Minus, Plus, Search, SlidersHorizontal } from "lucide-react"
+import { ChevronDown, Minus, Plus, SlidersHorizontal } from "lucide-react"
 
 import { ProductBrowserDialog } from "~/components/products/product-browser-dialog"
 import { Badge } from "~/components/ui/badge"
@@ -93,7 +94,7 @@ export function KitOptionsSection({ form, products, catalog, categories, canEdit
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button type="button" size="sm" variant="outline" className="ml-auto">
-                <Plus data-icon="inline-start" />
+                <Plus data-icon="inline-start" className="text-emerald-600 dark:text-emerald-400" />
                 Agregar opcional
                 <ChevronDown data-icon="inline-end" />
               </Button>
@@ -337,9 +338,11 @@ function OptionChangesTable({
                     </TableCell>
                     <TableCell className="font-mono text-xs">{change?.product_code}</TableCell>
                     <TableCell className="max-w-[24rem]">
-                      <span className="block truncate" title={product?.name}>
-                        {product?.name ?? <span className="text-destructive">Producto inexistente</span>}
-                      </span>
+                      <HintTooltip content={product?.name}>
+                        <span className="block truncate">
+                          {product?.name ?? <span className="text-destructive">Producto inexistente</span>}
+                        </span>
+                      </HintTooltip>
                     </TableCell>
                     <TableCell className="w-24">
                       {change?.op !== "remove" ? (
@@ -388,19 +391,19 @@ function OptionChangesTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" variant="ghost" size="sm" className="self-start text-muted-foreground">
-              <Plus data-icon="inline-start" />
+              <Plus data-icon="inline-start" className="text-emerald-600 dark:text-emerald-400" />
               Agregar cambio
               <ChevronDown data-icon="inline-end" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
             <DropdownMenuItem onSelect={() => setBrowserOpen(true)}>
-              <Search />
+              <Plus className="text-emerald-600 dark:text-emerald-400" />
               Sumar producto del catálogo…
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <SlidersHorizontal />
+                <SlidersHorizontal className="text-amber-600 dark:text-amber-400" />
                 Cambiar cantidad de…
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
@@ -409,7 +412,7 @@ function OptionChangesTable({
             </DropdownMenuSub>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <Minus />
+                <Minus className="text-destructive" />
                 Quitar de la base…
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="max-h-80 overflow-y-auto">

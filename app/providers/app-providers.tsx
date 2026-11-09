@@ -13,6 +13,7 @@ import { Toaster } from "~/components/ui/sonner"
 import { TooltipProvider } from "~/components/ui/tooltip"
 
 import { AuthProvider } from "./auth-provider"
+import { ThemeProvider } from "./theme-provider"
 
 type AppProvidersProps = {
   children: ReactNode
@@ -33,10 +34,12 @@ export function AppProviders({
       <PermissionsStoreSync />
       <ProductsStoreSync />
       <CategoriesStoreSync />
-      <TooltipProvider>
-        {children}
-        <Toaster />
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
     </AuthProvider>
   )
 }

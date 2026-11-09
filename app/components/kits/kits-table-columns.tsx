@@ -1,25 +1,20 @@
 "use client"
 
 import type { ColumnDef } from "@tanstack/react-table"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import {
   AlertTriangle,
   CircleCheck,
   CircleMinus,
-  Copy,
-  MoreHorizontal,
+  CopyPlus,
+  Eye,
+  Pencil,
   Trash2,
 } from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
+import { ACTIONS_COLUMN_META, RowActionsMenu } from "~/components/ui/row-actions-menu"
 import { StatusIcon, statusFromActive } from "~/components/ui/status-indicator"
 import type { Kit } from "~/domain/kits/kits.schemas"
 import { GRID_TYPE_COLORS, GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
@@ -50,22 +45,39 @@ const equalsFilter =
 export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
   return [
     {
-      id: "kit",
       accessorKey: "code",
-      header: ({ column }) => <SortableHeader column={column} title="Kit" />,
+      header: ({ column }) => <SortableHeader column={column} title="Código" />,
+      cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span>,
+    },
+    {
+      id: "kit",
+      accessorKey: "name",
+      header: ({ column }) => <SortableHeader column={column} title="Nombre" />,
       cell: ({ row }) => (
-        <button
-          type="button"
-          className="flex max-w-[18rem] min-w-0 items-center gap-2 text-left hover:underline"
-          onClick={() => o.onOpen(row.original)}
-          title={row.original.description ?? undefined}
-        >
+        <div className="flex max-w-[20rem] min-w-0 items-center gap-2">
           <StatusIcon status={statusFromActive(row.original.active)} />
-          <span className="shrink-0 font-mono text-xs text-muted-foreground">
-            {row.original.code}
-          </span>
-          <span className="truncate font-medium">{row.original.name}</span>
-        </button>
+          <HintTooltip
+            content={
+              row.original.description ? (
+                <>
+                  <span className="font-medium">{row.original.name}</span>
+                  <br />
+                  {row.original.description}
+                </>
+              ) : (
+                row.original.name
+              )
+            }
+          >
+            <button
+              type="button"
+              className="min-w-0 truncate text-left font-medium hover:underline"
+              onClick={() => o.onOpen(row.original)}
+            >
+              {row.original.name}
+            </button>
+          </HintTooltip>
+        </div>
       ),
       filterFn: (row, _id, value) => {
         const q = String(value ?? "").trim().toLowerCase()
@@ -95,8 +107,15 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
       accessorKey: "phases",
       header: ({ column }) => <SortableHeader column={column} title="Fases" />,
       cell: ({ row }) => (
-        <span className="text-xs text-muted-foreground">
-          {row.original.phases === "tri" ? "Tri" : "Mono"}
+        <span
+          className={cn(
+            "rounded-full px-2 py-0.5 text-xs font-medium",
+            row.original.phases === "tri"
+              ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
+              : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+          )}
+        >
+          {row.original.phases === "tri" ? "Trifásico" : "Monofásico"}
         </span>
       ),
       filterFn: equalsFilter("phases"),
@@ -161,14 +180,15 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
           <>
             <span className="font-mono tabular-nums">{usd(kit.total_usd)}</span>
             {kit.items_without_price > 0 ? (
-              <Badge
-                variant="outline"
-                className="ml-1.5 text-amber-700"
-                title={`${kit.items_without_price} de ${kit.items_count} productos sin precio o inactivos`}
-              >
-                <AlertTriangle data-icon="inline-start" />
-                {kit.items_without_price}
-              </Badge>
+              <HintTooltip content={`${kit.items_without_price} de ${kit.items_count} productos sin precio o inactivos`}>
+                <Badge
+                  variant="outline"
+                  className="ml-1.5 text-amber-700"
+                >
+                  <AlertTriangle data-icon="inline-start" />
+                  {kit.items_without_price}
+                </Badge>
+              </HintTooltip>
             ) : null}
           </>
         )
@@ -197,44 +217,27 @@ export function kitsTableColumns(o: KitsTableColumnsOptions): ColumnDef<Kit>[] {
       id: "actions",
       enableSorting: false,
       header: () => null,
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Acciones">
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => o.onOpen(row.original)}>
-              {o.canUpdate ? "Editar" : "Ver"}
-            </DropdownMenuItem>
-            {o.canUpdate ? (
-              <DropdownMenuItem
-                onSelect={() => o.onToggleActive(row.original, !row.original.active)}
-              >
-                {row.original.active ? <CircleMinus /> : <CircleCheck />}
-                {row.original.active ? "Desactivar" : "Activar"}
-              </DropdownMenuItem>
-            ) : null}
-            {o.canCreate ? (
-              <DropdownMenuItem onSelect={() => o.onDuplicate(row.original)}>
-                <Copy />
-                Duplicar
-              </DropdownMenuItem>
-            ) : null}
-            {o.canDelete ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onSelect={() => o.onDelete(row.original)}>
-                  <Trash2 />
-                  Borrar
-                </DropdownMenuItem>
-              </>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-      meta: { cellClassName: "text-right" },
+      cell: ({ row }) => {
+        const kit = row.original
+        return (
+          <RowActionsMenu
+            actions={[
+              { key: "edit", label: o.canUpdate ? "Editar" : "Ver", icon: o.canUpdate ? Pencil : Eye, tone: o.canUpdate ? "edit" : "neutral", onSelect: () => o.onOpen(kit) },
+              { key: "duplicate", label: "Duplicar", icon: CopyPlus, tone: "duplicate", hidden: !o.canCreate, onSelect: () => o.onDuplicate(kit) },
+              {
+                key: "toggle",
+                label: kit.active ? "Desactivar" : "Activar",
+                icon: kit.active ? CircleMinus : CircleCheck,
+                tone: kit.active ? "deactivate" : "activate",
+                hidden: !o.canUpdate,
+                onSelect: () => o.onToggleActive(kit, !kit.active),
+              },
+              { key: "delete", label: "Eliminar", icon: Trash2, tone: "delete", hidden: !o.canDelete, onSelect: () => o.onDelete(kit) },
+            ]}
+          />
+        )
+      },
+      meta: ACTIONS_COLUMN_META,
     },
   ]
 }

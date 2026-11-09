@@ -1,8 +1,11 @@
 "use client"
 
 import type { ColumnDef } from "@tanstack/react-table"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 import { ProductNameLink } from "~/components/products/product-name-link"
+import { ProductRowActions } from "~/components/products/product-row-actions"
+import { ACTIONS_COLUMN_META, ActionsHeader } from "~/components/ui/row-actions-menu"
 import { ProductTechnicalPropertyBadges } from "~/components/products/product-technical-property-badges"
 import { Badge } from "~/components/ui/badge"
 import { StatusIcon, statusFromActive } from "~/components/ui/status-indicator"
@@ -62,12 +65,13 @@ export function productsTableColumns(
               className="shrink-0"
             />
             {description ? (
-              <span
-                className="min-w-0 truncate text-xs text-muted-foreground"
-                title={description}
-              >
-                {truncateText(description, DESCRIPTION_MAX_LENGTH)}
-              </span>
+              <HintTooltip content={description}>
+                <span
+                  className="min-w-0 truncate text-xs text-muted-foreground"
+                >
+                  {truncateText(description, DESCRIPTION_MAX_LENGTH)}
+                </span>
+              </HintTooltip>
             ) : null}
           </div>
           {properties.length > 0 ? (
@@ -166,19 +170,18 @@ export function productsTableColumns(
           Sin precio
         </Badge>
       ) : (
-        <span
-          className="font-mono text-sm tabular-nums"
-          title={
-            row.original.price_updated_at
+        <HintTooltip content={row.original.price_updated_at
               ? `Actualizado el ${new Date(row.original.price_updated_at).toLocaleDateString("es-AR")}`
-              : undefined
-          }
-        >
-          {row.original.price_usd.toLocaleString("es-AR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </span>
+              : undefined}>
+          <span
+            className="font-mono text-sm tabular-nums"
+          >
+            {row.original.price_usd.toLocaleString("es-AR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </HintTooltip>
       ),
     meta: {
       headerClassName: "text-right",
@@ -207,6 +210,19 @@ export function productsTableColumns(
       headerClassName: "text-center",
       cellClassName: "text-center",
     },
+  },
+  {
+    id: "actions",
+    enableSorting: false,
+    header: () => <ActionsHeader />,
+    cell: ({ row }) => (
+      <ProductRowActions
+        product={row.original}
+        onOpenEdit={onOpenEdit}
+        onDuplicate={onDuplicate}
+      />
+    ),
+    meta: ACTIONS_COLUMN_META,
   },
 ]
 }

@@ -38,6 +38,7 @@ import {
 } from "~/lib/companies/company-form.utils"
 import { appToast } from "~/lib/toast"
 import { companiesService } from "~/services/companies.service"
+import { useCompanyStore } from "~/stores/company.store"
 
 type TextFieldName = Exclude<keyof CompanyFormValues, "active" | "country">
 
@@ -55,6 +56,7 @@ const FIELDS: Array<{ name: TextFieldName; label: string; placeholder?: string; 
 
 export function CompanySettingsCard({ canEdit }: { canEdit: boolean }) {
   const [company, setCompany] = React.useState<Company | null>(null)
+  const setStoreCompany = useCompanyStore((s) => s.setCompany)
   const [loading, setLoading] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
   const [uploading, setUploading] = React.useState(false)
@@ -89,6 +91,7 @@ export function CompanySettingsCard({ canEdit }: { canEdit: boolean }) {
         ? await companiesService.update(company.id, { ...payload, logo_url: company.logo_url })
         : await companiesService.create(payload)
       setCompany(saved)
+      setStoreCompany(saved)
       form.reset(companyToFormValues(saved))
       appToast.success("Datos de la empresa guardados")
     } catch (error) {
@@ -108,7 +111,9 @@ export function CompanySettingsCard({ canEdit }: { canEdit: boolean }) {
     setUploading(true)
     try {
       const url = await companiesService.uploadLogo(company.id, file)
-      setCompany(await companiesService.update(company.id, { logo_url: url }))
+      const updated = await companiesService.update(company.id, { logo_url: url })
+      setCompany(updated)
+      setStoreCompany(updated)
       appToast.success("Logo actualizado")
     } catch (error) {
       appToast.error("No se pudo subir el logo", {
@@ -126,7 +131,7 @@ export function CompanySettingsCard({ canEdit }: { canEdit: boolean }) {
         <CardDescription>Datos que aparecen en el encabezado del PDF del presupuesto.</CardDescription>
       </CardHeader>
       {loading ? (
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+        <CardContent className="grid items-start gap-4 sm:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-14" />
           ))}
@@ -142,7 +147,7 @@ export function CompanySettingsCard({ canEdit }: { canEdit: boolean }) {
                 disabled={!canEdit || !company}
                 onFileSelect={handleLogo}
               />
-              <fieldset disabled={!canEdit} className="grid gap-4 sm:grid-cols-2">
+              <fieldset disabled={!canEdit} className="grid items-start gap-4 sm:grid-cols-2">
                 {FIELDS.map((f) => (
                   <FormField
                     key={f.name}

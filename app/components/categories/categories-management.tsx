@@ -18,7 +18,7 @@ import { getCategoryStats } from "~/lib/categories/category-display.utils"
 
 function CategoriesMetricsSkeleton() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+    <div className="flex flex-wrap items-center gap-2">
       {Array.from({ length: 3 }).map((_, index) => (
         <div key={index} className="flex items-center gap-2">
           <Skeleton className="h-5 w-20" />
@@ -48,7 +48,13 @@ export function CategoriesManagement() {
   const canOpenForm = canCreate || canUpdate
 
   const handleNewCategory = () => openModal()
-  const handleEditCategory = (category: Category) => openModal(category)
+  // Callback estable (ver products-management): evita remontar las celdas de la tabla.
+  const openModalRef = React.useRef(openModal)
+  openModalRef.current = openModal
+  const handleEditCategory = React.useCallback(
+    (category: Category) => openModalRef.current(category),
+    [],
+  )
 
   const stats = React.useMemo(
     () => getCategoryStats(categories, productCounts),
@@ -102,34 +108,22 @@ export function CategoriesManagement() {
       {isInitialLoading ? (
         <CategoriesMetricsSkeleton />
       ) : (
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <Layers data-icon="inline-start" />
-              Total
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.total}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <Package data-icon="inline-start" className="text-green-600" />
-              Con productos
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.withProducts}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <Layers data-icon="inline-start" className="text-muted-foreground" />
-              Vacías
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.empty}
-            </span>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Layers data-icon="inline-start" />
+            Total
+            <span className="font-semibold text-foreground tabular-nums">{stats.total}</span>
+          </Badge>
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Package data-icon="inline-start" className="text-green-600" />
+            Con productos
+            <span className="font-semibold text-foreground tabular-nums">{stats.withProducts}</span>
+          </Badge>
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Layers data-icon="inline-start" className="text-muted-foreground" />
+            Vacías
+            <span className="font-semibold text-foreground tabular-nums">{stats.empty}</span>
+          </Badge>
         </div>
       )}
 

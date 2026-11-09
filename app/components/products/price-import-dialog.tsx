@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { FileUp, History, Upload } from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
@@ -256,9 +257,11 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
                             {row.line}
                           </TableCell>
                           <TableCell className="font-mono">{row.code || row.rawCode}</TableCell>
-                          <TableCell className="max-w-56 truncate" title={row.productName}>
-                            {row.productName ?? "—"}
-                          </TableCell>
+                          <HintTooltip content={row.productName}>
+                            <TableCell className="max-w-56 truncate">
+                              {row.productName ?? "—"}
+                            </TableCell>
+                          </HintTooltip>
                           <TableCell className="text-right font-mono tabular-nums">
                             {usd(row.currentPrice)}
                           </TableCell>
@@ -309,17 +312,20 @@ export function PriceImportDialog({ open, onOpenChange }: PriceImportDialogProps
                   {history.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell>{new Date(log.created_at).toLocaleString("es-AR")}</TableCell>
-                      <TableCell className="max-w-48 truncate" title={log.file_name}>
-                        {log.file_name}
-                      </TableCell>
+                      <HintTooltip content={log.file_name}>
+                        <TableCell className="max-w-48 truncate">
+                          {log.file_name}
+                        </TableCell>
+                      </HintTooltip>
                       <TableCell className="text-right tabular-nums">{log.rows_total}</TableCell>
                       <TableCell className="text-right tabular-nums">{log.rows_updated}</TableCell>
-                      <TableCell
-                        className="text-right tabular-nums"
-                        title={log.codes_not_found.join(", ")}
-                      >
-                        {log.codes_not_found.length}
-                      </TableCell>
+                      <HintTooltip content={log.codes_not_found.join(", ")}>
+                        <TableCell
+                          className="text-right tabular-nums"
+                        >
+                          {log.codes_not_found.length}
+                        </TableCell>
+                      </HintTooltip>
                     </TableRow>
                   ))}
                 </TableBody>

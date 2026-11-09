@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { CompanySettingsCard } from "~/components/config/company-settings-card"
 import { ExchangeRateCard } from "~/components/config/exchange-rate-card"
+import { QuoteLogoCard } from "~/components/config/quote-logo-card"
 import { QuoteSettingsCard } from "~/components/config/quote-settings-card"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
@@ -45,7 +46,10 @@ export function ConfigGeneralPage() {
         </TabsContent>
         <TabsContent value="quotes">
           {settings ? (
-            <QuoteSettingsCard settings={settings} canEdit={canEdit} onSaved={setSettings} />
+            <div className="flex flex-col gap-4">
+              <QuoteSettingsCard settings={settings} canEdit={canEdit} onSaved={setSettings} />
+              <QuoteLogoCard settings={settings} canEdit={canEdit} onSaved={setSettings} />
+            </div>
           ) : (
             <Skeleton className="h-96" />
           )}

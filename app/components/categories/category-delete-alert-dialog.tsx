@@ -1,6 +1,7 @@
 "use client"
 
 import { Trash2 } from "lucide-react"
+import { Link } from "react-router"
 
 import {
   AlertDialog,
@@ -35,20 +36,25 @@ export function CategoryDeleteAlertDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Eliminar categoría?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {productCount > 0 ? "La categoría tiene productos" : "¿Eliminar categoría?"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Vas a eliminar permanentemente{" "}
             <span className="font-medium text-foreground">{category.name}</span>
-            {category.slug ? ` (${category.slug})` : null}.
+            {category.slug ? ` (${category.slug})` : null}.{" "}
             {productCount > 0 ? (
               <>
-                {" "}
-                Hay {productCount} producto{productCount === 1 ? "" : "s"}{" "}
-                asociado{productCount === 1 ? "" : "s"}; la eliminación puede
-                fallar si no se reasignan antes.
+                Tiene {productCount} producto{productCount === 1 ? "" : "s"}: movelos a otra
+                categoría antes de borrarla.{" "}
+                <Link
+                  to={`/productos?category=${category.id}`}
+                  className="font-medium text-foreground underline"
+                >
+                  Ver productos
+                </Link>
               </>
             ) : (
-              <> Esta acción no se puede deshacer.</>
+              <>No tiene productos. Esta acción no se puede deshacer.</>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -56,7 +62,7 @@ export function CategoryDeleteAlertDialog({
           <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
-            disabled={isDeleting}
+            disabled={isDeleting || productCount > 0}
             onClick={(event) => {
               event.preventDefault()
               void onConfirm()

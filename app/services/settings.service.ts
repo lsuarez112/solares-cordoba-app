@@ -8,6 +8,7 @@ import {
   type CurrentExchangeRate,
   type ExchangeRate,
 } from "~/domain/settings/settings.schemas"
+import { getLogoFileExtension } from "~/lib/companies/company-logo.utils"
 import { devLog } from "~/lib/dev-log"
 import { createClient } from "~/lib/supabase/client"
 
@@ -26,6 +27,21 @@ export const settingsService = {
       throw error
     }
     return AppSettingsSchema.parse(data)
+  },
+
+  /** Sube un logo propio para el PDF del presupuesto y devuelve su URL pública. */
+  async uploadQuoteLogo(file: File): Promise<string> {
+    const supabase = createClient()
+    const path = `quote/logo.${getLogoFileExtension(file)}`
+    const { error } = await supabase.storage
+      .from("company-logos")
+      .upload(path, file, { upsert: true })
+    if (error) {
+      devLog("[settings-service] uploadQuoteLogo error", error)
+      throw error
+    }
+    const { data } = supabase.storage.from("company-logos").getPublicUrl(path)
+    return `${data.publicUrl}?t=${Date.now()}`
   },
 
   async update(payload: AppSettingsUpdate): Promise<AppSettings> {

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import {
   DndContext,
   KeyboardSensor,
@@ -18,7 +19,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useFieldArray, useWatch, type Control } from "react-hook-form"
-import { AlertTriangle, ChevronDown, GripVertical, Plus, Search } from "lucide-react"
+import { AlertTriangle, ChevronDown, GripVertical, PackageOpen, Plus, Search } from "lucide-react"
 
 import { ProductBrowserDialog } from "~/components/products/product-browser-dialog"
 import { Badge } from "~/components/ui/badge"
@@ -31,6 +32,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty"
 import { FormControl, FormField, FormItem, FormMessage } from "~/components/ui/form"
 import { DeleteIconButton } from "~/components/ui/icon-action-button"
 import { Input } from "~/components/ui/input"
@@ -116,7 +125,7 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button type="button" size="sm" variant="outline">
-                <Plus data-icon="inline-start" />
+                <Plus data-icon="inline-start" className="text-emerald-600 dark:text-emerald-400" />
                 Agregar productos
                 <ChevronDown data-icon="inline-end" />
               </Button>
@@ -148,6 +157,32 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
         </p>
       ) : null}
 
+      {fields.length === 0 ? (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <PackageOpen />
+            </EmptyMedia>
+            <EmptyTitle>Sin productos</EmptyTitle>
+            <EmptyDescription>
+              Armá la lista de materiales base del kit: paneles, inversor, baterías,
+              protecciones, cableado y estructura. Los precios se toman del catálogo.
+            </EmptyDescription>
+          </EmptyHeader>
+          {canEdit ? (
+            <EmptyContent>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setBrowser({ open: true, categoryId: null })}
+              >
+                <Search data-icon="inline-start" />
+                Buscar en el catálogo
+              </Button>
+            </EmptyContent>
+          ) : null}
+        </Empty>
+      ) : (
       <div className="overflow-hidden rounded-lg border bg-card">
         <TableScrollArea maxHeightClassName="max-h-[32rem]">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -164,13 +199,6 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {fields.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
-                      Sin productos. Usá "Agregar productos".
-                    </TableCell>
-                  </TableRow>
-                ) : null}
                 {groups.map((group) => {
                   const groupTotal = group.indexes.reduce((acc, i) => {
                     const p = catalog.get(items[i]?.product_code)
@@ -213,6 +241,7 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
           </DndContext>
         </TableScrollArea>
       </div>
+      )}
 
       <FormField
         control={control}
@@ -283,9 +312,11 @@ function BomRow({
       </TableCell>
       <TableCell className="font-mono text-xs">{code}</TableCell>
       <TableCell className="max-w-[28rem]">
-        <span className="block truncate" title={product?.name}>
-          {product?.name ?? <span className="text-destructive">Producto inexistente</span>}
-        </span>
+        <HintTooltip content={product?.name}>
+          <span className="block truncate">
+            {product?.name ?? <span className="text-destructive">Producto inexistente</span>}
+          </span>
+        </HintTooltip>
       </TableCell>
       <TableCell className="w-24">
         <FormField

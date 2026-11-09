@@ -304,6 +304,7 @@ export function ProductDetailDialog({
           onOpenChange={actions.setDeleteDialogOpen}
           isDeleting={actions.isDeleting}
           onConfirm={actions.handleDeleteConfirm}
+          onDeactivate={actions.handleToggleActive}
         />
       ) : null}
     </>

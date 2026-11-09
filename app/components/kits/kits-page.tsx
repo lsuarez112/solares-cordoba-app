@@ -2,10 +2,11 @@
 
 import * as React from "react"
 import { useNavigate } from "react-router"
-import { Plus } from "lucide-react"
+import { AlertTriangle, Boxes, CircleCheck, Plus } from "lucide-react"
 
 import { AssemblyRulesEditor } from "~/components/kits/assembly-rules-editor"
 import { KitsDataTable } from "~/components/kits/kits-data-table"
+import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
@@ -68,10 +69,15 @@ export function KitsPage() {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex max-w-3xl flex-col gap-1.5">
           <h1 className="text-2xl font-semibold tracking-tight">Kits</h1>
           <p className="text-sm text-muted-foreground">
-            Kits predefinidos que la IA filtra y sugiere, o que se eligen a mano.
+            Son los kits <strong className="font-medium text-foreground">base</strong> del
+            presupuestador. Cuando un vendedor describe el pedido del cliente, la IA calcula la
+            potencia necesaria y <strong className="font-medium text-foreground">solo elige entre
+            estos kits activos</strong> (por tipo de sistema, kWp y batería), aplicando sus
+            opcionales si hace falta. También se pueden elegir a mano. Mantenelos completos y con
+            precio: un kit inactivo o con productos sin precio no se sugiere.
           </p>
         </div>
         {canCreate ? (
@@ -88,7 +94,30 @@ export function KitsPage() {
           <TabsTrigger value="rules">Reglas de armado</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="kits">
+        <TabsContent value="kits" className="flex flex-col gap-4">
+          {kits ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+                <Boxes data-icon="inline-start" />
+                Total
+                <span className="font-semibold text-foreground tabular-nums">{kits.length}</span>
+              </Badge>
+              <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+                <CircleCheck data-icon="inline-start" className="text-emerald-600" />
+                Activos
+                <span className="font-semibold text-foreground tabular-nums">
+                  {kits.filter((k) => k.active).length}
+                </span>
+              </Badge>
+              <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+                <AlertTriangle data-icon="inline-start" className="text-amber-600" />
+                Con precios faltantes
+                <span className="font-semibold text-foreground tabular-nums">
+                  {kits.filter((k) => k.items_without_price > 0).length}
+                </span>
+              </Badge>
+            </div>
+          ) : null}
           {kits === null ? (
             <Skeleton className="h-80" />
           ) : (

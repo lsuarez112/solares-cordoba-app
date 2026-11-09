@@ -1,6 +1,7 @@
 import { Cpu } from "lucide-react"
 
 import { Badge } from "~/components/ui/badge"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 import {
   formatPropertyValue,
   orderProductProperties,
@@ -36,18 +37,21 @@ export function ProductTechnicalPropertyBadges({
   return (
     <div className={cn("flex min-w-0 gap-1", compact ? "flex-nowrap" : "flex-wrap", className)}>
       {visible.map(({ key, value }) => (
-        <Badge key={key} variant="secondary" className={BADGE_CLASS} title={`${key}: ${value}`}>
-          {compact ? null : <Cpu data-icon="inline-start" className="text-violet-600" />}
-          {compact ? formatPropertyValue(key, value) : `${key}: ${value}`}
-        </Badge>
+        <HintTooltip key={key} content={`${key}: ${value}`}>
+          <Badge variant="secondary" className={BADGE_CLASS}>
+            {compact ? null : <Cpu data-icon="inline-start" className="text-violet-600" />}
+            {compact ? formatPropertyValue(key, value) : `${key}: ${value}`}
+          </Badge>
+        </HintTooltip>
       ))}
       {rest.length > 0 ? (
-        <Badge
-          variant="outline"
-          title={rest.map(({ key, value }) => `${key}: ${value}`).join("\n")}
-        >
-          +{rest.length}
-        </Badge>
+        <HintTooltip content={rest.map(({ key, value }) => `${key}: ${value}`).join("\n")}>
+          <Badge
+            variant="outline"
+          >
+            +{rest.length}
+          </Badge>
+        </HintTooltip>
       ) : null}
     </div>
   )

@@ -150,7 +150,7 @@ export function AssemblyRulesEditor({ canEdit }: { canEdit: boolean }) {
                       disabled={!rule.dirty || savingKey === rule.key}
                       onClick={() => void save(rule)}
                     >
-                      <Save />
+                      <Save className="text-sky-600 dark:text-sky-400" />
                     </Button>
                     <DeleteIconButton label="Borrar regla" onClick={() => void removeRule(rule)} />
                   </>
@@ -161,7 +161,7 @@ export function AssemblyRulesEditor({ canEdit }: { canEdit: boolean }) {
         )}
         {canEdit ? (
           <Button variant="outline" size="sm" className="self-start" onClick={addRule}>
-            <Plus data-icon="inline-start" />
+            <Plus data-icon="inline-start" className="text-emerald-600 dark:text-emerald-400" />
             Agregar regla
           </Button>
         ) : null}

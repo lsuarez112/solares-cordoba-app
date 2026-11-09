@@ -27,7 +27,7 @@ import { useProductsStore } from "~/stores/products.store"
 
 function ProductsMetricsSkeleton() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+    <div className="flex flex-wrap items-center gap-2">
       {Array.from({ length: 3 }).map((_, index) => (
         <div key={index} className="flex items-center gap-2">
           <Skeleton className="h-5 w-20" />
@@ -86,17 +86,19 @@ export function ProductsManagement() {
     setFormOpen(true)
   }
 
-  const handleEditProduct = (product: Product) => {
+  // Callbacks estables: si cambian, la tabla recrea las columnas y remonta las celdas
+  // (se perderían, por ejemplo, los diálogos abiertos desde la columna de acciones).
+  const handleEditProduct = React.useCallback((product: Product) => {
     setDuplicateFrom(undefined)
     setEditingProduct(product)
     setFormOpen(true)
-  }
+  }, [])
 
-  const handleDuplicateProduct = (product: Product) => {
+  const handleDuplicateProduct = React.useCallback((product: Product) => {
     setEditingProduct(undefined)
     setDuplicateFrom(product)
     setFormOpen(true)
-  }
+  }, [])
 
   const canOpenForm = canCreate || canUpdate
   const canDuplicateProduct = canCreate
@@ -128,7 +130,7 @@ export function ProductsManagement() {
               ) : null}
               {canUpdate ? (
                 <DropdownMenuItem onSelect={() => setPriceImportOpen(true)}>
-                  <DollarSign className="size-4" />
+                  <DollarSign className="size-4 text-emerald-600 dark:text-emerald-400" />
                   Actualizar precios
                 </DropdownMenuItem>
               ) : null}
@@ -146,7 +148,7 @@ export function ProductsManagement() {
                   size="sm"
                   onClick={() => setPriceImportOpen(true)}
                 >
-                  <DollarSign data-icon="inline-start" />
+                  <DollarSign data-icon="inline-start" className="text-emerald-600 dark:text-emerald-400" />
                   Actualizar precios
                 </Button>
               ) : null}
@@ -161,34 +163,22 @@ export function ProductsManagement() {
       {isInitialLoading ? (
         <ProductsMetricsSkeleton />
       ) : (
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <Package data-icon="inline-start" />
-              Total
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.total}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <Package data-icon="inline-start" className="text-green-600" />
-              Activos
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.active}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <AlertTriangle data-icon="inline-start" className="text-amber-600" />
-              Sin precio
-            </Badge>
-            <span className="text-sm font-semibold tabular-nums">
-              {stats.noPrice}
-            </span>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Package data-icon="inline-start" />
+            Total
+            <span className="font-semibold text-foreground tabular-nums">{stats.total}</span>
+          </Badge>
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Package data-icon="inline-start" className="text-green-600" />
+            Activos
+            <span className="font-semibold text-foreground tabular-nums">{stats.active}</span>
+          </Badge>
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <AlertTriangle data-icon="inline-start" className="text-amber-600" />
+            Sin precio
+            <span className="font-semibold text-foreground tabular-nums">{stats.noPrice}</span>
+          </Badge>
         </div>
       )}
 

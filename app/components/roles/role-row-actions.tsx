@@ -1,20 +1,12 @@
 "use client"
 
-import { MoreHorizontal, Trash2 } from "lucide-react"
+import { Copy, Pencil, Trash2 } from "lucide-react"
 
 import { RoleDeleteAlertDialog } from "~/components/roles/role-delete-alert-dialog"
-import { Button } from "~/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
+import { RowActionsMenu } from "~/components/ui/row-actions-menu"
 import type { RoleListItem } from "~/domain/roles/roles.types"
 import { useRoleActions } from "~/hooks/use-role-actions"
+import { appToast } from "~/lib/toast"
 
 type RoleRowActionsProps = {
   role: RoleListItem
@@ -22,67 +14,43 @@ type RoleRowActionsProps = {
   onOpenEdit?: (role: RoleListItem) => void
 }
 
-export function RoleRowActions({
-  role,
-  canUpdate = false,
-  onOpenEdit,
-}: RoleRowActionsProps) {
+export function RoleRowActions({ role, canUpdate = false, onOpenEdit }: RoleRowActionsProps) {
   const actions = useRoleActions(role)
 
   if (!actions.hasAnyAction) return null
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm">
-            <span className="sr-only">Abrir menú</span>
-            <MoreHorizontal />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(role.id)}
-            >
-              Copiar ID
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-
-          {canUpdate ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault()
-                    onOpenEdit?.(role)
-                  }}
-                >
-                  Editar rol
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </>
-          ) : null}
-
-          {actions.canDelete ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Administración</DropdownMenuLabel>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={actions.openDeleteDialog}
-                >
-                  <Trash2 data-icon="inline-start" />
-                  Eliminar
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </>
-          ) : null}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <RowActionsMenu
+        actions={[
+          {
+            key: "edit",
+            label: "Editar rol",
+            icon: Pencil,
+            tone: "edit",
+            hidden: !canUpdate || !onOpenEdit,
+            onSelect: () => onOpenEdit?.(role),
+          },
+          {
+            key: "copy",
+            label: "Copiar ID",
+            icon: Copy,
+            tone: "neutral",
+            onSelect: () => {
+              void navigator.clipboard.writeText(role.id)
+              appToast.success("ID copiado")
+            },
+          },
+          {
+            key: "delete",
+            label: "Eliminar",
+            icon: Trash2,
+            tone: "delete",
+            hidden: !actions.canDelete,
+            onSelect: actions.openDeleteDialog,
+          },
+        ]}
+      />
 
       {actions.canDelete ? (
         <RoleDeleteAlertDialog

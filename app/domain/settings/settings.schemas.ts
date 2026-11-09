@@ -8,6 +8,8 @@ export const AppSettingsSchema = z.object({
   default_iva_pct: z.coerce.number(),
   quote_footer: z.string().nullable(),
   rate_mode: z.enum(["api", "manual"]),
+  quote_logo_mode: z.enum(["company", "custom", "none"]).default("company"),
+  quote_logo_url: z.string().nullable().default(null),
   system_efficiency: z.coerce.number(),
   default_hsp: z.coerce.number(),
   kwp_tolerance_pct: z.coerce.number(),
@@ -19,6 +21,7 @@ export const AppSettingsSchema = z.object({
 })
 export type AppSettings = z.infer<typeof AppSettingsSchema>
 export type RateMode = AppSettings["rate_mode"]
+export type QuoteLogoMode = AppSettings["quote_logo_mode"]
 
 export const QuoteSettingsFormSchema = z.object({
   number_prefix: z

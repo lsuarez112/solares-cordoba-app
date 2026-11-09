@@ -38,35 +38,29 @@ type RolesPageSummaryProps = {
 
 function RolesPageSummary({ stats }: RolesPageSummaryProps) {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <Shield data-icon="inline-start" />
-          Total
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.total}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <CheckCircle2 data-icon="inline-start" className="text-green-600" />
-          Activos
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.active}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary">
-          <CircleX data-icon="inline-start" className="text-destructive" />
-          Inactivos
-        </Badge>
-        <span className="text-sm font-semibold tabular-nums">{stats.inactive}</span>
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <Shield data-icon="inline-start" />
+            Total
+            <span className="font-semibold text-foreground tabular-nums">{stats.total}</span>
+          </Badge>
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <CheckCircle2 data-icon="inline-start" className="text-green-600" />
+            Activos
+            <span className="font-semibold text-foreground tabular-nums">{stats.active}</span>
+          </Badge>
+      <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
+            <CircleX data-icon="inline-start" className="text-destructive" />
+            Inactivos
+            <span className="font-semibold text-foreground tabular-nums">{stats.inactive}</span>
+          </Badge>
     </div>
   )
 }
 
 function RolesPageSummarySkeleton() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+    <div className="flex flex-wrap items-center gap-2">
       {Array.from({ length: 3 }).map((_, index) => (
         <div key={index} className="flex items-center gap-2">
           <Skeleton className="h-5 w-20" />

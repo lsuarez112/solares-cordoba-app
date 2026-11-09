@@ -64,7 +64,7 @@ export function DataActionsMenu({
             onSelect={() => onRefresh?.()}
             className="gap-2"
           >
-            <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
+            <RefreshCw className={cn("size-4 text-sky-600 dark:text-sky-400", refreshing && "animate-spin")} />
             Actualizar
           </DropdownMenuItem>
           {formatted ? (

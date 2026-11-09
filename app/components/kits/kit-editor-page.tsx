@@ -136,8 +136,9 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
           </Button>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-lg font-semibold tracking-tight">{title}</h1>
-            <p className="truncate text-xs text-muted-foreground">
-              Los precios salen siempre del catálogo vigente.
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              Kit base del presupuestador: la IA lo considera al sugerir (por sistema, kWp y
+              batería) y puede aplicar sus opcionales. Los precios salen del catálogo vigente.
             </p>
           </div>
           {canEdit ? (

@@ -165,7 +165,7 @@ export function ExchangeRateCard({
             </p>
           )}
           <Button variant="outline" size="sm" onClick={() => void handleFetch()} disabled={fetching}>
-            {fetching ? <Spinner data-icon="inline-start" /> : <RefreshCw data-icon="inline-start" />}
+            {fetching ? <Spinner data-icon="inline-start" /> : <RefreshCw data-icon="inline-start" className="text-sky-600 dark:text-sky-400" />}
             Actualizar desde API
           </Button>
         </div>

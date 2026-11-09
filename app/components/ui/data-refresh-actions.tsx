@@ -32,7 +32,7 @@ export function DataRefreshActions({
           disabled={refreshing}
           onClick={onRefresh}
         >
-          <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
+          <RefreshCw className={cn("size-4 text-sky-600 dark:text-sky-400", refreshing && "animate-spin")} />
           Actualizar
         </Button>
         {children}

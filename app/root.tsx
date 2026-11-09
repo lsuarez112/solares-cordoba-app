@@ -12,6 +12,7 @@ import {
 import type { Route } from "./+types/root"
 import { getServerAuthUser } from "./lib/auth/session"
 import { APP_TITLE } from "./lib/page-meta"
+import { THEME_INIT_SCRIPT } from "./lib/theme"
 import { AppProviders } from "./providers/app-providers"
 import "./app.css"
 
@@ -52,6 +53,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        {/* Aplica el tema guardado antes del primer pintado (sin parpadeo). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body suppressHydrationWarning>
         {children}

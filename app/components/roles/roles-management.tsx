@@ -61,7 +61,13 @@ export function RolesManagement() {
   const isRefreshing = loading && initialized
 
   const handleNewRole = () => openModal()
-  const handleEditRole = (role: (typeof roleItems)[number]) => openModal(role)
+  // Callback estable: evita remontar las celdas (y cerrar diálogos de la columna de acciones).
+  const openModalRef = React.useRef(openModal)
+  openModalRef.current = openModal
+  const handleEditRole = React.useCallback(
+    (role: (typeof roleItems)[number]) => openModalRef.current(role),
+    [],
+  )
 
   return (
     <RolesPage>

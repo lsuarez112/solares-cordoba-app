@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { HintTooltip } from "~/components/ui/hint-tooltip"
 
 import { ProductDetailDialog } from "~/components/products/product-detail-dialog"
 import { Button } from "~/components/ui/button"
@@ -33,18 +34,19 @@ export function ProductNameLink({
 
   return (
     <>
-      <Button
-        type="button"
-        variant="link"
-        className={cn(
-          "h-auto max-w-xs justify-start truncate p-0 font-medium text-foreground",
-          className,
-        )}
-        title={isTruncated ? product.name : undefined}
-        onClick={() => setOpen(true)}
-      >
-        {displayName}
-      </Button>
+      <HintTooltip content={isTruncated ? product.name : undefined}>
+        <Button
+          type="button"
+          variant="link"
+          className={cn(
+            "h-auto max-w-xs justify-start truncate p-0 font-medium text-foreground",
+            className,
+          )}
+          onClick={() => setOpen(true)}
+        >
+          {displayName}
+        </Button>
+      </HintTooltip>
 
       <ProductDetailDialog
         product={product}

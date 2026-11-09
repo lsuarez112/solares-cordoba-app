@@ -2,6 +2,8 @@
 
 import type { ColumnDef } from "@tanstack/react-table"
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
+import { ACTIONS_COLUMN_META, ActionsHeader } from "~/components/ui/row-actions-menu"
+import { CategoryRowActions } from "./category-row-actions"
 import { Link } from "react-router"
 
 import { CategoryNameLink } from "./category-name-link"
@@ -91,6 +93,13 @@ export function categoriesTableColumns(
         headerClassName: "text-center",
         cellClassName: "text-center",
       },
+    },
+    {
+      id: "actions",
+      enableSorting: false,
+      header: () => <ActionsHeader />,
+      cell: ({ row }) => <CategoryRowActions category={row.original} onOpenEdit={onOpenEdit} />,
+      meta: ACTIONS_COLUMN_META,
     },
   ]
 }
