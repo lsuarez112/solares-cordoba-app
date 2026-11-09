@@ -17,6 +17,7 @@ import {
   type CategoryRow,
 } from "./categories-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
 import { DataTableToolbar } from "~/components/ui/data-table-toolbar"
 import type { Category } from "~/domain/categories/categories.schemas"
 import type { CategoryFilters } from "~/domain/categories/categories.types"
@@ -112,6 +113,19 @@ export function CategoriesDataTable({
         showRowCount
         totalCount={data.length}
         rowCountLabel="categorías"
+        mobileCard={(row, { actions, cell }) => (
+          <MobileRowCard
+            title={cell("name")}
+            subtitle={row.original.description?.trim() || "Sin descripción"}
+            trailing={
+              <span className="flex flex-col items-end">
+                <span className="text-sm font-semibold tabular-nums">{cell("productCount")}</span>
+                <span className="text-[11px] text-muted-foreground">productos</span>
+              </span>
+            }
+            actions={actions}
+          />
+        )}
       />
     </div>
   )

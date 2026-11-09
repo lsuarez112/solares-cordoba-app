@@ -11,6 +11,7 @@ import { KitHeaderFields } from "~/components/kits/kit-header-fields"
 import { KitOptionsSection } from "~/components/kits/kit-options-section"
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
+import { confirmDialog } from "~/components/ui/confirm-dialog"
 import { Card, CardContent } from "~/components/ui/card"
 import { Form } from "~/components/ui/form"
 import { Skeleton } from "~/components/ui/skeleton"
@@ -111,8 +112,12 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
   )
   React.useEffect(() => {
     if (blocker.state !== "blocked") return
-    if (window.confirm("Hay cambios sin guardar. ¿Salir igual?")) blocker.proceed()
-    else blocker.reset()
+    void confirmDialog({
+      title: "Hay cambios sin guardar",
+      description: "Si salís ahora se pierden.",
+      confirmLabel: "Salir sin guardar",
+      destructive: true,
+    }).then((ok) => (ok ? blocker.proceed() : blocker.reset()))
   }, [blocker])
 
   const onSubmit = form.handleSubmit(
@@ -148,13 +153,7 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
               <ArrowLeft />
             </Link>
           </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-semibold tracking-tight">{title}</h1>
-            <p className="line-clamp-2 text-xs text-muted-foreground">
-              Kit base del presupuestador: la IA lo considera al sugerir (por sistema, kWp y
-              batería) y puede aplicar sus opcionales. Los precios salen del catálogo vigente.
-            </p>
-          </div>
+          <h1 className="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight">{title}</h1>
           {canEdit ? (
             <Button type="submit" size="sm" disabled={saving || isLoading || !form.formState.isDirty}>
               {saving ? <Spinner data-icon="inline-start" /> : <Save data-icon="inline-start" />}
@@ -162,6 +161,11 @@ export function KitEditorPage({ kitId, duplicateFromId = null }: KitEditorPagePr
             </Button>
           ) : null}
         </div>
+
+        <p className="-mt-3 text-sm text-muted-foreground">
+          Kit base del presupuestador: la IA lo considera al sugerir (por sistema, kWp y batería) y puede aplicar
+          sus opcionales. Los precios salen del catálogo vigente.
+        </p>
 
         {isLoading ? (
           <div className="flex flex-col gap-4">

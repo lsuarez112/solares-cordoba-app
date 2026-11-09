@@ -23,7 +23,7 @@ export function ProductsDataTableSkeleton() {
         <Skeleton className="h-8 w-full sm:w-40" />
       </div>
 
-      <div className="min-w-0 overflow-hidden rounded-lg border bg-card">
+      <div className="min-w-0 overflow-hidden rounded-lg border bg-card shadow-card">
         <TableScrollArea>
           <Table>
             <TableHeader>

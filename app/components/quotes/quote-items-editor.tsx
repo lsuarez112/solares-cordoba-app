@@ -199,7 +199,7 @@ export function QuoteItemsEditor({
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="overflow-hidden rounded-lg border bg-card shadow-card">
           <TableScrollArea maxHeightClassName="max-h-[min(60svh,40rem)]">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               {/* table-fixed: la descripción toma el ancho que sobra y se trunca (sin scroll
@@ -287,7 +287,7 @@ function SortableLineCard({ index, line, product, canEdit, onQty, onRemove }: Li
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition, "--i": index } as React.CSSProperties}
-      className={cn("row-in flex gap-2 rounded-lg border bg-card p-2.5", isDragging && "relative z-20 shadow-md")}
+      className={cn("row-in flex gap-2 rounded-lg border bg-card shadow-card p-2.5", isDragging && "relative z-20 shadow-md")}
     >
       {canEdit ? (
         <button

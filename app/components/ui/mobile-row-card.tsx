@@ -36,7 +36,7 @@ export function MobileRowCard({
     </>
   )
   return (
-    <div className={cn("flex items-start gap-2 rounded-lg border bg-card p-3", className)}>
+    <div className={cn(to && "card-lift", "flex items-start gap-2 rounded-lg border bg-card p-3 card-surface", className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         {to ? (
           <Link to={to} className="flex min-w-0 flex-col gap-0.5 hover:underline-offset-2 [&:hover_.truncate.font-medium]:underline">

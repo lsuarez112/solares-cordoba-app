@@ -37,7 +37,7 @@ export function ImportProductsPreviewTable({
   })
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card shadow-card">
       <TableScrollArea className="min-h-0 flex-1">
         <ScrollArea className="h-full min-h-[min(68vh,640px)]">
           <Table>

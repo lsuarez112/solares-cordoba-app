@@ -44,7 +44,7 @@ function groupByNumber(quotes: QuoteListItem[]): NumberGroup[] {
     const created = new Date(q.created_at)
     const g = groups.get(key) ?? { createdAt: created, issued: false, issuedAt: null, issuedUsd: 0 }
     if (created < g.createdAt) g.createdAt = created
-    if (q.status === "issued") {
+    if (q.status !== "draft") {
       g.issued = true
       const at = q.issued_at ? new Date(q.issued_at) : created
       // El importe que vale es el de la revisión vigente (o la última emitida).

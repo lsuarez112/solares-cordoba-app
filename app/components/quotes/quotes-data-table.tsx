@@ -24,8 +24,9 @@ import {
   type DataTableFilter,
 } from "~/components/ui/data-table-toolbar"
 import { MobileRowCard } from "~/components/ui/mobile-row-card"
-import { StatusIcon, StatusLegend } from "~/components/ui/status-indicator"
-import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import { QUOTE_STATUS_KINDS, StatusIcon, StatusLegend } from "~/components/ui/status-indicator"
+import type { QuoteListItem, QuoteStatus } from "~/domain/quotes/quotes.schemas"
+import { QUOTE_STATUS_PLURAL } from "~/lib/quotes/quote-status"
 import { formatDate } from "~/lib/dates"
 import { GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
 import { formatArs, formatUsd } from "~/lib/quotes/quote-totals"
@@ -44,7 +45,7 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "date", desc: true }])
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize })
 
-  const { canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete, onShare } = options
+  const { canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete, onShare, onSetStatus } = options
   const columns = React.useMemo(
     () =>
       quotesTableColumns({
@@ -57,8 +58,9 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
         onDuplicate,
         onDelete,
         onShare,
+        onSetStatus,
       }),
-    [canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete, onShare],
+    [canCreate, canUpdate, canDelete, hideClient, onOpen, onRevise, onDuplicate, onDelete, onShare, onSetStatus],
   )
 
   const table = useReactTable({
@@ -85,12 +87,12 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
     {
       id: "status",
       label: "Estado",
-      allLabel: "Borradores y emitidos",
+      allLabel: "Todos los estados",
       value: filterValue("status"),
-      options: [
-        { value: "draft", label: "Borradores" },
-        { value: "issued", label: "Emitidos" },
-      ],
+      options: QUOTE_STATUS_KINDS.map((status) => ({
+        value: status,
+        label: QUOTE_STATUS_PLURAL[status as QuoteStatus],
+      })),
       onChange: setFilter("status"),
     },
     {
@@ -133,7 +135,7 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
         showRowCount
         totalCount={data.length}
         rowCountLabel="presupuestos"
-        legend={<StatusLegend statuses={["draft", "issued"]} />}
+        legend={<StatusLegend statuses={QUOTE_STATUS_KINDS} />}
         maxHeightClassName={maxHeightClassName}
         mobileCard={(row, { actions }) => {
           const q = row.original
@@ -141,7 +143,7 @@ export function QuotesDataTable({ data, pageSize = 20, maxHeightClassName, ...op
           return (
             <MobileRowCard
               to={`/presupuestos/${q.id}`}
-              leading={<StatusIcon status={isDraft ? "draft" : "issued"} />}
+              leading={<StatusIcon status={q.status} />}
               title={
                 <>
                   <span className="font-mono text-xs">{q.display_number ?? "Borrador"}</span>

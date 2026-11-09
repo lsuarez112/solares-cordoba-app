@@ -22,6 +22,7 @@ import {
 } from "~/components/quotes/quote-request-edit-dialog"
 import { QuoteRequestSummary } from "~/components/quotes/quote-request-summary"
 import { QuoteShareMenu } from "~/components/quotes/quote-share-menu"
+import { QuoteStatusCard } from "~/components/quotes/quote-status-card"
 import { IvaChoiceField, QuoteTotalsCard } from "~/components/quotes/quote-totals-card"
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import {
@@ -35,9 +36,13 @@ import {
 } from "~/components/ui/alert-dialog"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import { confirmDialog } from "~/components/ui/confirm-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu"
 import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { Label } from "~/components/ui/label"
+import { OverflowMenu } from "~/components/ui/overflow-menu"
+import { PageHeader } from "~/components/ui/page-header"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Spinner } from "~/components/ui/spinner"
 import { StatusIcon } from "~/components/ui/status-indicator"
@@ -69,6 +74,7 @@ import {
   revisionLabel,
   type IvaChoice,
 } from "~/lib/quotes/quote-totals"
+import { QUOTE_STATUS_LABELS, canRevise, isIssued } from "~/lib/quotes/quote-status"
 import { appToast } from "~/lib/toast"
 import { cn } from "~/lib/utils"
 import { quotesService, type QuoteDetail } from "~/services/quotes.service"
@@ -165,8 +171,12 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
   )
   React.useEffect(() => {
     if (blocker.state !== "blocked") return
-    if (window.confirm("Hay cambios sin guardar. ¿Salir igual?")) blocker.proceed()
-    else blocker.reset()
+    void confirmDialog({
+      title: "Hay cambios sin guardar",
+      description: "Si salís ahora se pierden.",
+      confirmLabel: "Salir sin guardar",
+      destructive: true,
+    }).then((ok) => (ok ? blocker.proceed() : blocker.reset()))
   }, [blocker])
 
   const actions = useQuoteActions({ onDeleted: () => navigate("/presupuestos", { replace: true }) })
@@ -213,7 +223,10 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
           : null
 
   const title = listItem.display_number ?? "Borrador"
-  const currentIssued = revisions.find((r) => r.is_current && r.status === "issued")
+  const gridType = draft?.request?.grid_type ?? quote.grid_type
+  const revisable = canRevise(quote.status) && quote.is_current && canUpdate
+  const nextRevision = revisionLabel(Math.max(...revisions.map((r) => r.revision)) + 1)
+  const currentIssued = revisions.find((r) => r.is_current && isIssued(r.status))
   const newerRevision = revisions.find((r) => r.revision > quote.revision)
   const requestInput = draft?.request?.input ?? quote.input
   const requestSizing = draft?.request ? draft.request.sizing : quote.sizing
@@ -271,66 +284,86 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-5 pb-20 sm:pb-0">
       {/* Encabezado */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <Link to="/presupuestos" className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-3.5" />
-            Presupuestos
-          </Link>
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusIcon status={isDraft ? "draft" : "issued"} className="size-5" />
-            <h1 className="font-mono text-2xl font-semibold tracking-tight">{title}</h1>
+      <PageHeader
+        back={{ to: "/presupuestos", label: "Presupuestos" }}
+        leading={<StatusIcon status={quote.status} className="size-5" />}
+        title={title}
+        titleClassName="font-mono"
+        badges={
+          <>
             <Badge variant={isDraft ? "outline" : "secondary"}>
-              {isDraft ? "Borrador" : "Emitido"}
+              {QUOTE_STATUS_LABELS[quote.status]}
               {quote.number != null ? ` · ${revisionLabel(quote.revision)}` : ""}
             </Badge>
-            {(draft?.request?.grid_type ?? quote.grid_type) ? (
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-xs font-medium",
-                  GRID_TYPE_COLORS[(draft?.request?.grid_type ?? quote.grid_type)!],
-                )}
-              >
-                {GRID_TYPE_LABELS[(draft?.request?.grid_type ?? quote.grid_type)!]}
+            {gridType ? (
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", GRID_TYPE_COLORS[gridType])}>
+                {GRID_TYPE_LABELS[gridType]}
               </span>
             ) : null}
-          </div>
-          <p className="text-sm text-muted-foreground">
+          </>
+        }
+        description={
+          <>
             <Link to={`/clientes/${quote.client_id}`} className="font-medium text-foreground hover:underline">
               {listItem.client_name}
             </Link>
             {listItem.client_phone ? ` · ${listItem.client_phone}` : ""}
             {listItem.kit_code ? ` · Kit ${listItem.kit_code}` : ""}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <QuoteShareMenu
-            quoteId={quote.id}
-            share={share}
-            clientPhone={listItem.client_phone}
-            blockedReason={dirty ? "Guardá el borrador antes de compartirlo" : null}
-          />
-          {canCreate ? (
-            <Button variant="outline" size="sm" onClick={() => void actions.onDuplicate(listItem)}>
-              <CopyPlus data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
-              Duplicar
-            </Button>
-          ) : null}
-          {isDraft && canDelete ? (
-            <Button variant="outline" size="sm" onClick={() => void actions.onDelete(listItem)}>
-              <Trash2 data-icon="inline-start" className="text-destructive" />
-              Eliminar
-            </Button>
-          ) : null}
-          {!isDraft && quote.is_current && canUpdate ? (
-            <Button size="sm" onClick={() => void actions.onRevise(listItem)}>
-              <GitBranchPlus data-icon="inline-start" />
-              Editar (crea {revisionLabel(Math.max(...revisions.map((r) => r.revision)) + 1)})
-            </Button>
-          ) : null}
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <>
+            <QuoteShareMenu
+              quoteId={quote.id}
+              share={share}
+              clientPhone={listItem.client_phone}
+              blockedReason={dirty ? "Guardá el borrador antes de compartirlo" : null}
+            />
+            <div className="hidden gap-2 sm:flex">
+              {canCreate ? (
+                <Button variant="outline" size="sm" onClick={() => void actions.onDuplicate(listItem)}>
+                  <CopyPlus data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
+                  Duplicar
+                </Button>
+              ) : null}
+              {isDraft && canDelete ? (
+                <Button variant="outline" size="sm" onClick={() => void actions.onDelete(listItem)}>
+                  <Trash2 data-icon="inline-start" className="text-destructive" />
+                  Eliminar
+                </Button>
+              ) : null}
+              {revisable ? (
+                <Button size="sm" onClick={() => void actions.onRevise(listItem)}>
+                  <GitBranchPlus data-icon="inline-start" />
+                  Editar (crea {nextRevision})
+                </Button>
+              ) : null}
+            </div>
+            {canCreate || (isDraft && canDelete) || revisable ? (
+              <OverflowMenu className="sm:hidden">
+                {revisable ? (
+                  <DropdownMenuItem onSelect={() => void actions.onRevise(listItem)}>
+                    <GitBranchPlus className="text-sky-600 dark:text-sky-400" />
+                    Editar (crea {nextRevision})
+                  </DropdownMenuItem>
+                ) : null}
+                {canCreate ? (
+                  <DropdownMenuItem onSelect={() => void actions.onDuplicate(listItem)}>
+                    <CopyPlus className="text-violet-600 dark:text-violet-400" />
+                    Duplicar
+                  </DropdownMenuItem>
+                ) : null}
+                {isDraft && canDelete ? (
+                  <DropdownMenuItem variant="destructive" onSelect={() => void actions.onDelete(listItem)}>
+                    <Trash2 />
+                    Eliminar
+                  </DropdownMenuItem>
+                ) : null}
+              </OverflowMenu>
+            ) : null}
+          </>
+        }
+      />
 
       {/* Avisos de revisión */}
       {isDraft && quote.revision > 0 && currentIssued ? (
@@ -356,7 +389,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
           </AlertTitle>
           <AlertDescription className="text-amber-900/90 dark:text-amber-200/90">
             <Link to={`/presupuestos/${newerRevision.id}`} className="font-medium underline-offset-2 hover:underline">
-              Ver {newerRevision.display_number} ({newerRevision.status === "draft" ? "borrador" : "emitido"})
+              Ver {newerRevision.display_number} ({QUOTE_STATUS_LABELS[newerRevision.status].toLowerCase()})
             </Link>
           </AlertDescription>
         </Alert>
@@ -422,6 +455,15 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
         </div>
 
         <div className="stagger-y flex flex-col gap-4 lg:sticky lg:top-4">
+          {!isDraft ? (
+            <QuoteStatusCard
+              quoteId={quote.id}
+              status={quote.status}
+              isCurrent={quote.is_current}
+              canUpdate={canUpdate}
+              onChanged={load}
+            />
+          ) : null}
           <QuoteTotalsCard
             totals={totals}
             usdArs={isDraft ? (rate?.usd_to_ars ?? null) : quote.usd_ars}
@@ -486,11 +528,11 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
                           r.id === quote.id && "bg-muted",
                         )}
                       >
-                        <StatusIcon status={r.status === "issued" ? "issued" : "draft"} />
+                        <StatusIcon status={r.status} />
                         <span className="font-mono text-xs">{revisionLabel(r.revision)}</span>
                         {r.is_current ? <Badge variant="secondary" className="h-4 px-1 text-[10px]">vigente</Badge> : null}
                         <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                          {r.status === "issued" ? `USD ${formatUsd(r.total_usd)}` : "borrador"}
+                          {isIssued(r.status) ? `USD ${formatUsd(r.total_usd)}` : "borrador"}
                         </span>
                       </Link>
                     </li>
@@ -564,7 +606,7 @@ function IssuedItemsTable({ detail }: { detail: QuoteDetail }) {
           {detail.items.map((i, index) => (
             <li
               key={i.id}
-              className="row-in flex flex-col gap-1 rounded-lg border bg-card p-2.5"
+              className="row-in flex flex-col gap-1 rounded-lg border bg-card shadow-card p-2.5"
               style={{ "--i": index } as React.CSSProperties}
             >
               <span className="line-clamp-2 text-sm">{i.description}</span>
@@ -589,7 +631,7 @@ function IssuedItemsTable({ detail }: { detail: QuoteDetail }) {
         <h2 className="text-base font-medium">Ítems</h2>
         <Badge variant="secondary">{detail.items.length}</Badge>
       </div>
-      <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="overflow-hidden rounded-lg border bg-card shadow-card">
         <TableScrollArea maxHeightClassName="max-h-[min(60svh,40rem)]">
           <Table className="w-full min-w-[32rem] table-fixed">
             <TableHeader className="sticky top-0 z-10 bg-card">

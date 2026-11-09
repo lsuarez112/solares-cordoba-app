@@ -48,6 +48,7 @@ import {
   type KitOptionKind,
 } from "~/domain/kits/kits.schemas"
 import type { Product, ProductCategory } from "~/domain/products/products.schemas"
+import { useIsMobile } from "~/hooks/use-mobile"
 import { applyKitOption, computeBomTotals } from "~/lib/kits/kit-bom"
 import { nextOptionCode } from "~/lib/kits/kit-form.utils"
 import { cn } from "~/lib/utils"
@@ -133,7 +134,7 @@ export function KitOptionsSection({ form, products, catalog, categories, canEdit
           : 0
 
         return (
-          <div key={field.id} className="flex flex-col gap-3 rounded-lg border bg-card p-3">
+          <div key={field.id} className="flex flex-col gap-3 rounded-lg border bg-card shadow-card p-3">
             <div className="grid grid-cols-[5rem_1fr_auto] items-start gap-2 sm:grid-cols-[5rem_12rem_1fr_auto_auto]">
               <FormField
                 control={form.control}
@@ -278,6 +279,7 @@ function OptionChangesTable({
   })
   const changes = useWatch({ control, name: `options.${optionIndex}.changes` }) ?? []
   const [browserOpen, setBrowserOpen] = React.useState(false)
+  const isMobile = useIsMobile()
 
   const baseMenu = (onPick: (code: string, qty: number) => void) =>
     baseItems.length === 0 ? (
@@ -295,9 +297,73 @@ function OptionChangesTable({
       ))
     )
 
+  const opField = (i: number, className: string) => (
+    <FormField
+      control={control}
+      name={`options.${optionIndex}.changes.${i}.op`}
+      render={({ field: f }) => (
+        <Select value={f.value} onValueChange={f.onChange} disabled={!canEdit}>
+          <SelectTrigger size="sm" className={className} aria-label="Operación">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(OP_LABELS) as Array<keyof typeof OP_LABELS>).map((op) => (
+              <SelectItem key={op} value={op}>
+                {OP_LABELS[op]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    />
+  )
+  const qtyField = (i: number, className: string) =>
+    changes[i]?.op !== "remove" ? (
+      <FormField
+        control={control}
+        name={`options.${optionIndex}.changes.${i}.qty`}
+        render={({ field: f }) => (
+          <Input
+            type="number"
+            inputMode="decimal"
+            step="any"
+            min={0}
+            className={cn("text-right tabular-nums", className)}
+            aria-label="Cantidad"
+            {...f}
+            value={f.value ?? ""}
+            onChange={(e) => f.onChange(e.target.value)}
+          />
+        )}
+      />
+    ) : null
+  const productName = (product: Product | undefined) =>
+    product?.name ?? <span className="text-destructive">Producto inexistente</span>
+
   return (
     <div className="flex flex-col gap-2">
-      {fields.length > 0 ? (
+      {fields.length > 0 && isMobile ? (
+        // Celular: un cambio por tarjeta, sin scroll horizontal.
+        <ul className="flex flex-col gap-1.5">
+          {fields.map((field, i) => {
+            const change = changes[i]
+            const product = change ? catalog.get(change.product_code) : undefined
+            return (
+              <li key={field.id} style={{ "--i": i } as React.CSSProperties} className="row-in flex flex-col gap-1.5 rounded-md border p-2.5">
+                <div className="flex items-start gap-2">
+                  <span className="line-clamp-2 min-w-0 flex-1 text-sm">{productName(product)}</span>
+                  {canEdit ? <DeleteIconButton label="Quitar cambio" onClick={() => remove(i)} /> : null}
+                </div>
+                <div className="flex items-center gap-2">
+                  {opField(i, "h-8 w-28")}
+                  {qtyField(i, "h-8 w-20")}
+                  <span className="ml-auto font-mono text-xs text-muted-foreground">{change?.product_code}</span>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      ) : fields.length > 0 ? (
         <div className="overflow-hidden rounded-md border">
           <TableScrollArea maxHeightClassName="max-h-80">
           <Table>
@@ -316,55 +382,14 @@ function OptionChangesTable({
                 const product = change ? catalog.get(change.product_code) : undefined
                 return (
                   <TableRow key={field.id}>
-                    <TableCell className="w-28">
-                      <FormField
-                        control={control}
-                        name={`options.${optionIndex}.changes.${i}.op`}
-                        render={({ field: f }) => (
-                          <Select value={f.value} onValueChange={f.onChange} disabled={!canEdit}>
-                            <SelectTrigger size="sm" className="h-7 w-full" aria-label="Operación">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(Object.keys(OP_LABELS) as Array<keyof typeof OP_LABELS>).map((op) => (
-                                <SelectItem key={op} value={op}>
-                                  {OP_LABELS[op]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </TableCell>
+                    <TableCell className="w-28">{opField(i, "h-7 w-full")}</TableCell>
                     <TableCell className="font-mono text-xs">{change?.product_code}</TableCell>
                     <TableCell className="max-w-[24rem]">
                       <HintTooltip content={product?.name}>
-                        <span className="block truncate">
-                          {product?.name ?? <span className="text-destructive">Producto inexistente</span>}
-                        </span>
+                        <span className="block truncate">{productName(product)}</span>
                       </HintTooltip>
                     </TableCell>
-                    <TableCell className="w-24">
-                      {change?.op !== "remove" ? (
-                        <FormField
-                          control={control}
-                          name={`options.${optionIndex}.changes.${i}.qty`}
-                          render={({ field: f }) => (
-                            <Input
-                              type="number"
-                              inputMode="decimal"
-                              step="any"
-                              min={0}
-                              className="h-7 text-right tabular-nums"
-                              aria-label="Cantidad"
-                              {...f}
-                              value={f.value ?? ""}
-                              onChange={(e) => f.onChange(e.target.value)}
-                            />
-                          )}
-                        />
-                      ) : null}
-                    </TableCell>
+                    <TableCell className="w-24">{qtyField(i, "h-7")}</TableCell>
                     <TableCell className="w-10 pl-0 text-right">
                       {canEdit ? <DeleteIconButton label="Quitar cambio" onClick={() => remove(i)} /> : null}
                     </TableCell>

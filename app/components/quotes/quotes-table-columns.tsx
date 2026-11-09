@@ -3,6 +3,9 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Link } from "react-router"
 import {
+  BadgeCheck,
+  Handshake,
+  Receipt,
   CopyPlus,
   Download,
   FilePen,
@@ -17,10 +20,11 @@ import { SortableHeader } from "~/components/ui/data-table-sortable-header"
 import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { ACTIONS_COLUMN_META, RowActionsMenu } from "~/components/ui/row-actions-menu"
 import { StatusIcon } from "~/components/ui/status-indicator"
-import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import type { QuoteListItem, QuoteStatus } from "~/domain/quotes/quotes.schemas"
 import type { QuoteShareAction } from "~/hooks/use-quote-share"
 import { formatDate } from "~/lib/dates"
 import { GRID_TYPE_COLORS, GRID_TYPE_LABELS } from "~/lib/products/grid-type.utils"
+import { QUOTE_STATUS_ACTIONS, canRevise, isIssued, nextStatus } from "~/lib/quotes/quote-status"
 import { formatArs, formatUsd } from "~/lib/quotes/quote-totals"
 import { cn } from "~/lib/utils"
 
@@ -35,6 +39,7 @@ export type QuotesTableColumnsOptions = {
   onDuplicate: (quote: QuoteListItem) => void
   onDelete: (quote: QuoteListItem) => void
   onShare: (quote: QuoteListItem, action: QuoteShareAction) => void
+  onSetStatus: (quote: QuoteListItem, status: QuoteStatus) => void
 }
 
 /** Fecha que importa: emisión si está emitido, alta si es borrador. */
@@ -50,11 +55,11 @@ export function quotesTableColumns(o: QuotesTableColumnsOptions): ColumnDef<Quot
         const q = row.original
         return (
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <StatusIcon status={q.status === "issued" ? "issued" : "draft"} />
+            <StatusIcon status={q.status} />
             <Link to={`/presupuestos/${q.id}`} className="font-mono text-xs font-medium hover:underline">
               {q.display_number ?? "Borrador"}
             </Link>
-            {q.status === "issued" && !q.is_current ? (
+            {isIssued(q.status) && !q.is_current ? (
               <HintTooltip content="Hay una revisión más nueva de este presupuesto">
                 <span className="text-xs text-muted-foreground">reemplazado</span>
               </HintTooltip>
@@ -118,7 +123,7 @@ export function quotesTableColumns(o: QuotesTableColumnsOptions): ColumnDef<Quot
       header: ({ column }) => <SortableHeader column={column} title="Total USD" className="ml-auto" />,
       cell: ({ row }) => {
         const q = row.original
-        if (q.status === "issued") {
+        if (isIssued(q.status)) {
           return <span className="font-mono tabular-nums">{formatUsd(q.total_usd)}</span>
         }
         return (
@@ -189,6 +194,7 @@ export function quotesTableColumns(o: QuotesTableColumnsOptions): ColumnDef<Quot
       cell: ({ row }) => {
         const q = row.original
         const isDraft = q.status === "draft"
+        const next = nextStatus(q.status)
         return (
           <RowActionsMenu
             actions={[
@@ -204,8 +210,16 @@ export function quotesTableColumns(o: QuotesTableColumnsOptions): ColumnDef<Quot
                 label: "Editar (nueva revisión)",
                 icon: GitBranchPlus,
                 tone: "edit",
-                hidden: isDraft || !q.is_current || !o.canUpdate,
+                hidden: !canRevise(q.status) || !q.is_current || !o.canUpdate,
                 onSelect: () => o.onRevise(q),
+              },
+              {
+                key: "status",
+                label: next ? (QUOTE_STATUS_ACTIONS[next] ?? "") : "",
+                icon: next === "confirmed" ? Handshake : next === "invoiced" ? BadgeCheck : Receipt,
+                tone: "activate",
+                hidden: !next || !q.is_current || !o.canUpdate,
+                onSelect: () => next && o.onSetStatus(q, next),
               },
               { key: "duplicate", label: "Duplicar", icon: CopyPlus, tone: "duplicate", hidden: !o.canCreate, onSelect: () => o.onDuplicate(q) },
               {

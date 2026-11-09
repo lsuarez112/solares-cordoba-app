@@ -113,7 +113,7 @@ export function RolePermissionsEditor({
           return (
             <section
               key={section.id}
-              className="overflow-hidden rounded-lg border bg-card"
+              className="overflow-hidden rounded-lg border bg-card shadow-card"
             >
               <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b bg-muted/20 px-2.5 py-1.5">
                 <h4 className="min-w-0 text-xs font-semibold break-words">{section.label}</h4>

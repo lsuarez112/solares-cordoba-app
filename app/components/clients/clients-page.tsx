@@ -11,6 +11,7 @@ import { ClientsDataTable } from "~/components/clients/clients-data-table"
 import { Badge } from "~/components/ui/badge"
 import { BadgesSkeleton } from "~/components/ui/badges-skeleton"
 import { Button } from "~/components/ui/button"
+import { PageHeader } from "~/components/ui/page-header"
 import { Skeleton } from "~/components/ui/skeleton"
 import type { ClientListItem } from "~/domain/clients/clients.schemas"
 import { usePermission } from "~/hooks/use-permission"
@@ -75,27 +76,25 @@ export function ClientsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex max-w-3xl flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
-          <p className="line-clamp-2 text-sm text-muted-foreground sm:line-clamp-none">
-            Fichas con el historial de presupuestos. Un teléfono repetido solo se avisa; los
-            duplicados se pueden unificar sin perder presupuestos.
-          </p>
-        </div>
-        {canCreate ? (
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditing(null)
-              setFormOpen(true)
-            }}
-          >
-            <Plus data-icon="inline-start" />
-            Nuevo cliente
-          </Button>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Clientes"
+        description="Fichas con el historial de presupuestos. Un teléfono repetido solo se avisa; los duplicados se pueden unificar sin perder presupuestos."
+        actions={
+          canCreate ? (
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditing(null)
+                setFormOpen(true)
+              }}
+            >
+              <Plus data-icon="inline-start" />
+              <span className="sm:hidden">Nuevo</span>
+              <span className="hidden sm:inline">Nuevo cliente</span>
+            </Button>
+          ) : null
+        }
+      />
 
       {clients ? (
         <div className="stagger-x flex flex-wrap items-center gap-2">

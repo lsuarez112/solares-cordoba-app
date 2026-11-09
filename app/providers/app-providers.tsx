@@ -9,6 +9,7 @@ import { PermissionsStoreSync } from "~/components/stores/permissions-store-sync
 import { ProductsStoreSync } from "~/components/stores/products-store-sync"
 import { RolesStoreSync } from "~/components/stores/roles-store-sync"
 import { UsersStoreSync } from "~/components/stores/users-store-sync"
+import { ConfirmDialogHost } from "~/components/ui/confirm-dialog"
 import { Toaster } from "~/components/ui/sonner"
 import { TooltipProvider } from "~/components/ui/tooltip"
 
@@ -38,6 +39,7 @@ export function AppProviders({
         <TooltipProvider>
           {children}
           <Toaster />
+          <ConfirmDialogHost />
         </TooltipProvider>
       </ThemeProvider>
     </AuthProvider>

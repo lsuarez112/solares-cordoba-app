@@ -5,6 +5,7 @@ import { Link } from "react-router"
 import { ArrowRight, FilePlus2, FileText, Users } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
+import { PageHeader } from "~/components/ui/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Skeleton } from "~/components/ui/skeleton"
 import { StatusIcon } from "~/components/ui/status-indicator"
@@ -23,7 +24,7 @@ function QuoteRow({ q }: { q: QuoteListItem }) {
       to={`/presupuestos/${q.id}`}
       className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50"
     >
-      <StatusIcon status={q.status === "issued" ? "issued" : "draft"} />
+      <StatusIcon status={q.status} />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-medium">{q.client_name}</span>
         <span className="truncate text-xs text-muted-foreground">
@@ -41,7 +42,7 @@ function QuoteRow({ q }: { q: QuoteListItem }) {
 
 function StatTile({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border bg-card px-3 py-2.5">
+    <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border bg-card card-surface px-3 py-2.5">
       <span className="truncate text-[11px] text-muted-foreground">{label}</span>
       <span className="truncate font-mono text-base font-semibold tabular-nums sm:text-lg">{value}</span>
       <span className="truncate text-[11px] text-muted-foreground">{hint}</span>
@@ -74,23 +75,25 @@ export function HomePage() {
 
   return (
     <div className="stagger-y mx-auto flex w-full max-w-3xl flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Inicio</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/clientes">
-              <Users data-icon="inline-start" />
-              Clientes
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/presupuestos">
-              <FileText data-icon="inline-start" />
-              Presupuestos
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Inicio"
+        actions={
+          <>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/clientes">
+                <Users data-icon="inline-start" />
+                Clientes
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/presupuestos">
+                <FileText data-icon="inline-start" />
+                Presupuestos
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       {canCreate ? (
         <Button asChild size="lg" className="h-12 text-base">
@@ -147,7 +150,7 @@ export function HomePage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="flex items-center gap-2">
-                  <StatusIcon status={last.status === "issued" ? "issued" : "draft"} />
+                  <StatusIcon status={last.status} />
                   <span className="font-mono text-sm">{last.display_number ?? "Borrador"}</span>
                 </span>
                 <span className="truncate text-lg font-semibold">{last.client_name}</span>
@@ -160,7 +163,7 @@ export function HomePage() {
                   USD {formatUsd(last.total_usd ?? last.subtotal_usd)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {last.status === "issued" ? formatArs(last.total_ars) : "borrador, sin IVA"}
+                  {last.status !== "draft" ? formatArs(last.total_ars) : "borrador, sin IVA"}
                 </span>
               </div>
             </div>

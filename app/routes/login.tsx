@@ -39,17 +39,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (loading || !isAuthenticated) return
 
-    if (redirectParam) {
-      navigate(redirectParam, { replace: true })
-      return
-    }
-
-    if (profile) {
-      navigate(resolvePostLoginPath(null, profile), { replace: true })
-      return
-    }
-
-    navigate("/dashboard", { replace: true })
+    navigate(resolvePostLoginPath(redirectParam, profile), { replace: true })
   }, [isAuthenticated, loading, navigate, profile, redirectParam])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -74,8 +64,7 @@ export default function LoginPage() {
     <AuthPageShell>
         <h1 className="text-xl font-semibold">Iniciar sesión</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ingresá con tu email y contraseña. Si tu cuenta es nueva, puede que
-          un administrador deba habilitarla primero.
+          Ingresá con tu email y contraseña.
         </p>
 
         <AuthFormAlert variant="info" className="mt-4">

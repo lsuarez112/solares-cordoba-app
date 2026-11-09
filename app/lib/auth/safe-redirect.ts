@@ -2,6 +2,9 @@
 export function safeInternalPath(value: string | null | undefined): string | null {
   if (!value) return null
   const path = value.trim()
+  // Los navegadores descartan tabs/saltos en URLs ("/\t/x" → "//x"): se rechazan.
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001f\u007f]/.test(path)) return null
   if (!path.startsWith("/") || path.startsWith("//") || path.startsWith("/\\")) return null
   return path
 }

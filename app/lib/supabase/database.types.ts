@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   graphql_public: {
     Tables: {
@@ -750,6 +750,51 @@ export type Database = {
           },
         ]
       }
+      quote_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          from_status: string
+          id: string
+          note: string | null
+          quote_id: string
+          to_status: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          from_status: string
+          id?: string
+          note?: string | null
+          quote_id: string
+          to_status: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string
+          id?: string
+          note?: string | null
+          quote_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_status_history_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_status_history_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quotes: {
         Row: {
           ai_summary: Json | null
@@ -775,6 +820,8 @@ export type Database = {
           sizing: Json | null
           source_quote_id: string | null
           status: string
+          status_changed_at: string | null
+          status_changed_by: string | null
           subtotal_usd: number | null
           total_ars: number | null
           total_usd: number | null
@@ -806,6 +853,8 @@ export type Database = {
           sizing?: Json | null
           source_quote_id?: string | null
           status?: string
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           subtotal_usd?: number | null
           total_ars?: number | null
           total_usd?: number | null
@@ -837,6 +886,8 @@ export type Database = {
           sizing?: Json | null
           source_quote_id?: string | null
           status?: string
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           subtotal_usd?: number | null
           total_ars?: number | null
           total_usd?: number | null
@@ -1143,6 +1194,34 @@ export type Database = {
           },
         ]
       }
+      v_quote_status_history: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          changed_by_name: string | null
+          from_status: string | null
+          id: string | null
+          note: string | null
+          quote_id: string | null
+          to_status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_status_history_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_status_history_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "v_quotes_list"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_quotes_list: {
         Row: {
           ai_cost_usd: number | null
@@ -1167,6 +1246,7 @@ export type Database = {
           seller_id: string | null
           source_quote_id: string | null
           status: string | null
+          status_changed_at: string | null
           subtotal_usd: number | null
           total_ars: number | null
           total_usd: number | null
@@ -1309,6 +1389,8 @@ export type Database = {
           sizing: Json | null
           source_quote_id: string | null
           status: string
+          status_changed_at: string | null
+          status_changed_by: string | null
           subtotal_usd: number | null
           total_ars: number | null
           total_usd: number | null
@@ -1394,6 +1476,8 @@ export type Database = {
           sizing: Json | null
           source_quote_id: string | null
           status: string
+          status_changed_at: string | null
+          status_changed_by: string | null
           subtotal_usd: number | null
           total_ars: number | null
           total_usd: number | null
@@ -1409,6 +1493,48 @@ export type Database = {
         }
       }
       set_my_theme: { Args: { p_theme: string }; Returns: undefined }
+      set_quote_status: {
+        Args: { p_note?: string; p_quote_id: string; p_status: string }
+        Returns: {
+          ai_summary: Json | null
+          client_id: string
+          client_notes: string | null
+          created_at: string
+          grid_type: Database["public"]["Enums"]["grid_type_enum"] | null
+          id: string
+          input: Json
+          is_current: boolean
+          issued_at: string | null
+          issued_by: string | null
+          iva_pct: number
+          iva_usd: number | null
+          kit_id: string | null
+          notes: string | null
+          number: number | null
+          pdf_path: string | null
+          rate_date: string | null
+          rate_source: string | null
+          revision: number
+          seller_id: string | null
+          sizing: Json | null
+          source_quote_id: string | null
+          status: string
+          status_changed_at: string | null
+          status_changed_by: string | null
+          subtotal_usd: number | null
+          total_ars: number | null
+          total_usd: number | null
+          updated_at: string
+          usd_ars: number | null
+          valid_until: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       suggest_kit_candidates: {
         Args: {
           p_battery_kwh?: number

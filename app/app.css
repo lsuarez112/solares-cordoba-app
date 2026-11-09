@@ -6,6 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    --shadow-card: var(--card-shadow);
+    --shadow-card-hover: var(--card-shadow-hover);
     --font-heading: var(--font-sans);
     --font-sans: 'Inter Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -53,6 +55,11 @@
     /* Series del gráfico de Inicio (validadas: dataviz validate_palette). */
     --chart-issued: #059669;
     --chart-draft: #f59e0b;
+    /* Profundidad leve de cards (borde de luz + sombra difusa corta). */
+    --card-shadow: 0 1px 2px rgb(15 15 15 / 0.05), 0 4px 14px -4px rgb(15 15 15 / 0.10);
+    --card-shadow-hover: 0 2px 4px rgb(15 15 15 / 0.06), 0 10px 24px -6px rgb(15 15 15 / 0.14);
+    /* Fondo de card: un velo muy leve del azul de marca arriba que se desvanece. */
+    --card-tint: rgb(26 106 192 / 0.035);
     --background: #ffffff;
     --foreground: #37352f;
     --card: #ffffff;
@@ -90,6 +97,10 @@
 .dark {
     --chart-issued: #059669;
     --chart-draft: #d97706;
+    /* En oscuro la sombra casi no se ve: suma un filo de luz arriba. */
+    --card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 4px 14px -4px rgb(0 0 0 / 0.55);
+    --card-shadow-hover: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 10px 24px -6px rgb(0 0 0 / 0.65);
+    --card-tint: rgb(90 150 230 / 0.06);
     --background: #191919;
     --foreground: #d4d4d4;
     --card: #202020;
@@ -148,6 +159,21 @@
 }
 
 @layer utilities {
+  /** Superficie de card: velo de color arriba + sombra (cards, tarjetas de listas). */
+  .card-surface {
+    background-image: linear-gradient(180deg, var(--card-tint), transparent 70%);
+    box-shadow: var(--card-shadow);
+  }
+  /** Tarjeta clickeable: se eleva apenas al pasar el mouse. */
+  .card-lift {
+    transition: box-shadow 160ms ease, transform 160ms ease;
+  }
+  @media (hover: hover) {
+    .card-lift:hover {
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-1px);
+    }
+  }
   /** Contenedor de scroll vertical del área principal (sin desborde horizontal). */
   .page-scroll {
     @apply flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto;
@@ -240,6 +266,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .card-lift:hover { transform: none; }
   .skeleton-shimmer { animation: none; background-image: none; }
   .row-in, .page-in, .stagger-x > *, .stagger-y > * { animation: none; }
 }

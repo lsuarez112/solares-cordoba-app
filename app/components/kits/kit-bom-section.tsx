@@ -54,6 +54,7 @@ import {
 } from "~/components/ui/table"
 import type { KitFormValues } from "~/domain/kits/kits.schemas"
 import type { Product, ProductCategory } from "~/domain/products/products.schemas"
+import { useIsMobile } from "~/hooks/use-mobile"
 import { computeBomTotals } from "~/lib/kits/kit-bom"
 import { groupItems, insertionIndex } from "~/lib/kits/kit-groups"
 import { cn } from "~/lib/utils"
@@ -71,6 +72,7 @@ type KitBomSectionProps = {
 
 export function KitBomSection({ control, products, catalog, categories, canEdit }: KitBomSectionProps) {
   const { fields, insert, remove, move } = useFieldArray({ control, name: "items" })
+  const isMobile = useIsMobile()
   const items = useWatch({ control, name: "items" }) ?? []
   const [browser, setBrowser] = React.useState<{ open: boolean; categoryId: string | null }>({
     open: false,
@@ -89,6 +91,11 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
     fields.map((f, i) => ({ id: f.id, product_code: items[i]?.product_code ?? f.product_code })),
     catalog,
   )
+  const groupTotal = (indexes: number[]) =>
+    indexes.reduce((acc, i) => {
+      const p = catalog.get(items[i]?.product_code)
+      return acc + (p ? (Number(items[i]?.qty) || 0) * p.price_usd : 0)
+    }, 0)
   const loadedCodes = React.useMemo(() => new Set(items.map((i) => i.product_code)), [items])
 
   const handleAdd = (selected: Product[]) => {
@@ -182,8 +189,42 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
             </EmptyContent>
           ) : null}
         </Empty>
+      ) : isMobile ? (
+        // Celular: tarjetas por grupo (sin scroll horizontal), mismo dnd.
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="flex flex-col gap-3">
+            {groups.map((group) => (
+              <div key={group.key} className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between px-1 text-xs font-medium text-muted-foreground">
+                  <span>
+                    {group.label} · {group.indexes.length}
+                  </span>
+                  <span className="font-mono tabular-nums">{usd(groupTotal(group.indexes))}</span>
+                </div>
+                <SortableContext items={group.indexes.map((i) => fields[i].id)} strategy={verticalListSortingStrategy}>
+                  <ul className="flex flex-col gap-1.5">
+                    {group.indexes.map((index) => (
+                      <BomRow
+                        key={fields[index].id}
+                        variant="card"
+                        id={fields[index].id}
+                        index={index}
+                        control={control}
+                        product={catalog.get(items[index]?.product_code)}
+                        code={items[index]?.product_code}
+                        qty={Number(items[index]?.qty) || 0}
+                        canEdit={canEdit}
+                        onRemove={() => remove(index)}
+                      />
+                    ))}
+                  </ul>
+                </SortableContext>
+              </div>
+            ))}
+          </div>
+        </DndContext>
       ) : (
-      <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="overflow-hidden rounded-lg border bg-card shadow-card">
         <TableScrollArea maxHeightClassName="max-h-[32rem]">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <Table>
@@ -200,10 +241,6 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
               </TableHeader>
               <TableBody>
                 {groups.map((group) => {
-                  const groupTotal = group.indexes.reduce((acc, i) => {
-                    const p = catalog.get(items[i]?.product_code)
-                    return acc + (p ? (Number(items[i]?.qty) || 0) * p.price_usd : 0)
-                  }, 0)
                   return (
                     <React.Fragment key={group.key}>
                       <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -211,7 +248,7 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
                           {group.label} · {group.indexes.length}
                         </TableCell>
                         <TableCell className="py-1 text-right font-mono text-xs text-muted-foreground tabular-nums">
-                          {usd(groupTotal)}
+                          {usd(groupTotal(group.indexes))}
                         </TableCell>
                         <TableCell className="py-1" />
                       </TableRow>
@@ -267,6 +304,7 @@ export function KitBomSection({ control, products, catalog, categories, canEdit 
 }
 
 function BomRow({
+  variant = "row",
   id,
   index,
   control,
@@ -276,6 +314,7 @@ function BomRow({
   canEdit,
   onRemove,
 }: {
+  variant?: "row" | "card"
   id: string
   index: number
   control: Control<KitFormValues>
@@ -290,26 +329,83 @@ function BomRow({
 
   const noPrice = product ? !(product.price_usd > 0) : false
 
+  const grip = canEdit ? (
+    <button
+      type="button"
+      ref={setActivatorNodeRef}
+      className="flex cursor-grab touch-none items-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+      aria-label="Reordenar"
+      {...attributes}
+      {...listeners}
+    >
+      <GripVertical className="size-4" />
+    </button>
+  ) : null
+  const qtyField = (className: string) => (
+    <FormField
+      control={control}
+      name={`items.${index}.qty`}
+      render={({ field }) => (
+        <FormItem>
+          <FormControl>
+            <Input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              min={0}
+              className={cn("text-right tabular-nums", className)}
+              aria-label="Cantidad"
+              {...field}
+              onChange={(e) => field.onChange(e.target.value)}
+            />
+          </FormControl>
+        </FormItem>
+      )}
+    />
+  )
+
+  if (variant === "card") {
+    return (
+      <li
+        ref={setNodeRef}
+        style={{ transform: CSS.Translate.toString(transform), transition, "--i": index } as React.CSSProperties}
+        className={cn("row-in flex gap-2 rounded-lg border bg-card shadow-card p-2.5", isDragging && "relative z-20 shadow-md")}
+      >
+        {grip ? <div className="-ml-1 flex px-1">{grip}</div> : null}
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex items-start gap-2">
+            <span className="line-clamp-2 min-w-0 flex-1 text-sm">
+              {product?.name ?? <span className="text-destructive">Producto inexistente</span>}
+            </span>
+            {canEdit ? <DeleteIconButton label="Quitar producto" onClick={onRemove} /> : null}
+          </div>
+          <span className="font-mono text-xs text-muted-foreground">{code}</span>
+          <div className="flex items-center gap-2">
+            {qtyField("h-8 w-20")}
+            <span
+              className={cn(
+                "font-mono text-xs tabular-nums text-muted-foreground",
+                noPrice && "text-amber-700 dark:text-amber-400",
+              )}
+            >
+              × {product ? (noPrice ? "sin precio" : usd(product.price_usd)) : "—"}
+            </span>
+            <span className="ml-auto font-mono text-sm font-medium tabular-nums">
+              {product ? usd(qty * product.price_usd) : "—"}
+            </span>
+          </div>
+        </div>
+      </li>
+    )
+  }
+
   return (
     <TableRow
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(isDragging && "relative z-20 bg-background shadow-md")}
     >
-      <TableCell className="w-8 pr-0">
-        {canEdit ? (
-          <button
-            type="button"
-            ref={setActivatorNodeRef}
-            className="flex cursor-grab touch-none items-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
-            aria-label="Reordenar"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="size-4" />
-          </button>
-        ) : null}
-      </TableCell>
+      <TableCell className="w-8 pr-0">{grip}</TableCell>
       <TableCell className="font-mono text-xs">{code}</TableCell>
       <TableCell className="max-w-[28rem]">
         <HintTooltip content={product?.name}>
@@ -318,28 +414,7 @@ function BomRow({
           </span>
         </HintTooltip>
       </TableCell>
-      <TableCell className="w-24">
-        <FormField
-          control={control}
-          name={`items.${index}.qty`}
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  step="any"
-                  min={0}
-                  className="h-7 text-right tabular-nums"
-                  aria-label="Cantidad"
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value)}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </TableCell>
+      <TableCell className="w-24">{qtyField("h-7")}</TableCell>
       <TableCell className={cn("text-right font-mono text-xs tabular-nums", noPrice && "text-amber-700")}>
         {product ? (noPrice ? "Sin precio" : usd(product.price_usd)) : "—"}
       </TableCell>

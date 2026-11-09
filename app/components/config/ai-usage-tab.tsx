@@ -15,6 +15,7 @@ import { AlertTriangle, CircleCheck, CircleX, Plus, Sparkles, Trash2 } from "luc
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import { confirmDialog } from "~/components/ui/confirm-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { DataTableView } from "~/components/ui/data-table"
 import { SortableHeader } from "~/components/ui/data-table-sortable-header"
@@ -30,6 +31,7 @@ import {
 import { HintTooltip } from "~/components/ui/hint-tooltip"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Spinner } from "~/components/ui/spinner"
 import { Switch } from "~/components/ui/switch"
@@ -116,7 +118,13 @@ export function AiUsageTab({
   }
 
   const removeTopup = async (t: AiCreditTopup) => {
-    if (!window.confirm(`¿Borrar la recarga de USD ${t.amount_usd} del ${formatDate(t.topped_at)}?`)) return
+    const ok = await confirmDialog({
+      title: "¿Borrar la recarga?",
+      description: `USD ${t.amount_usd} del ${formatDate(t.topped_at)}. El saldo estimado se recalcula.`,
+      confirmLabel: "Borrar",
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await aiService.removeTopup(t.id)
       await load()
@@ -540,7 +548,7 @@ function AiRequestsTable({ data }: { data: AiRequestListItem[] }) {
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-full sm:basis-0 sm:flex-1">
           <DataTableToolbar
             search={(table.getColumn("search")?.getFilterValue() as string | undefined) ?? ""}
             onSearchChange={(value) => table.getColumn("search")?.setFilterValue(value)}
@@ -562,6 +570,39 @@ function AiRequestsTable({ data }: { data: AiRequestListItem[] }) {
         totalCount={data.length}
         rowCountLabel="consultas"
         maxHeightClassName="max-h-[min(60svh,36rem)]"
+        mobileCard={(row) => {
+          const r = row.original
+          return (
+            <MobileRowCard
+              to={r.quote_id && r.step !== "kit" ? `/presupuestos/${r.quote_id}` : undefined}
+              leading={
+                r.error ? (
+                  <CircleX className="size-4 shrink-0 text-destructive" aria-label="Con error" />
+                ) : (
+                  <CircleCheck className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-label="OK" />
+                )
+              }
+              title={`${AI_STEP_LABELS[r.step]} · ${MODEL_LABEL(r.model)}`}
+              subtitle={[
+                formatDateTime(r.created_at),
+                r.step === "kit" ? "Kit" : r.quote_number ? `${r.quote_number} ${r.client_name ?? ""}`.trim() : "Sin presupuesto",
+                r.user_name,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              meta={
+                <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                  {(r.tokens_in ?? 0).toLocaleString("es-AR")} / {(r.tokens_out ?? 0).toLocaleString("es-AR")} tokens
+                  {r.duration_ms != null
+                    ? ` · ${(r.duration_ms / 1000).toLocaleString("es-AR", { maximumFractionDigits: 1 })} s`
+                    : ""}
+                  {r.error ? <span className="block font-sans text-destructive">{r.error}</span> : null}
+                </span>
+              }
+              trailing={<span className="font-mono text-sm font-semibold tabular-nums">{formatAiUsd(r.cost_usd)}</span>}
+            />
+          )
+        }}
       />
     </div>
   )

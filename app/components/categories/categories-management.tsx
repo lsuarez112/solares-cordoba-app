@@ -1,5 +1,6 @@
 "use client"
 
+import { PageHeader } from "~/components/ui/page-header"
 import * as React from "react"
 import { Layers, Package, Plus } from "lucide-react"
 
@@ -67,16 +68,11 @@ export function CategoriesManagement() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Categorías de productos
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Clasificación y organización del catálogo de productos
-          </p>
-        </div>
-        <div className="flex shrink-0 items-start gap-2">
+      <PageHeader
+        title="Categorías de productos"
+        description="Clasificación y organización del catálogo de productos"
+        actions={
+          <>
           <div className="sm:hidden">
             <DataActionsMenu
               refreshing={isRefreshing}
@@ -103,8 +99,9 @@ export function CategoriesManagement() {
               ) : null}
             </DataRefreshActions>
           </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {isInitialLoading ? (
         <CategoriesMetricsSkeleton />

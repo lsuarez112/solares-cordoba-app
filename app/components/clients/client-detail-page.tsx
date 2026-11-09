@@ -22,6 +22,9 @@ import type { MergeState } from "~/components/clients/clients-page"
 import { QuotesDataTable } from "~/components/quotes/quotes-data-table"
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu"
+import { OverflowMenu } from "~/components/ui/overflow-menu"
+import { PageHeader } from "~/components/ui/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Skeleton } from "~/components/ui/skeleton"
 import type { Client, ClientListItem } from "~/domain/clients/clients.schemas"
@@ -29,6 +32,7 @@ import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
 import { usePermission } from "~/hooks/use-permission"
 import { useQuoteActions } from "~/hooks/use-quote-actions"
 import { whatsappLink } from "~/lib/clients/phone"
+import { isIssued } from "~/lib/quotes/quote-status"
 import { formatDate } from "~/lib/dates"
 import { formatUsd } from "~/lib/quotes/quote-totals"
 import { clientsService } from "~/services/clients.service"
@@ -79,7 +83,7 @@ export function ClientDetailPage({ clientId }: { clientId: string }) {
     void load()
   }, [load])
 
-  const actions = useQuoteActions({ onDeleted: () => void load() })
+  const actions = useQuoteActions({ onDeleted: () => void load(), onChanged: () => void load() })
 
   if (notFound) {
     return (
@@ -98,57 +102,87 @@ export function ClientDetailPage({ clientId }: { clientId: string }) {
   if (!client || !quotes) return <Skeleton className="h-96" />
 
   const wa = whatsappLink(client.phone)
-  const issued = quotes.filter((q) => q.status === "issued" && q.is_current)
+  const issued = quotes.filter((q) => isIssued(q.status) && q.is_current)
   const issuedTotal = issued.reduce((sum, q) => sum + (q.total_usd ?? 0), 0)
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <Link to="/clientes" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-3.5" />
-            Clientes
-          </Link>
-          <h1 className="truncate text-2xl font-semibold tracking-tight">{client.name}</h1>
-          <p className="text-xs text-muted-foreground">Alta {formatDate(client.created_at)}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {wa ? (
-            <Button variant="outline" size="sm" asChild>
-              <a href={wa} target="_blank" rel="noopener noreferrer">
-                <MessageCircle data-icon="inline-start" className="text-green-600 dark:text-green-400" />
-                WhatsApp
-              </a>
-            </Button>
-          ) : null}
-          {canUpdate ? (
-            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Pencil data-icon="inline-start" className="text-sky-600 dark:text-sky-400" />
-              Editar
-            </Button>
-          ) : null}
-          {canUpdate ? (
-            <Button variant="outline" size="sm" onClick={() => setMerge({ client, direction: "into" })}>
-              <Merge data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
-              Unificar
-            </Button>
-          ) : null}
-          {canDelete ? (
-            <Button variant="outline" size="sm" onClick={() => setDeleting(client)}>
-              <Trash2 data-icon="inline-start" className="text-destructive" />
-              Eliminar
-            </Button>
-          ) : null}
-          {canCreateQuote ? (
-            <Button size="sm" asChild>
-              <Link to={`/presupuestos/nuevo?cliente=${client.id}`}>
-                <FilePlus2 data-icon="inline-start" />
-                Nuevo presupuesto
-              </Link>
-            </Button>
-          ) : null}
-        </div>
-      </div>
+      <PageHeader
+        back={{ to: "/clientes", label: "Clientes" }}
+        title={client.name}
+        description={<span className="text-xs">Alta {formatDate(client.created_at)}</span>}
+        actions={
+          <>
+            <div className="hidden gap-2 sm:flex">
+              {wa ? (
+                <Button variant="outline" size="sm" asChild>
+                  <a href={wa} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle data-icon="inline-start" className="text-green-600 dark:text-green-400" />
+                    WhatsApp
+                  </a>
+                </Button>
+              ) : null}
+              {canUpdate ? (
+                <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                  <Pencil data-icon="inline-start" className="text-sky-600 dark:text-sky-400" />
+                  Editar
+                </Button>
+              ) : null}
+              {canUpdate ? (
+                <Button variant="outline" size="sm" onClick={() => setMerge({ client, direction: "into" })}>
+                  <Merge data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
+                  Unificar
+                </Button>
+              ) : null}
+              {canDelete ? (
+                <Button variant="outline" size="sm" onClick={() => setDeleting(client)}>
+                  <Trash2 data-icon="inline-start" className="text-destructive" />
+                  Eliminar
+                </Button>
+              ) : null}
+            </div>
+            {canCreateQuote ? (
+              <Button size="sm" asChild>
+                <Link to={`/presupuestos/nuevo?cliente=${client.id}`}>
+                  <FilePlus2 data-icon="inline-start" />
+                  <span className="sm:hidden">Nuevo</span>
+                  <span className="hidden sm:inline">Nuevo presupuesto</span>
+                </Link>
+              </Button>
+            ) : null}
+            {wa || canUpdate || canDelete ? (
+              <OverflowMenu className="sm:hidden">
+                {wa ? (
+                  <DropdownMenuItem asChild>
+                    <a href={wa} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="text-green-600 dark:text-green-400" />
+                      WhatsApp
+                    </a>
+                  </DropdownMenuItem>
+                ) : null}
+                {canUpdate ? (
+                  <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+                    <Pencil className="text-sky-600 dark:text-sky-400" />
+                    Editar
+                  </DropdownMenuItem>
+                ) : null}
+                {canUpdate ? (
+                  <DropdownMenuItem onSelect={() => setMerge({ client, direction: "into" })}>
+                    <Merge className="text-violet-600 dark:text-violet-400" />
+                    Unificar
+                  </DropdownMenuItem>
+                ) : null}
+                {canDelete ? (
+                  <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(client)}>
+                    <Trash2 />
+                    Eliminar
+                  </DropdownMenuItem>
+                ) : null}
+              </OverflowMenu>
+            ) : null}
+          </>
+        }
+      />
 
       {duplicates.length > 0 ? (
         <Alert className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">

@@ -1,5 +1,6 @@
 "use client"
 
+import { PageHeader } from "~/components/ui/page-header"
 import * as React from "react"
 import {
   AlertTriangle,
@@ -113,14 +114,11 @@ export function ProductsManagement() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Productos</h1>
-          <p className="text-sm text-muted-foreground">
-            Catálogo completo de productos del sistema
-          </p>
-        </div>
-        <div className="flex shrink-0 items-start gap-2">
+      <PageHeader
+        title="Productos"
+        description="Catálogo completo de productos del sistema"
+        actions={
+          <>
           <div className="sm:hidden">
             <DataActionsMenu
               refreshing={isRefreshing}
@@ -160,8 +158,9 @@ export function ProductsManagement() {
               ) : null}
             </DataRefreshActions>
           </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {isInitialLoading ? (
         <ProductsMetricsSkeleton />

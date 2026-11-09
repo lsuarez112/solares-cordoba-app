@@ -19,7 +19,7 @@ export function CategoriesDataTableSkeleton() {
         <Skeleton className="h-8 w-full max-w-sm" />
       </div>
 
-      <div className="min-w-0 overflow-hidden rounded-lg border bg-card">
+      <div className="min-w-0 overflow-hidden rounded-lg border bg-card shadow-card">
         <TableScrollArea>
           <Table>
             <TableHeader>

@@ -17,7 +17,7 @@ export function RolesDataTableSkeleton() {
     <div className="flex flex-col gap-4">
       <Skeleton className="h-8 max-w-sm w-full" />
 
-      <div className="min-w-0 overflow-hidden rounded-lg border bg-card">
+      <div className="min-w-0 overflow-hidden rounded-lg border bg-card shadow-card">
         <TableScrollArea>
           <Table>
           <TableHeader>

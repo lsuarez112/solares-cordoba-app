@@ -1,5 +1,6 @@
 "use client"
 
+import { PageHeader } from "~/components/ui/page-header"
 import * as React from "react"
 
 import { AiUsageTab } from "~/components/config/ai-usage-tab"
@@ -28,12 +29,10 @@ export function ConfigGeneralPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
-        <p className="text-sm text-muted-foreground">
-          Empresa, parámetros de presupuesto, cotización del dólar y consumo de IA.
-        </p>
-      </div>
+      <PageHeader
+        title="Configuración"
+        description="Empresa, parámetros de presupuesto, cotización del dólar y consumo de IA."
+      />
 
       <Tabs defaultValue="company" className="gap-4">
         <TabsList>

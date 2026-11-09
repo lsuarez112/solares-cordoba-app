@@ -34,12 +34,13 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
     name: "kwp" | "battery_kwh" | "inverter_kw" | "est_kwh_month" | "ref_kwh_month_min" | "ref_kwh_month_max" | "battery_voltage",
     label: string,
     disabled?: boolean,
+    className?: string,
   ) => (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className={className}>
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <NumberInput
@@ -158,8 +159,9 @@ export function KitHeaderFields({ form }: { form: UseFormReturn<KitFormValues> }
         {numberField("inverter_kw", "Inversor (kW)")}
         {numberField("battery_kwh", "Batería (kWh)", gridType === "ON-GRID")}
         {numberField("battery_voltage", "Tensión banco (V)", gridType === "ON-GRID")}
-        {numberField("est_kwh_month", "Generación (kWh/mes)")}
-        <div className="grid grid-cols-2 gap-2">
+        {/* En el celular: generación en su fila y el rango de consumo en otra (sin labels apretados). */}
+        {numberField("est_kwh_month", "Generación (kWh/mes)", false, "col-span-2 sm:col-span-1")}
+        <div className="col-span-2 grid grid-cols-2 gap-2 sm:col-span-1">
           {numberField("ref_kwh_month_min", "Consumo mín.")}
           {numberField("ref_kwh_month_max", "Consumo máx.")}
         </div>

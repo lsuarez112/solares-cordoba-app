@@ -15,6 +15,8 @@ import {
 import { UsersDataTableSkeleton } from "~/components/users/users-data-table-skeleton"
 import { UsersTableEmpty } from "~/components/users/users-table-empty"
 import { DataTableView } from "~/components/ui/data-table"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
+import { formatDate } from "~/lib/dates"
 import { StatusLegend } from "~/components/ui/status-indicator"
 import {
   DataTableToolbar,
@@ -138,6 +140,24 @@ export function UsersDataTable({
         totalCount={data.length}
         rowCountLabel="usuarios"
         legend={<StatusLegend statuses={["active", "pending", "inactive"]} />}
+        mobileCard={(row, { actions, cell }) => {
+          const u = row.original
+          return (
+            <MobileRowCard
+              title={cell("fullName")}
+              subtitle={[u.phone, `creado ${formatDate(u.createdAt)}`].filter(Boolean).join(" · ")}
+              meta={
+                <>
+                  {cell("roleId")}
+                  {u.notificationsEnabled ? null : (
+                    <span className="text-xs text-muted-foreground">Notificaciones desactivadas</span>
+                  )}
+                </>
+              }
+              actions={actions}
+            />
+          )
+        }}
       />
     </div>
   )

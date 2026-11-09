@@ -7,6 +7,7 @@ import {
   QuoteItemSchema,
   QuoteListItemSchema,
   QuoteSchema,
+  QuoteStatusEventSchema,
   SolarZoneSchema,
   type AppliancePreset,
   type KitCandidate,
@@ -14,6 +15,8 @@ import {
   type QuoteDraftLine,
   type QuoteItem,
   type QuoteListItem,
+  type QuoteStatus,
+  type QuoteStatusEvent,
   type SolarZone,
 } from "~/domain/quotes/quotes.schemas"
 import { devLog } from "~/lib/dev-log"
@@ -227,8 +230,33 @@ export const quotesService = {
   /** Solo borradores (los emitidos los protege un trigger). */
   async remove(id: string): Promise<void> {
     const supabase = createClient()
-    const { error } = await supabase.from("quotes").delete().eq("id", id)
+    const { error, count } = await supabase.from("quotes").delete({ count: "exact" }).eq("id", id)
     if (error) fail("remove", error)
+    // Sin error pero sin filas = no se borró (RLS o ya no existía): que no parezca un éxito.
+    if (count === 0) fail("remove", new Error("No se pudo eliminar: el presupuesto ya no existe o no tenés permiso."))
+  },
+
+  /** Avanza o vuelve un paso en el flujo (emitido → confirmado → facturar → facturado). */
+  async setStatus(id: string, status: QuoteStatus, note?: string | null): Promise<Quote> {
+    const supabase = createClient()
+    const { data, error } = await supabase.rpc("set_quote_status", {
+      p_quote_id: id,
+      p_status: status,
+      p_note: note ?? undefined,
+    })
+    if (error) fail("setStatus", error)
+    return QuoteSchema.parse(data)
+  },
+
+  async statusHistory(quoteId: string): Promise<QuoteStatusEvent[]> {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from("v_quote_status_history")
+      .select("*")
+      .eq("quote_id", quoteId)
+      .order("changed_at", { ascending: false })
+    if (error) fail("statusHistory", error)
+    return z.array(QuoteStatusEventSchema).parse(data ?? [])
   },
 
   async solarZones(): Promise<SolarZone[]> {

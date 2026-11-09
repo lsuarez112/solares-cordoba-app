@@ -16,6 +16,7 @@ import { RolesDataTableSkeleton } from "~/components/roles/roles-data-table-skel
 import { RolesTableEmpty } from "~/components/roles/roles-table-empty"
 import { createRolesTableColumns } from "~/components/roles/roles-table-columns"
 import { DataTableView } from "~/components/ui/data-table"
+import { MobileRowCard } from "~/components/ui/mobile-row-card"
 import { StatusLegend } from "~/components/ui/status-indicator"
 import { DataTableToolbar } from "~/components/ui/data-table-toolbar"
 import type { RoleListItem, RoleStatusFilter } from "~/domain/roles/roles.types"
@@ -125,6 +126,18 @@ export function RolesDataTable({
         totalCount={data.length}
         rowCountLabel="roles"
         legend={<StatusLegend />}
+        mobileCard={(row, { actions, cell }) => (
+          <MobileRowCard
+            title={cell("name")}
+            subtitle={row.original.description?.trim() || "Sin descripción"}
+            meta={
+              <span className="text-xs text-muted-foreground">
+                {row.original.permissionsCount} permisos · orden {row.original.metadata.display_order ?? "—"}
+              </span>
+            }
+            actions={actions}
+          />
+        )}
       />
     </div>
   )

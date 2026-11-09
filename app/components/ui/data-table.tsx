@@ -116,13 +116,13 @@ export function DataTableView<TData>({
               </div>
             ))
           ) : (
-            <div className="rounded-lg border bg-card">
+            <div className="rounded-lg border bg-card shadow-card">
               {emptyState ?? <p className="py-12 text-center text-sm text-muted-foreground">{emptyMessage}</p>}
             </div>
           )}
         </div>
       ) : null}
-      <div className={cn("overflow-hidden rounded-lg border bg-card", mobileCard && "hidden sm:block")}>
+      <div className={cn("overflow-hidden rounded-lg border bg-card shadow-card", mobileCard && "hidden sm:block")}>
         <TableScrollArea maxHeightClassName={maxHeightClassName}>
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-card">

@@ -1,8 +1,10 @@
 import * as React from "react"
 import { useNavigate } from "react-router"
 
-import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import { confirmDialog } from "~/components/ui/confirm-dialog"
+import type { QuoteListItem, QuoteStatus } from "~/domain/quotes/quotes.schemas"
 import { useQuoteShare, type QuoteShareAction } from "~/hooks/use-quote-share"
+import { QUOTE_STATUS_ACTIONS, QUOTE_STATUS_LABELS } from "~/lib/quotes/quote-status"
 import { appToast } from "~/lib/toast"
 import { quotesService } from "~/services/quotes.service"
 
@@ -14,10 +16,15 @@ const errorDescription = (error: unknown) => (error instanceof Error ? error.mes
  * Acciones de presupuesto compartidas por el listado, la ficha del cliente y el
  * detalle. Los handlers son estables (las columnas de TanStack los usan).
  */
-export function useQuoteActions({ onDeleted }: { onDeleted?: (quote: QuoteRef) => void } = {}) {
+export function useQuoteActions({
+  onDeleted,
+  onChanged,
+}: { onDeleted?: (quote: QuoteRef) => void; onChanged?: (quote: QuoteRef) => void } = {}) {
   const navigate = useNavigate()
   const onDeletedRef = React.useRef(onDeleted)
   onDeletedRef.current = onDeleted
+  const onChangedRef = React.useRef(onChanged)
+  onChangedRef.current = onChanged
 
   const onOpen = React.useCallback((q: QuoteRef) => navigate(`/presupuestos/${q.id}`), [navigate])
 
@@ -50,7 +57,13 @@ export function useQuoteActions({ onDeleted }: { onDeleted?: (quote: QuoteRef) =
   const onDelete = React.useCallback(async (q: QuoteRef) => {
     if (q.status !== "draft") return
     const label = q.display_number ? `el borrador ${q.display_number}` : "este borrador"
-    if (!window.confirm(`¿Eliminar ${label}? No se puede deshacer.`)) return
+    const ok = await confirmDialog({
+      title: `¿Eliminar ${label}?`,
+      description: "Se borran sus ítems. No se puede deshacer.",
+      confirmLabel: "Eliminar",
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await quotesService.remove(q.id)
       appToast.success("Borrador eliminado")
@@ -70,5 +83,23 @@ export function useQuoteActions({ onDeleted }: { onDeleted?: (quote: QuoteRef) =
     [whatsapp, copyMessage, sharePdf, downloadPdf, previewPdf],
   )
 
-  return { onOpen, onRevise, onDuplicate, onDelete, onShare }
+  /** Avance rápido de estado desde el listado (la nota se carga desde el detalle). */
+  const onSetStatus = React.useCallback(async (q: QuoteRef, status: QuoteStatus) => {
+    const label = q.display_number ?? "el presupuesto"
+    const ok = await confirmDialog({
+      title: `¿${QUOTE_STATUS_ACTIONS[status] ?? QUOTE_STATUS_LABELS[status]} ${label}?`,
+      description: "Solo cambia el estado; precios y totales siguen congelados. Queda en el historial.",
+      confirmLabel: QUOTE_STATUS_ACTIONS[status] ?? "Aceptar",
+    })
+    if (!ok) return
+    try {
+      await quotesService.setStatus(q.id, status)
+      appToast.success(`${label}: ${QUOTE_STATUS_LABELS[status].toLowerCase()}`)
+      onChangedRef.current?.(q)
+    } catch (error) {
+      appToast.error("No se pudo cambiar el estado", { description: errorDescription(error) })
+    }
+  }, [])
+
+  return { onOpen, onRevise, onDuplicate, onDelete, onShare, onSetStatus }
 }

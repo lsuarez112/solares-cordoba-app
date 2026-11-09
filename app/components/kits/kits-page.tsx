@@ -10,6 +10,8 @@ import { KitsDataTable } from "~/components/kits/kits-data-table"
 import { Badge } from "~/components/ui/badge"
 import { BadgesSkeleton } from "~/components/ui/badges-skeleton"
 import { Button } from "~/components/ui/button"
+import { PageHeader } from "~/components/ui/page-header"
+import { confirmDialog } from "~/components/ui/confirm-dialog"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import type { Kit } from "~/domain/kits/kits.schemas"
@@ -65,7 +67,13 @@ export function KitsPage() {
   }, [load])
 
   const remove = React.useCallback(async (kit: Kit) => {
-    if (!window.confirm(`¿Borrar el kit ${kit.code}? Los presupuestos ya emitidos no cambian.`)) return
+    const ok = await confirmDialog({
+      title: `¿Borrar el kit ${kit.code}?`,
+      description: "Los presupuestos ya emitidos no cambian.",
+      confirmLabel: "Borrar",
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await kitsService.remove(kit.id)
       appToast.success("Kit borrado")
@@ -77,33 +85,35 @@ export function KitsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex max-w-3xl flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Kits</h1>
-          <p className="line-clamp-2 text-sm text-muted-foreground sm:line-clamp-none">
-            Son los kits <strong className="font-medium text-foreground">base</strong> del
-            presupuestador. Cuando un vendedor describe el pedido del cliente, la IA calcula la
-            potencia necesaria y <strong className="font-medium text-foreground">solo elige entre
-            estos kits activos</strong> (por tipo de sistema, kWp y batería), aplicando sus
-            opcionales si hace falta. También se pueden elegir a mano. Mantenelos completos y con
-            precio: un kit inactivo o con productos sin precio no se sugiere.
-          </p>
-        </div>
-        {canCreate ? (
-          <div className="flex flex-wrap gap-2">
-            {aiEnabled ? (
-              <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
-                <Sparkles data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
-                Crear con IA
+      <PageHeader
+        title="Kits"
+        description={
+          <>
+            Son los kits <strong className="font-medium text-foreground">base</strong> del presupuestador. La IA
+            calcula la potencia del pedido y <strong className="font-medium text-foreground">solo elige entre estos
+            kits activos</strong> (por tipo de sistema, kWp y batería), aplicando sus opcionales si hace falta. Un kit
+            inactivo o con productos sin precio no se sugiere.
+          </>
+        }
+        actions={
+          canCreate ? (
+            <>
+              {aiEnabled ? (
+                <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
+                  <Sparkles data-icon="inline-start" className="text-violet-600 dark:text-violet-400" />
+                  <span className="sm:hidden">IA</span>
+              <span className="hidden sm:inline">Crear con IA</span>
+                </Button>
+              ) : null}
+              <Button size="sm" onClick={openNew}>
+                <Plus data-icon="inline-start" />
+                <span className="sm:hidden">Nuevo</span>
+              <span className="hidden sm:inline">Nuevo kit</span>
               </Button>
-            ) : null}
-            <Button size="sm" onClick={openNew}>
-              <Plus data-icon="inline-start" />
-              Nuevo kit
-            </Button>
-          </div>
-        ) : null}
-      </div>
+            </>
+          ) : null
+        }
+      />
 
       <Tabs defaultValue="kits" className="gap-4">
         <TabsList>

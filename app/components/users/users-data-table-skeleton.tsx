@@ -20,7 +20,7 @@ export function UsersDataTableSkeleton() {
         <Skeleton className="h-8 w-full sm:w-[180px]" />
       </div>
 
-      <div className="min-w-0 overflow-hidden rounded-lg border bg-card">
+      <div className="min-w-0 overflow-hidden rounded-lg border bg-card shadow-card">
         <TableScrollArea>
           <Table>
           <TableHeader>

@@ -5,7 +5,7 @@ import { GridTypeSchema } from "~/domain/products/products.schemas"
 const num = z.coerce.number()
 const numOrNull = z.coerce.number().nullable()
 
-export const QuoteStatusSchema = z.enum(["draft", "issued"])
+export const QuoteStatusSchema = z.enum(["draft", "issued", "confirmed", "to_invoice", "invoiced"])
 export type QuoteStatus = z.infer<typeof QuoteStatusSchema>
 
 /** Fila de v_quotes_list. */
@@ -38,6 +38,7 @@ export const QuoteListItemSchema = z.object({
   updated_at: z.string(),
   ai_cost_usd: num.default(0),
   ai_requests_count: num.default(0),
+  status_changed_at: z.string().nullable().optional(),
 })
 export type QuoteListItem = z.infer<typeof QuoteListItemSchema>
 
@@ -135,3 +136,16 @@ export const AppliancePresetSchema = z.object({
   sort_order: num,
 })
 export type AppliancePreset = z.infer<typeof AppliancePresetSchema>
+
+/** Fila de v_quote_status_history. */
+export const QuoteStatusEventSchema = z.object({
+  id: z.string(),
+  quote_id: z.string(),
+  from_status: QuoteStatusSchema,
+  to_status: QuoteStatusSchema,
+  note: z.string().nullable(),
+  changed_by: z.string().nullable(),
+  changed_by_name: z.string().nullable(),
+  changed_at: z.string(),
+})
+export type QuoteStatusEvent = z.infer<typeof QuoteStatusEventSchema>

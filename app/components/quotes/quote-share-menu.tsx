@@ -40,13 +40,13 @@ export function QuoteShareMenu({
   return (
     <DropdownMenu onOpenChange={(open) => open && !blockedReason && share.prefetch(quoteId)}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={share.busy !== null}>
+        <Button variant="outline" size="sm" disabled={share.busy !== null} aria-label="Compartir">
           {share.busy ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <Share2 data-icon="inline-start" className={ACTION_TONE_CLASS.share} />
           )}
-          Compartir
+          <span className="hidden sm:inline">Compartir</span>
           <ChevronDown data-icon="inline-end" />
         </Button>
       </DropdownMenuTrigger>

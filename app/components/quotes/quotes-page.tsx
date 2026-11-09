@@ -2,14 +2,17 @@
 
 import * as React from "react"
 import { Link } from "react-router"
-import { FileCheck2, FilePen, FileText, Plus } from "lucide-react"
+import { FileText, Plus } from "lucide-react"
 
 import { QuotesDataTable } from "~/components/quotes/quotes-data-table"
 import { Badge } from "~/components/ui/badge"
 import { BadgesSkeleton } from "~/components/ui/badges-skeleton"
 import { Button } from "~/components/ui/button"
+import { PageHeader } from "~/components/ui/page-header"
+import { QUOTE_STATUS_KINDS, StatusIcon } from "~/components/ui/status-indicator"
 import { Skeleton } from "~/components/ui/skeleton"
-import type { QuoteListItem } from "~/domain/quotes/quotes.schemas"
+import type { QuoteListItem, QuoteStatus } from "~/domain/quotes/quotes.schemas"
+import { QUOTE_STATUS_PLURAL } from "~/lib/quotes/quote-status"
 import { usePermission } from "~/hooks/use-permission"
 import { useQuoteActions } from "~/hooks/use-quote-actions"
 import { appToast } from "~/lib/toast"
@@ -35,29 +38,27 @@ export function QuotesPage() {
     void load()
   }, [load])
 
-  const actions = useQuoteActions({ onDeleted: () => void load() })
+  const actions = useQuoteActions({ onDeleted: () => void load(), onChanged: () => void load() })
 
   const current = quotes?.filter((q) => q.is_current) ?? []
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex max-w-3xl flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Presupuestos</h1>
-          <p className="line-clamp-2 text-sm text-muted-foreground sm:line-clamp-none">
-            Un emitido no se modifica: al editarlo se crea una revisión (R1, R2…) que reemplaza a la
-            anterior cuando se emite. Los borradores toman los precios vigentes hasta que se emiten.
-          </p>
-        </div>
-        {canCreate ? (
-          <Button size="sm" asChild>
-            <Link to="/presupuestos/nuevo">
-              <Plus data-icon="inline-start" />
-              Nuevo presupuesto
-            </Link>
-          </Button>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Presupuestos"
+        description="Un emitido no se modifica: al editarlo se crea una revisión (R1, R2…) que reemplaza a la anterior cuando se emite. Los borradores toman los precios vigentes hasta que se emiten."
+        actions={
+          canCreate ? (
+            <Button size="sm" asChild>
+              <Link to="/presupuestos/nuevo">
+                <Plus data-icon="inline-start" />
+                <span className="sm:hidden">Nuevo</span>
+              <span className="hidden sm:inline">Nuevo presupuesto</span>
+              </Link>
+            </Button>
+          ) : null
+        }
+      />
 
       {quotes ? (
         <div className="stagger-x flex flex-wrap items-center gap-2">
@@ -66,20 +67,16 @@ export function QuotesPage() {
             Total
             <span className="font-semibold text-foreground tabular-nums">{current.length}</span>
           </Badge>
-          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
-            <FileCheck2 data-icon="inline-start" className="text-emerald-600" />
-            Emitidos
-            <span className="font-semibold text-foreground tabular-nums">
-              {current.filter((q) => q.status === "issued").length}
-            </span>
-          </Badge>
-          <Badge variant="secondary" className="h-6 gap-1.5 px-2.5">
-            <FilePen data-icon="inline-start" className="text-amber-600" />
-            Borradores
-            <span className="font-semibold text-foreground tabular-nums">
-              {quotes.filter((q) => q.status === "draft").length}
-            </span>
-          </Badge>
+          {QUOTE_STATUS_KINDS.map((status) => {
+            const n = (status === "draft" ? quotes : current).filter((q) => q.status === status).length
+            return n > 0 || status === "draft" || status === "issued" ? (
+              <Badge key={status} variant="secondary" className="h-6 gap-1.5 px-2.5">
+                <StatusIcon status={status} />
+                {QUOTE_STATUS_PLURAL[status as QuoteStatus]}
+                <span className="font-semibold text-foreground tabular-nums">{n}</span>
+              </Badge>
+            ) : null
+          })}
         </div>
       ) : (
         <BadgesSkeleton count={3} />
