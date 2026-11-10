@@ -174,6 +174,16 @@
       padding: 0;
     }
   }
+  /** Margen superior en el celular: el iPhone difumina la franja de arriba
+      (barra de estado / barra de Safari), así que el contenido arranca más abajo. */
+  .mobile-safe-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+  @media (min-width: 48rem) {
+    .mobile-safe-top {
+      padding-top: 0;
+    }
+  }
   /** Superficie de card: velo de color arriba + sombra (cards, tarjetas de listas). */
   .card-surface {
     background-image: linear-gradient(180deg, var(--card-tint), transparent 70%);
