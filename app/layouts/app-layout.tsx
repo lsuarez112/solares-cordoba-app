@@ -33,7 +33,7 @@ export default function AppLayout() {
             viewportClassName="page-scroll-viewport"
           >
             {/* key: cada sección entra con un fundido suave. */}
-            <div key={pathname} className="page-content page-in p-4 md:p-6">
+            <div key={pathname} className="page-content page-in px-4 pt-4 pb-10 md:p-6">
               <Outlet />
             </div>
           </ScrollArea>

@@ -166,8 +166,10 @@ function DialogScrollableContent({
   return (
     <ScrollArea
       data-slot="dialog-scrollable-content"
-      className={cn(fill ? "min-h-0 flex-1" : "-mx-4")}
-      viewportClassName={cn("[&>div]:!block", !fill && "max-h-[50vh]")}
+      // fill: alto por flex (no por %): dentro de un diálogo con solo max-h el
+      // height:100% del viewport no se resuelve y el contenido quedaba cortado.
+      className={cn(fill ? "flex min-h-0 flex-1 flex-col" : "-mx-4")}
+      viewportClassName={cn("[&>div]:!block", fill ? "!h-auto min-h-0 flex-1" : "max-h-[50vh]")}
     >
       <div className={cn(fill ? "px-4 py-4" : "px-4", className)} {...props}>
         {children}

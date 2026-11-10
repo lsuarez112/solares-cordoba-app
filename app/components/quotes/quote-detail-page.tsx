@@ -282,7 +282,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-5 pb-20 sm:pb-0">
+    <div className="flex min-w-0 flex-col gap-5 pb-28 sm:pb-0">
       {/* Encabezado */}
       <PageHeader
         back={{ to: "/presupuestos", label: "Presupuestos" }}
@@ -482,7 +482,7 @@ export function QuoteDetailPage({ quoteId }: { quoteId: string }) {
           </QuoteTotalsCard>
 
           {editable ? (
-            <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:grid-cols-1 sm:border-0 sm:bg-transparent sm:p-0">
+            <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-2 border-t bg-background/95 mobile-action-bar backdrop-blur sm:static sm:grid-cols-1 sm:border-0 sm:bg-transparent">
               <Button
                 type="button"
                 variant="outline"

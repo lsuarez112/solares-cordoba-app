@@ -169,7 +169,7 @@ export function AppSidebar() {
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="pb-5 md:pb-2">
         <NavUser />
       </SidebarFooter>
 

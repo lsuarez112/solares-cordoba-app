@@ -275,7 +275,7 @@ export function QuoteWizardPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-5 pb-20 sm:pb-0">
+    <div className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-5 pb-28 sm:pb-0">
       <div className="flex flex-col gap-3">
         <Link
           to="/presupuestos"
@@ -360,7 +360,7 @@ export function QuoteWizardPage() {
 
       {/* Navegación: fija abajo en el celular. */}
       {data && step > 0 ? (
-        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between gap-2 border-t bg-background/95 mobile-action-bar backdrop-blur sm:static sm:border-0 sm:bg-transparent">
           <Button type="button" variant="outline" onClick={() => setStep((s) => (s - 1) as Step)}>
             <ArrowLeft data-icon="inline-start" />
             Atrás

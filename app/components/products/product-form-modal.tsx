@@ -131,7 +131,7 @@ export function ProductFormModal({
                 value="general"
                 className="flex min-h-0 flex-1 flex-col"
               >
-                <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+                <ScrollArea className="flex min-h-0 flex-1 flex-col" viewportClassName="!h-auto min-h-0 flex-1 [&>div]:!block">
                 <div className="flex flex-col gap-4 pt-2 pr-3">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -289,7 +289,7 @@ export function ProductFormModal({
                 value="precios"
                 className="flex min-h-0 flex-1 flex-col"
               >
-                <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+                <ScrollArea className="flex min-h-0 flex-1 flex-col" viewportClassName="!h-auto min-h-0 flex-1 [&>div]:!block">
                 <div className="flex flex-col gap-4 pt-2 pr-3">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -352,7 +352,7 @@ export function ProductFormModal({
                 value="detalles"
                 className="flex min-h-0 flex-1 flex-col"
               >
-                <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+                <ScrollArea className="flex min-h-0 flex-1 flex-col" viewportClassName="!h-auto min-h-0 flex-1 [&>div]:!block">
                 <div className="flex flex-col gap-4 pt-2 pr-3">
 
                   <div className="flex flex-col gap-3">

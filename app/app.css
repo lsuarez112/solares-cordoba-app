@@ -163,6 +163,17 @@
 }
 
 @layer utilities {
+  /** Barra fija inferior en el celular: margen extra para que los botones no
+      toquen las esquinas curvas de la pantalla (+ área segura si el navegador la informa). */
+  .mobile-action-bar {
+    padding: 0.875rem max(1.25rem, env(safe-area-inset-right)) max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem))
+      max(1.25rem, env(safe-area-inset-left));
+  }
+  @media (min-width: 40rem) {
+    .mobile-action-bar {
+      padding: 0;
+    }
+  }
   /** Superficie de card: velo de color arriba + sombra (cards, tarjetas de listas). */
   .card-surface {
     background-image: linear-gradient(180deg, var(--card-tint), transparent 70%);
