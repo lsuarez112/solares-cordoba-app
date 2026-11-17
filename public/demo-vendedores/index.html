@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Publicada en una carpeta (…/demo-vendedores): sin la barra final, los archivos relativos se pedirían a la raíz del sitio -->
+<script>if (!/(\/|\.html)$/.test(location.pathname)) location.replace(location.pathname + "/" + location.search + location.hash);</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gestor de vendedores</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="text-scale" content="scale">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="estilos.css">
+<!-- Sesión: se resuelve antes de pintar, para que no se vea la app un instante sin haber ingresado -->
+<script>try { document.documentElement.dataset.sesion = localStorage.getItem("demo-vendedores:sesion") || sessionStorage.getItem("demo-vendedores:sesion") ? "si" : "no"; } catch { document.documentElement.dataset.sesion = "no"; }</script>
+<script src="base.js"></script>
+</head>
+<body>
+
+<svg hidden>
+  <symbol id="i-hoy" viewBox="0 0 24 24"><path d="m4 6.500 1.500 1.500L8 5.500M4 12.500l1.500 1.500L8 11.500M4 18.500l1.500 1.500L8 17.500M11.500 7H20M11.500 13H20M11.500 19H20"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.500 7 2.500 8h-17C3.500 16 6 15 6 9z"/><path d="M10 20.500a2.200 2.200 0 0 0 4 0"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+  <symbol id="i-tienda" viewBox="0 0 24 24"><path d="M4 10v10h16V10M3 10l2-6h14l2 6M3 10h18M10 20v-5h4v5"/></symbol>
+  <symbol id="i-reporte" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8.500 16v-5M13 16V8M17.500 16v-3"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3.500" y="4.500" width="17" height="15" rx="2.500"/><path d="M9.500 4.500v15"/></symbol>
+  <symbol id="i-pedido" viewBox="0 0 24 24"><path d="M6 3.500h12v17l-3-2-3 2-3-2-3 2v-17zM9.500 8.500h5M9.500 12.500h5"/></symbol>
+  <symbol id="i-piezas" viewBox="0 0 24 24"><rect x="3.500" y="3.500" width="7" height="7" rx="1.500"/><rect x="13.500" y="3.500" width="7" height="7" rx="1.500"/><rect x="3.500" y="13.500" width="7" height="7" rx="1.500"/><rect x="13.500" y="13.500" width="7" height="7" rx="1.500"/></symbol>
+  <symbol id="i-aviso" viewBox="0 0 24 24"><path d="M12 4 2.500 20h19L12 4zM12 10v4.500M12 17.500v.010"/></symbol>
+  <symbol id="i-fuera" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol>
+  <symbol id="i-ir" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-volver" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M5 12h.010M12 12h.010M19 12h.010" stroke-width="2.500"/></symbol>
+  <symbol id="i-releer" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.600-5.900M20 4v5h-5"/></symbol>
+  <symbol id="i-bajar" viewBox="0 0 24 24"><path d="M12 4v11M7 10.500l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-filtro" viewBox="0 0 24 24"><path d="M4 6.500h16M7 12h10M10 17.500h4"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/></symbol>
+  <symbol id="i-mensaje" viewBox="0 0 24 24"><path d="m4 19.500 1.300-4a7.500 7.500 0 1 1 3.200 3.200L4 19.500z"/></symbol>
+  <symbol id="i-usuario" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.500"/><path d="M5 20c1-4 4-5.500 7-5.500s6 1.500 7 5.500"/></symbol>
+  <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-ojo" viewBox="0 0 24 24"><path d="M2.500 12c1-1.500 4.500-6 9.500-6s8.500 4.500 9.500 6c-1 1.500-4.500 6-9.500 6s-8.500-4.500-9.500-6z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-ojo-no" viewBox="0 0 24 24"><path d="M3 3l18 18M10.500 6.100A9 9 0 0 1 12 6c5 0 8.500 4.500 9.500 6-.500.700-1.400 1.900-2.700 3.100M6.400 7.600C4.400 8.900 3 10.900 2.500 12c1 1.500 4.500 6 9.500 6 1.500 0 2.900-.400 4.100-1M9.900 9.900a3 3 0 0 0 4.200 4.200"/></symbol>
+  <symbol id="i-salir" viewBox="0 0 24 24"><path d="M14 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h9"/></symbol>
+  <symbol id="i-sumar" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.600 5.600 7 7M17 17l1.400 1.400M5.600 18.400 7 17M17 7l1.400-1.400"/></symbol>
+  <symbol id="i-luna" viewBox="0 0 24 24"><path d="M20 14.500A8 8 0 0 1 9.500 4 7.500 7.500 0 1 0 20 14.500z"/></symbol>
+  <symbol id="i-sistema" viewBox="0 0 24 24"><rect x="3.500" y="5" width="17" height="11" rx="2"/><path d="M9 20h6M12 16v4"/></symbol>
+</svg>
+
+<!-- Ingreso (maqueta): acepta cualquier contraseña. En la versión real valida contra el servidor. -->
+<div class="login" id="login">
+  <form class="login-caja" id="form-login" method="post" action="#">
+    <div class="marca"><b>JS</b><span>Gestor de vendedores<small>Cuenta master</small></span></div>
+    <div><h1 class="t-pagina">Ingresar</h1><p class="t-secundario">Entrá con tu correo y tu contraseña.</p></div>
+    <div class="campo"><label for="email">Correo</label>
+      <input class="input" type="email" id="email" name="email" autocomplete="username" spellcheck="false" required enterkeyhint="next" value="julio@colchonesyhogar.com.ar"></div>
+    <div class="campo"><span class="campo-cabeza"><label for="clave">Contraseña</label><button class="btn link" type="button" id="olvide">¿La olvidaste?</button></span>
+      <span class="con-boton"><input class="input" type="password" id="clave" name="password" autocomplete="current-password" required enterkeyhint="done">
+        <button class="btn ghost icon sm" type="button" id="ver-clave" aria-label="Mostrar la contraseña" aria-pressed="false"><svg class="i" aria-hidden="true"><use href="#i-ojo"/></svg></button></span></div>
+    <label class="check"><input type="checkbox" id="recordar" name="recordar" checked>Mantener la sesión en este equipo</label>
+    <button class="btn primary" type="submit">Ingresar</button>
+    <p class="t-secundario" id="login-estado" role="status"></p>
+    <p class="t-secundario login-pie">Maqueta: cualquier contraseña funciona.</p>
+  </form>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="marca"><b>JS</b><span>Gestor de vendedores<small>Cuenta master</small></span></div>
+  <nav class="grupo" aria-label="Trabajo del día">
+    <p>Trabajo del día</p>
+    <a href="#hoy" data-nav="hoy" class="en-tabbar"><svg class="i" aria-hidden="true"><use href="#i-hoy"/></svg>Hoy</a>
+    <a href="#alertas" data-nav="alertas" class="en-tabbar"><svg class="i" aria-hidden="true"><use href="#i-alerta"/></svg>Alertas <span class="badge warning cuenta" data-cuenta="alertas" title="Productos desincronizados"></span></a>
+    <a href="#pedidos" data-nav="pedidos" class="en-tabbar"><svg class="i" aria-hidden="true"><use href="#i-pedido"/></svg>Pedidos <span class="badge secondary cuenta" data-cuenta="pedidos" title="Pedidos por confirmar"></span></a>
+    <a href="#vendedores" data-nav="vendedores" class="en-tabbar"><svg class="i" aria-hidden="true"><use href="#i-tienda"/></svg>Vendedores</a>
+  </nav>
+  <nav class="grupo" aria-label="Análisis y ajustes">
+    <p>Análisis y ajustes</p>
+    <a href="#reportes" data-nav="reportes"><svg class="i" aria-hidden="true"><use href="#i-reporte"/></svg>Reportes</a>
+    <a href="#configuracion" data-nav="configuracion"><svg class="i" aria-hidden="true"><use href="#i-ajustes"/></svg>Configuración</a>
+  </nav>
+  <!-- Solo en la maqueta: en producción esta página sale de la navegación -->
+  <nav class="grupo" aria-label="Referencia de la maqueta">
+    <p>Solo en la maqueta</p>
+    <a href="componentes.html"><svg class="i" aria-hidden="true"><use href="#i-piezas"/></svg>Componentes</a>
+  </nav>
+  <footer><span class="avatar chico">JS</span><span>Julio Serrano<small>Administrador</small></span>
+    <button class="btn ghost icon sm push" type="button" data-accion="salir" aria-label="Cerrar sesión" title="Cerrar sesión"><svg class="i" aria-hidden="true"><use href="#i-salir"/></svg></button></footer>
+</aside>
+
+<main>
+  <div class="barra">
+    <button class="btn ghost icon" id="alternar-sidebar" aria-label="Mostrar u ocultar el menú" aria-controls="sidebar"><svg class="i solo-escritorio" aria-hidden="true"><use href="#i-panel"/></svg><svg class="i solo-movil" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    <span class="miga" id="miga"></span>
+    <!-- Frescura de los datos: siempre a la vista, en todas las páginas -->
+    <button class="frescura push" id="frescura" data-accion="comprobar" title="Volver a leer las tiendas ahora"></button>
+    <button class="btn ghost icon" id="tema" aria-label="Tema de la interfaz" title="Tema"><svg class="i" aria-hidden="true"><use href="#i-sol"/></svg></button>
+  </div>
+  <div class="contenido" id="contenido"></div>
+</main>
+
+<!-- Teléfono: las cuatro páginas de trabajo al pulgar; el resto, en "Más" -->
+<nav class="tabbar" aria-label="Páginas principales">
+  <a href="#hoy" data-nav="hoy"><svg class="i" aria-hidden="true"><use href="#i-hoy"/></svg>Hoy</a>
+  <a href="#alertas" data-nav="alertas"><svg class="i" aria-hidden="true"><use href="#i-alerta"/></svg>Alertas<span class="badge warning cuenta" data-cuenta="alertas"></span></a>
+  <a href="#pedidos" data-nav="pedidos"><svg class="i" aria-hidden="true"><use href="#i-pedido"/></svg>Pedidos<span class="badge secondary cuenta" data-cuenta="pedidos"></span></a>
+  <a href="#vendedores" data-nav="vendedores"><svg class="i" aria-hidden="true"><use href="#i-tienda"/></svg>Vendedores</a>
+  <button type="button" data-abre-menu data-nav="mas"><svg class="i" aria-hidden="true"><use href="#i-mas"/></svg>Más</button>
+</nav>
+
+<!-- Como Pedix solo permite leer, la corrección se le pide al vendedor con el detalle exacto -->
+<dialog id="dlg-aviso" aria-labelledby="dlg-titulo" closedby="any">
+  <form method="dialog">
+    <h2 class="t-seccion" id="dlg-titulo">Avisar al vendedor</h2>
+    <p class="t-secundario" id="dlg-para"></p>
+    <textarea class="input" id="dlg-texto" aria-label="Mensaje para el vendedor" style="margin-top:8px"></textarea>
+    <p class="t-secundario">Sale por WhatsApp desde tu teléfono o WhatsApp Web. Al enviarlo queda marcado como avisado y se cierra solo cuando la próxima lectura lo encuentra corregido.</p>
+    <div class="acciones">
+      <button class="btn ghost">Cancelar</button>
+      <button class="btn outline" type="button" id="dlg-copiar">Copiar mensaje</button>
+      <a class="btn primary" id="dlg-whatsapp" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-mensaje"/></svg>Enviar por WhatsApp</a>
+    </div>
+  </form>
+</dialog>
+
+<!-- Detalle de pedido: panel lateral, para no perder la lista de atrás -->
+<dialog id="dlg-pedido" class="sheet" aria-label="Detalle del pedido" closedby="any">
+  <form method="dialog">
+    <div id="dlg-pedido-cuerpo"></div>
+  </form>
+</dialog>
+
+<!-- Teléfono: todos los filtros de pedidos en un solo panel -->
+<dialog id="dlg-filtros" class="sheet" aria-labelledby="filtros-titulo" closedby="any">
+  <form method="dialog">
+    <header class="sheet-cabeza"><h2 class="t-seccion" id="filtros-titulo">Filtros</h2><button class="btn ghost icon sm push" aria-label="Cerrar"><svg class="i" aria-hidden="true"><use href="#i-cerrar"/></svg></button></header>
+    <div class="sheet-cuerpo" id="dlg-filtros-cuerpo"></div>
+    <div class="acciones"><button class="btn ghost" type="button" data-accion="limpiar-filtros">Limpiar</button><button class="btn primary">Ver pedidos</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlg-exportar" aria-labelledby="exp-titulo" closedby="any">
+  <form method="dialog">
+    <h2 class="t-seccion" id="exp-titulo">Exportar</h2>
+    <p class="t-secundario">Se descarga un CSV listo para Excel en Argentina: columnas separadas por punto y coma, coma decimal y tildes bien (UTF-8 con BOM).</p>
+    <fieldset class="opciones"><legend>Reporte</legend><div id="exp-tipos"></div></fieldset>
+    <div class="exp-filtros">
+      <label class="campo"><span>Período</span><span class="select"><select id="exp-periodo" data-ex="periodo"></select></span></label>
+      <label class="campo"><span>Vendedor</span><span class="select"><select id="exp-vendedor" data-ex="vendedor"></select></span></label>
+      <label class="campo" id="exp-campo-desde"><span>Desde</span><input class="input" type="date" id="exp-desde" data-ex="desde"></label>
+      <label class="campo" id="exp-campo-hasta"><span>Hasta</span><input class="input" type="date" id="exp-hasta" data-ex="hasta"></label>
+      <label class="campo" id="exp-campo-grupo"><span>Agrupar por</span><span class="select"><select id="exp-grupo" data-ex="grupo">
+        <option value="dia">Día</option><option value="semana">Semana</option><option value="mes">Mes</option></select></span></label>
+    </div>
+    <p class="t-secundario" id="exp-resumen" role="status"></p>
+    <div class="acciones">
+      <button class="btn ghost">Cancelar</button>
+      <button class="btn primary" type="button" id="exp-descargar"><svg class="i" aria-hidden="true"><use href="#i-bajar"/></svg>Exportar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-vendedor" aria-labelledby="alta-titulo" closedby="any">
+  <form method="dialog" id="form-vendedor">
+    <h2 class="t-seccion" id="alta-titulo">Agregar vendedor</h2>
+    <p class="t-secundario">Se conecta con las credenciales de lectura de su tienda en Pedix.</p>
+    <label class="campo" style="margin-top:8px"><span>Nombre de la tienda</span><input class="input" name="nombre" required autocomplete="off" placeholder="Descanso Alta Gracia"></label>
+    <label class="campo"><span>Zona</span><input class="input" name="zona" required autocomplete="off" placeholder="Alta Gracia"></label>
+    <label class="campo"><span>Dirección de la tienda</span><input class="input" name="tienda" type="url" required placeholder="https://pedix.app/…"></label>
+    <label class="campo"><span>Clave de lectura de Pedix</span><input class="input" name="clave" type="password" required autocomplete="off" placeholder="pk_live_…"></label>
+    <label class="campo"><span>WhatsApp de contacto</span><input class="input" name="telefono" type="tel" inputmode="tel" autocomplete="off" placeholder="54 9 351 555 0000"></label>
+    <p class="estado-prueba" id="alta-prueba" role="status"></p>
+    <div class="acciones">
+      <button class="btn ghost" type="button" data-cerrar>Cancelar</button>
+      <button class="btn outline" type="button" id="alta-probar">Probar conexión</button>
+      <button class="btn primary" type="submit" value="ok">Agregar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-confirmar" aria-labelledby="conf-titulo" closedby="any">
+  <form method="dialog">
+    <h2 class="t-seccion" id="conf-titulo"></h2>
+    <p class="t-secundario" id="conf-texto"></p>
+    <div class="acciones"><button class="btn ghost" value="no">Cancelar</button><button class="btn destructive" value="si" id="conf-si"></button></div>
+  </form>
+</dialog>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="datos.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

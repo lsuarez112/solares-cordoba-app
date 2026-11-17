@@ -6,6 +6,8 @@ import {
 } from "@react-router/dev/routes"
 
 export default [
+  // Demo estática (public/demo-vendedores): fuera de los layouts y de la sesión.
+  route("demo-vendedores", "routes/demo-vendedores.tsx"),
   layout("layouts/public-layout.tsx", [
     layout("layouts/auth-layout.tsx", [
       index("routes/login.tsx"),

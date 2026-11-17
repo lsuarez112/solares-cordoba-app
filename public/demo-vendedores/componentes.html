@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Componentes · Gestor de vendedores</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="text-scale" content="scale">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="estilos.css">
+<script src="base.js"></script>
+</head>
+<body>
+
+<svg hidden>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7 2.5 8h-17C3.500 16 6 15 6 9z"/><path d="M10 20.500a2.200 2.200 0 0 0 4 0"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+  <symbol id="i-tienda" viewBox="0 0 24 24"><path d="M4 10v10h16V10M3 10l2-6h14l2 6M3 10h18M10 20v-5h4v5"/></symbol>
+  <symbol id="i-reporte" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8.500 16v-5M13 16V8M17.500 16v-3"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3.500" y="4.500" width="17" height="15" rx="2.500"/><path d="M9.500 4.500v15"/></symbol>
+  <symbol id="i-pedido" viewBox="0 0 24 24"><path d="M6 3.500h12v17l-3-2-3 2-3-2-3 2v-17zM9.500 8.500h5M9.500 12.500h5"/></symbol>
+  <symbol id="i-piezas" viewBox="0 0 24 24"><rect x="3.500" y="3.500" width="7" height="7" rx="1.500"/><rect x="13.500" y="3.500" width="7" height="7" rx="1.500"/><rect x="3.500" y="13.500" width="7" height="7" rx="1.500"/><rect x="13.500" y="13.500" width="7" height="7" rx="1.500"/></symbol>
+  <symbol id="i-aviso" viewBox="0 0 24 24"><path d="M12 4 2.500 20h19L12 4zM12 10v4.500M12 17.500v.010"/></symbol>
+  <symbol id="i-fuera" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-releer" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.900M20 4v5h-5"/></symbol>
+  <symbol id="i-bajar" viewBox="0 0 24 24"><path d="M12 4v11M7 10.500l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-hoy" viewBox="0 0 24 24"><path d="m4 6.500 1.500 1.500L8 5.500M4 12.500l1.500 1.500L8 11.500M4 18.500l1.500 1.500L8 17.500M11.500 7H20M11.500 13H20M11.500 19H20"/></symbol>
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.600 5.600 7 7M17 17l1.400 1.400M5.600 18.400 7 17M17 7l1.400-1.400"/></symbol>
+  <symbol id="i-luna" viewBox="0 0 24 24"><path d="M20 14.500A8 8 0 0 1 9.500 4 7.500 7.500 0 1 0 20 14.500z"/></symbol>
+  <symbol id="i-sistema" viewBox="0 0 24 24"><rect x="3.500" y="5" width="17" height="11" rx="2"/><path d="M9 20h6M12 16v4"/></symbol>
+  <symbol id="i-tema" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 3.500v17a8.500 8.500 0 0 0 0-17z" fill="currentColor"/></symbol>
+</svg>
+
+<!-- Sidebar: las páginas del gestor. "Componentes" es solo esta página de referencia. -->
+<aside class="sidebar" id="sidebar">
+  <div class="marca"><b>JS</b><span>Gestor de vendedores<small>Cuenta master</small></span></div>
+  <nav class="grupo" aria-label="Trabajo del día">
+    <p>Trabajo del día</p>
+    <a href="index.html#hoy"><svg class="i" aria-hidden="true"><use href="#i-hoy"/></svg>Hoy</a>
+    <a href="index.html#alertas"><svg class="i" aria-hidden="true"><use href="#i-alerta"/></svg>Alertas</a>
+    <a href="index.html#pedidos"><svg class="i" aria-hidden="true"><use href="#i-pedido"/></svg>Pedidos</a>
+    <a href="index.html#vendedores"><svg class="i" aria-hidden="true"><use href="#i-tienda"/></svg>Vendedores</a>
+  </nav>
+  <nav class="grupo" aria-label="Análisis y ajustes">
+    <p>Análisis y ajustes</p>
+    <a href="index.html#reportes"><svg class="i" aria-hidden="true"><use href="#i-reporte"/></svg>Reportes</a>
+    <a href="index.html#configuracion"><svg class="i" aria-hidden="true"><use href="#i-ajustes"/></svg>Configuración</a>
+  </nav>
+  <nav class="grupo" aria-label="Referencia de la maqueta">
+    <p>Solo en la maqueta</p>
+    <a href="#tipografia" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-piezas"/></svg>Componentes</a>
+  </nav>
+  <footer>Datos de ejemplo</footer>
+</aside>
+
+<main>
+  <div class="barra">
+    <button class="btn ghost icon" id="alternar-sidebar" aria-label="Mostrar u ocultar el menú" aria-controls="sidebar"><svg class="i solo-escritorio" aria-hidden="true"><use href="#i-panel"/></svg><svg class="i solo-movil" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    <span class="miga">Referencia / <b>Componentes</b></span>
+    <button class="btn ghost icon push" id="tema" aria-label="Tema de la interfaz"><svg class="i" aria-hidden="true"><use href="#i-sol"/></svg></button>
+  </div>
+
+  <div class="contenido">
+    <header class="bloque" style="gap:6px">
+      <h1 class="t-pagina">Componentes</h1>
+      <p class="t-secundario">Las piezas con las que se arman las páginas del gestor.</p>
+    </header>
+
+    <section class="bloque" id="tipografia">
+      <header><h2 class="t-seccion">Tipografía</h2><p class="t-secundario">Geist para toda la interfaz. Geist Mono solo para códigos de producto y valores que se comparan.</p></header>
+      <div class="escala">
+        <span>Título de página · 20 / 600</span><span class="t-pagina">Alertas de catálogo</span>
+        <span>Título de sección · 16 / 600</span><span class="t-seccion">Colchón Resortes Premium 140×190</span>
+        <span>Cuerpo · 14 / 400</span><span class="t-cuerpo">El precio del vendedor no coincide con el de la cuenta master.</span>
+        <span>Secundario · 13 / 400</span><span class="t-secundario">Vendedor de ejemplo 2 · detectado hoy, 15:32</span>
+        <span>Etiqueta · 12 / 500</span><span class="t-etiqueta">En la master</span>
+        <span>Dato · Mono 13</span><span class="t-dato">COL-140 · $ 489.900 · −6,1 %</span>
+      </div>
+    </section>
+
+    <section class="bloque" id="color">
+      <header><h2 class="t-seccion">Color</h2><p class="t-secundario">Todo neutro. El color aparece solo para decir algo: ámbar es desincronizado, rojo es sin conexión, verde es al día.</p></header>
+      <div class="colores">
+        <div><i style="background:var(--background)"></i><b>Fondo</b>background</div>
+        <div><i style="background:var(--muted)"></i><b>Apagado</b>muted</div>
+        <div><i style="background:var(--border)"></i><b>Borde</b>border</div>
+        <div><i style="background:var(--muted-foreground)"></i><b>Texto secundario</b>muted-foreground</div>
+        <div><i style="background:var(--primary)"></i><b>Principal</b>primary</div>
+        <div><i style="background:var(--warning-bg);border-color:var(--warning-border)"></i><b>Desincronizado</b>warning</div>
+        <div><i style="background:var(--destructive)"></i><b>Sin conexión</b>destructive</div>
+        <div><i style="background:var(--success)"></i><b>Al día</b>success</div>
+      </div>
+    </section>
+
+    <section class="bloque" id="botones">
+      <header><h2 class="t-seccion">Botones</h2><p class="t-secundario">Uno principal por tarjeta como máximo. El resto, con borde o sin fondo.</p></header>
+      <div class="muestra">
+        <button class="btn primary">Guardar cambios</button>
+        <button class="btn outline">Avisar al vendedor</button>
+        <button class="btn secondary">Volver a comprobar</button>
+        <button class="btn ghost">Dejar pasar</button>
+        <button class="btn destructive">Quitar vendedor</button>
+        <button class="btn link">Ver ficha</button>
+        <p class="rotulo">Chico, con icono y deshabilitado</p>
+        <button class="btn outline sm">Dejar pasar</button>
+        <a class="btn outline sm" href="#botones">Abrir en Pedix <svg class="i" aria-hidden="true"><use href="#i-fuera"/></svg></a>
+        <button class="btn outline icon" aria-label="Abrir en Pedix"><svg class="i" aria-hidden="true"><use href="#i-fuera"/></svg></button>
+        <button class="btn primary" disabled>Guardar cambios</button>
+      </div>
+    </section>
+
+    <section class="bloque" id="estados">
+      <header><h2 class="t-seccion">Estados</h2><p class="t-secundario">Etiquetas para el estado de un producto, un catálogo o una conexión.</p></header>
+      <div class="muestra">
+        <span class="badge warning">Desincronizado</span>
+        <span class="badge warning">3 productos desincronizados</span>
+        <span class="badge"><span class="punto"></span>Al día</span>
+        <span class="badge"><span class="punto"></span>Conectada</span>
+        <span class="badge destructive">Sin conexión</span>
+        <span class="badge secondary">Dejado pasar</span>
+        <span class="badge secondary">Vendedor avisado · 16:26</span>
+        <span class="badge warning cuenta">9</span>
+      </div>
+    </section>
+
+    <section class="bloque" id="controles">
+      <header><h2 class="t-seccion">Controles</h2><p class="t-secundario">Filtros de las listas y ajustes de la configuración de alertas.</p></header>
+      <div class="muestra" style="align-items:flex-end">
+        <label class="campo"><span>Buscar producto</span><input class="input" placeholder="Nombre o código"></label>
+        <label class="campo"><span>Vendedor</span>
+          <span class="select"><select><option>Todos</option><option>Colchones y Hogar Córdoba</option><option>Vendedor de ejemplo 2</option></select></span>
+        </label>
+        <div class="tabs" role="group" aria-label="Estado">
+          <button aria-pressed="true">Sin resolver</button>
+          <button aria-pressed="false">Dejadas pasar</button>
+        </div>
+      </div>
+      <p class="rotulo">Filas de configuración</p>
+      <div class="ajustes">
+        <div class="ajuste"><div><b>Precio</b><span class="t-secundario">Alertar cuando el precio del vendedor no coincide con la master.</span></div>
+          <input class="switch" type="checkbox" switch role="switch" checked aria-label="Alertar por precio"></div>
+        <div class="ajuste"><div><b>Tolerancia de precio</b><span class="t-secundario">Diferencias menores a este porcentaje no generan alerta.</span></div>
+          <label class="con-sufijo"><input class="input" value="2" inputmode="decimal" aria-label="Tolerancia de precio en porcentaje"><i>%</i></label></div>
+        <div class="ajuste"><div><b>Descripción</b><span class="t-secundario">Alertar cuando el texto del producto es distinto.</span></div>
+          <input class="switch" type="checkbox" switch role="switch" aria-label="Alertar por descripción"></div>
+        <div class="ajuste"><div><b>Aplicar a</b><span class="t-secundario">Vendedores que usan esta regla.</span></div>
+          <span class="muestra"><label class="check"><input type="checkbox" checked>Todos</label><label class="check"><input type="checkbox">Solo conectados</label></span></div>
+      </div>
+    </section>
+
+    <section class="bloque" id="tabla">
+      <header><h2 class="t-seccion">Tabla</h2><p class="t-secundario">Lista de vendedores. Los números van alineados a la derecha.</p></header>
+      <div class="tabla" tabindex="0" role="region" aria-label="Vendedores">
+        <table class="apilable">
+          <thead><tr><th>Vendedor</th><th>Zona</th><th>Conexión</th><th>Catálogo</th><th class="num">Pedidos hoy</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><b style="font-weight:500">Colchones y Hogar Córdoba</b></td><td>Córdoba Capital</td><td><span class="badge"><span class="punto"></span>Conectada</span></td><td><span class="badge"><span class="punto"></span>Al día</span></td><td class="num">7</td><td class="num"><button class="btn ghost sm">Ver ficha</button></td></tr>
+            <tr><td><b style="font-weight:500">Vendedor de ejemplo 2</b></td><td>Villa Carlos Paz</td><td><span class="badge"><span class="punto"></span>Conectada</span></td><td><span class="badge warning">3 desincronizados</span></td><td class="num">4</td><td class="num"><button class="btn ghost sm">Ver ficha</button></td></tr>
+            <tr><td><b style="font-weight:500">Vendedor de ejemplo 3</b></td><td>Río Cuarto</td><td><span class="badge"><span class="punto"></span>Conectada</span></td><td><span class="badge warning">1 desincronizado</span></td><td class="num">2</td><td class="num"><button class="btn ghost sm">Ver ficha</button></td></tr>
+            <tr><td><b style="font-weight:500">Vendedor de ejemplo 4</b></td><td>Villa María</td><td><span class="badge destructive">Sin conexión</span></td><td><span class="badge warning">5 desincronizados</span></td><td class="num">0</td><td class="num"><button class="btn ghost sm">Ver ficha</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bloque" id="alertas">
+      <header><h2 class="t-seccion">Alertas</h2><p class="t-secundario">La tarjeta de producto desincronizado y los avisos en línea.</p></header>
+      <article class="alerta">
+        <header>
+          <h3 class="t-cuerpo" style="font-weight:600">Colchón Resortes Premium 140×190 <span class="t-dato t-secundario">COL-140</span></h3>
+          <span class="badge warning">Desincronizado</span>
+          <p class="t-secundario">Vendedor de ejemplo 2 · 2 campos distintos · detectado hoy, 15:32</p>
+        </header>
+        <div class="dif">
+          <div class="fila th"><div>Campo</div><div>En la master</div><div>En el vendedor</div><div></div></div>
+          <div class="fila"><div class="nombre">Precio</div><div class="t-dato" data-rotulo="Master">$ 489.900</div><div class="t-dato" data-rotulo="Vendedor"><mark>$ 459.900</mark></div><div class="accion"><button class="btn ghost sm">Dejar pasar</button></div></div>
+          <div class="fila"><div class="nombre">Precio de oferta</div><div class="t-dato" data-rotulo="Master">$ 439.900</div><div class="t-dato" data-rotulo="Vendedor"><mark>Sin oferta</mark></div><div class="accion"><button class="btn ghost sm">Dejar pasar</button></div></div>
+        </div>
+        <footer>
+          <a class="btn primary sm" href="#alertas">Corregir<span class="largo">en Pedix</span> <svg class="i" aria-hidden="true"><use href="#i-fuera"/></svg></a>
+          <button class="btn outline sm">Avisar<span class="largo">al vendedor</span></button>
+        </footer>
+      </article>
+      <div class="aviso destructive"><svg class="i" aria-hidden="true"><use href="#i-aviso"/></svg><div><b>Sin conexión con Vendedor de ejemplo 4</b>Se muestra lo leído ayer a las 18:40. Puede haber cambiado desde entonces.</div></div>
+      <div class="aviso"><svg class="i" aria-hidden="true"><use href="#i-ok"/></svg><div><b>Catálogos releídos</b><span class="t-secundario">Sin cambios desde la última lectura.</span></div></div>
+    </section>
+
+    <section class="bloque" id="tienda">
+      <header><h2 class="t-seccion">Vista de tienda</h2><p class="t-secundario">La tienda del vendedor embebida, para revisarla sin salir del gestor.</p></header>
+      <div class="tienda">
+        <header>
+          <b style="font-weight:500">Colchones y Hogar Córdoba</b><span class="t-dato t-secundario">pedix.app/colchones-y-hogar-cordoba</span>
+          <div class="tabs push" role="group" aria-label="Tamaño de la vista">
+            <button aria-pressed="true" data-movil="0">Escritorio</button>
+            <button aria-pressed="false" data-movil="1">Móvil</button>
+          </div>
+        </header>
+        <div class="marco" id="marco"><iframe src="https://pedix.app/colchones-y-hogar-cordoba" title="Tienda del vendedor" loading="lazy"></iframe></div>
+      </div>
+    </section>
+
+    <section class="bloque" id="dialogos">
+      <header><h2 class="t-seccion">Diálogo, aviso flotante y vacío</h2><p class="t-secundario">Confirmaciones, resultado de una acción y listas sin contenido.</p></header>
+      <div class="muestra">
+        <button class="btn outline" id="abrir-dialogo">Abrir diálogo</button>
+        <button class="btn outline" id="abrir-toast">Mostrar aviso flotante</button>
+      </div>
+      <div class="vacio">
+        <svg class="i" aria-hidden="true"><use href="#i-ok"/></svg>
+        <b style="font-weight:500">Nada para resolver</b>
+        <span class="t-secundario">Todos los catálogos coinciden con la master.</span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<dialog id="dialogo" aria-labelledby="dialogo-titulo">
+  <form method="dialog">
+    <h2 class="t-seccion" id="dialogo-titulo">¿Dejar pasar esta diferencia?</h2>
+    <p class="t-secundario">El precio de este producto deja de alertarse para Vendedor de ejemplo 2 hasta que la master vuelva a cambiarlo.</p>
+    <div class="acciones"><button class="btn outline">Cancelar</button><button class="btn primary">Dejar pasar</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+
+document.querySelectorAll(".tabs").forEach(t => t.addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  t.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  if (b.dataset.movil) $("marco").classList.toggle("movil", b.dataset.movil === "1");
+}));
+
+$("abrir-dialogo").addEventListener("click", () => $("dialogo").showModal());
+let reloj;
+$("abrir-toast").addEventListener("click", () => {
+  $("toast").textContent = "Se deja pasar: Precio";
+  clearTimeout(reloj);
+  reloj = setTimeout(() => $("toast").textContent = "", 3000);
+});
+</script>
+</body>
+</html>
